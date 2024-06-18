@@ -6,12 +6,23 @@ use std::collections::{VecDeque, BTreeMap};
 #[cfg(test)]
 mod test;
 
+trait VecDequeUtil<T> {
+    fn extend_front<I: Iterator<Item = T> + DoubleEndedIterator>(&mut self, iter: I);
+}
+impl<T> VecDequeUtil<T> for VecDeque<T> {
+    fn extend_front<I: Iterator<Item = T> + DoubleEndedIterator>(&mut self, iter: I) {
+        for val in iter.rev() {
+            self.push_front(val);
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum CompileError {
     ParseError(Box<ast::Error>),
     RoleCount { count: usize },
     UnknownRole { name: CompactString },
-    UnsupportedBlock { info: CompactString },
+    UnsupportedBlock { state_machine: CompactString, state: CompactString, info: CompactString },
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -37,33 +48,31 @@ pub struct Transition {
     pub new_state: CompactString,
 }
 
-pub fn translate_expr(expr: &ast::Expr) -> Result<CompactString, CompileError> {
+pub fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr) -> Result<CompactString, CompileError> {
     Ok(match &expr.kind {
         ast::ExprKind::Value(ast::Value::String(x)) => x.clone(),
-        ast::ExprKind::Greater { left, right } => format_compact!("{} > {}", translate_expr(&left)?, translate_expr(&right)?),
+        ast::ExprKind::Greater { left, right } => format_compact!("{} > {}", translate_expr(state_machine, state, &left)?, translate_expr(state_machine, state, &right)?),
         ast::ExprKind::Timer => "t".into(),
-        x => return Err(CompileError::UnsupportedBlock { info: format_compact!("{x:?}") }),
+        x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
     })
 }
-pub fn parse_stmts(state_machine_name: &str, stmts: &[ast::Stmt]) -> Result<(Vec<CompactString>, Vec<Transition>), CompileError> {
+pub fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt]) -> Result<(Vec<CompactString>, Vec<Transition>), CompileError> {
     let mut actions = vec![];
     let mut transitions = vec![];
 
     let mut stmts = stmts.iter().rev().fuse();
     while let Some(stmt) = stmts.next() {
         match &stmt.kind {
-            ast::StmtKind::Assign { var, value } if var.name == state_machine_name => match &value.kind {
+            ast::StmtKind::Assign { var, value } if var.name == state_machine => match &value.kind {
                 ast::ExprKind::Value(ast::Value::String(x)) => transitions.push(Transition { condition: None, actions: Default::default(), new_state: x.clone() }),
                 _ => (),
             }
             ast::StmtKind::If { condition, then } => {
-                let condition = translate_expr(condition)?;
-                let (sub_actions, mut sub_transitions) = parse_stmts(state_machine_name, &then)?;
+                let condition = translate_expr(state_machine, state, condition)?;
+                let (sub_actions, mut sub_transitions) = parse_stmts(state_machine, state, &then)?;
                 for sub_transition in sub_transitions.iter_mut() {
                     sub_transition.condition = Some(sub_transition.condition.take().map(|x| format_compact!("{condition} and {x}")).unwrap_or_else(|| condition.clone()));
-                    for sub_action in sub_actions.iter().rev() {
-                        sub_transition.actions.push_front(sub_action.clone());
-                    }
+                    sub_transition.actions.extend_front(sub_actions.iter().cloned().rev());
                 }
                 transitions.extend(sub_transitions.into_iter());
             }
@@ -104,7 +113,7 @@ pub fn compile(xml: &str, role: Option<&str>) -> Result<Project, CompileError> {
             let state_machine = state_machines.entry(state_machine_name.clone()).or_insert_with(|| StateMachine { states: Default::default(), initial_state: Default::default() });
             let state = state_machine.states.entry(state_name.clone()).or_insert_with(|| State { actions: Default::default(), transitions: Default::default() });
 
-            let (actions, transitions) = parse_stmts(&state_machine_name, &script.stmts)?;
+            let (actions, transitions) = parse_stmts(&state_machine_name, &state_name, &script.stmts)?;
             let target_states = transitions.iter().map(|x| x.new_state.clone()).collect::<Vec<_>>();
             state.transitions.extend(transitions.into_iter());
             state.actions.extend(actions.into_iter());
