@@ -60,25 +60,33 @@ pub fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt]) -> Res
     let mut actions = vec![];
     let mut transitions = vec![];
 
-    let mut stmts = stmts.iter().rev().fuse();
-    while let Some(stmt) = stmts.next() {
+    let mut stmts = stmts.iter().rev().peekable();
+    while let Some(stmt) = stmts.peek() {
         match &stmt.kind {
             ast::StmtKind::Assign { var, value } if var.name == state_machine => match &value.kind {
                 ast::ExprKind::Value(ast::Value::String(x)) => transitions.push(Transition { condition: None, actions: Default::default(), new_state: x.clone() }),
-                _ => (),
+                _ => break,
             }
             ast::StmtKind::If { condition, then } => {
                 let condition = translate_expr(state_machine, state, condition)?;
                 let (sub_actions, mut sub_transitions) = parse_stmts(state_machine, state, &then)?;
                 for sub_transition in sub_transitions.iter_mut() {
-                    sub_transition.condition = Some(sub_transition.condition.take().map(|x| format_compact!("{condition} and {x}")).unwrap_or_else(|| condition.clone()));
+                    sub_transition.condition = Some(sub_transition.condition.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
                     sub_transition.actions.extend_front(sub_actions.iter().cloned().rev());
                 }
                 transitions.extend(sub_transitions.into_iter());
             }
-            _ => (),
+            _ => break,
+        }
+        stmts.next();
+    }
+    while let Some(stmt) = stmts.next() {
+        match &stmt.kind {
+            ast::StmtKind::ResetTimer => actions.push("t = 0".into()),
+            x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
         }
     }
+
     Ok((actions, transitions))
 }
 
