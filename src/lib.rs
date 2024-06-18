@@ -65,14 +65,21 @@ pub fn compile(xml: &str, role: Option<&str>) -> Result<Project, CompileError> {
             let state_machine = state_machines.entry(state_machine_name.clone()).or_insert_with(|| StateMachine { states: Default::default(), initial_state: None });
             let state = state_machine.states.entry(state_name.clone()).or_insert_with(|| State { transitions: Default::default() });
 
+            let mut target_states = vec![];
             for stmt in script.stmts.iter() {
                 match &stmt.kind {
                     ast::StmtKind::Assign { var, value } if var.name == state_machine_name => match &value.kind {
-                        ast::ExprKind::Value(ast::Value::String(x)) => state.transitions.push(Transition { condition: None, new_state: x.clone() }),
+                        ast::ExprKind::Value(ast::Value::String(x)) => {
+                            state.transitions.push(Transition { condition: None, new_state: x.clone() });
+                            target_states.push(x.clone());
+                        }
                         _ => (),
                     }
                     _ => (),
                 }
+            }
+            for target_state in target_states {
+                state_machine.states.entry(target_state).or_insert_with(|| State { transitions: Default::default() });
             }
         }
     }
