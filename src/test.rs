@@ -20,10 +20,20 @@ fn test_simple() {
             ("something".into(), StateMachine {
                 states: [
                     ("thing 1".into(), State {
-
+                        transitions: vec![
+                            Transition {
+                                condition: None,
+                                new_state: "thing 2".into(),
+                            },
+                        ],
                     }),
                     ("thing 2".into(), State {
-
+                        transitions: vec![
+                            Transition {
+                                condition: None,
+                                new_state: "thing 1".into(),
+                            },
+                        ],
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
