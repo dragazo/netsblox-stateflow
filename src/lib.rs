@@ -40,7 +40,7 @@ pub struct StateMachine {
 #[derive(Debug, PartialEq, Eq)]
 pub struct State {
     pub actions: VecDeque<CompactString>,
-    pub transitions: Vec<Transition>,
+    pub transitions: VecDeque<Transition>,
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct Transition {
@@ -57,10 +57,10 @@ pub fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr) -> Res
         x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
     })
 }
-pub fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool) -> Result<Option<Vec<Transition>>, CompileError> {
+pub fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool) -> Result<Option<VecDeque<Transition>>, CompileError> {
     Ok(match &stmt.kind {
         ast::StmtKind::Assign { var, value } if terminal && var.name == state_machine => match &value.kind {
-            ast::ExprKind::Value(ast::Value::String(x)) => Some(vec![Transition { condition: None, actions: Default::default(), new_state: x.clone() }]),
+            ast::ExprKind::Value(ast::Value::String(x)) => Some([Transition { condition: None, actions: Default::default(), new_state: x.clone() }].into_iter().collect()),
             _ => None,
         }
         ast::StmtKind::If { condition, then } => {
@@ -68,23 +68,44 @@ pub fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, ter
             let (actions, mut transitions) = parse_stmts(state_machine, state, &then, terminal)?;
             for transition in transitions.iter_mut() {
                 transition.condition = Some(transition.condition.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
-                transition.actions.extend_front(actions.iter().cloned().rev());
+                transition.actions.extend_front(actions.iter().cloned());
             }
             Some(transitions)
         }
         _ => None,
     })
 }
-pub fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], terminal: bool) -> Result<(Vec<CompactString>, Vec<Transition>), CompileError> {
-    let mut actions = vec![];
-    let mut transitions = vec![];
+pub fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut terminal: bool) -> Result<(VecDeque<CompactString>, VecDeque<Transition>), CompileError> {
+    let mut actions: VecDeque<CompactString> = Default::default();
+    let mut transitions: VecDeque<Transition> = Default::default();
 
     let mut stmts = stmts.iter().rev().peekable();
+    while let Some(stmt) = stmts.peek() {
+        match &stmt.kind {
+            ast::StmtKind::Return { value: _ } => (),
+            _ => break,
+        }
+        stmts.next();
+        terminal = true;
+    }
     if terminal {
         let mut last = true;
         while let Some(stmt) = stmts.peek() {
             match parse_transitions(state_machine, state, stmt, last)? {
-                Some(sub_transitions) => transitions.extend(sub_transitions.into_iter()),
+                Some(sub_transitions) => {
+                    let mut else_condition = None;
+                    for sub_transition in sub_transitions.iter() {
+                        if let Some(condition) = sub_transition.condition.as_ref() {
+                            else_condition = Some(else_condition.take().map(|x| format_compact!("{x} & ~({condition})")).unwrap_or_else(|| format_compact!("~({condition})")));
+                        }
+                    }
+                    if let Some(else_condition) = else_condition {
+                        for transition in transitions.iter_mut() {
+                            transition.condition = Some(transition.condition.take().map(|x| format_compact!("{else_condition} & {x}")).unwrap_or_else(|| else_condition.clone()));
+                        }
+                    }
+                    transitions.extend_front(sub_transitions.into_iter());
+                }
                 None => break,
             }
             stmts.next();
@@ -97,7 +118,7 @@ pub fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], termin
             _ => (),
         }
         match &stmt.kind {
-            ast::StmtKind::ResetTimer => actions.push("t = 0".into()),
+            ast::StmtKind::ResetTimer => actions.push_front("t = 0".into()),
             x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
         }
     }
@@ -138,8 +159,8 @@ pub fn compile(xml: &str, role: Option<&str>) -> Result<Project, CompileError> {
 
             let (actions, transitions) = parse_stmts(&state_machine_name, &state_name, &script.stmts, true)?;
             let target_states = transitions.iter().map(|x| x.new_state.clone()).collect::<Vec<_>>();
-            state.transitions.extend(transitions.into_iter());
-            state.actions.extend(actions.into_iter());
+            state.transitions.extend_front(transitions.into_iter());
+            state.actions.extend_front(actions.into_iter());
             for target_state in target_states {
                 state_machine.states.entry(target_state).or_insert_with(|| State { actions: Default::default(), transitions: Default::default() });
             }

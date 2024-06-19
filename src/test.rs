@@ -21,23 +21,23 @@ fn test_simple() {
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -57,27 +57,27 @@ fn test_simple_no_handler() {
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![],
+                        transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -97,23 +97,23 @@ fn test_simple_if_timer() {
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -135,23 +135,23 @@ fn test_if_timer_reset_1() {
                         actions: [
                             "t = 0".into(),
                         ].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -171,7 +171,7 @@ fn test_if_timer_reset_2() {
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: Some("t > 10".into()),
                                 actions: [
@@ -179,17 +179,17 @@ fn test_if_timer_reset_2() {
                                 ].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -209,25 +209,25 @@ fn test_if_timer_reset_3() {
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         actions: [
                             "t = 0".into(),
                         ].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -247,19 +247,19 @@ fn test_no_transitions_1() {
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         actions: [
                             "t = 0".into(),
                         ].into_iter().collect(),
-                        transitions: vec![],
+                        transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -279,17 +279,116 @@ fn test_no_transitions_2() {
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![
+                        transitions: [
                             Transition {
                                 condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
-                        ],
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         actions: [].into_iter().collect(),
-                        transitions: vec![],
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_if_chain_1() {
+    let proj = compile(include_str!("projects/if-chain-1.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                states: [
+                    ("thing 1".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                condition: Some("t > 9".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                            Transition {
+                                condition: Some("~(t > 9) & t > 10".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 3".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_if_chain_2() {
+    let proj = compile(include_str!("projects/if-chain-2.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                states: [
+                    ("thing 1".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                condition: Some("t > 8".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                            Transition {
+                                condition: Some("~(t > 8) & t > 9".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                            Transition {
+                                condition: Some("~(t > 8) & ~(t > 9) & t > 10".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 3".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 4".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
