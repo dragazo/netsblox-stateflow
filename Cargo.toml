@@ -4,4 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-netsblox-ast = "=0.5.10"
+netsblox-ast = "=0.5.11"

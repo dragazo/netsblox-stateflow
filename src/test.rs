@@ -235,3 +235,15 @@ fn test_if_timer_reset_3() {
         ].into_iter().collect(),
     });
 }
+
+#[test]
+fn test_if_fall_through_1() {
+    let err = compile(include_str!("projects/if-fall-through-1.xml"), None).unwrap_err();
+    assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
+}
+
+#[test]
+fn test_if_fall_through_2() {
+    let err = compile(include_str!("projects/if-fall-through-2.xml"), None).unwrap_err();
+    assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
+}
