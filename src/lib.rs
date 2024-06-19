@@ -59,16 +59,16 @@ pub fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr) -> Res
 }
 pub fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool) -> Result<Option<Vec<Transition>>, CompileError> {
     Ok(match &stmt.kind {
-        ast::StmtKind::Assign { var, value } if var.name == state_machine => match &value.kind {
+        ast::StmtKind::Assign { var, value } if terminal && var.name == state_machine => match &value.kind {
             ast::ExprKind::Value(ast::Value::String(x)) => Some(vec![Transition { condition: None, actions: Default::default(), new_state: x.clone() }]),
             _ => None,
         }
         ast::StmtKind::If { condition, then } => {
             let condition = translate_expr(state_machine, state, condition)?;
             let (actions, mut transitions) = parse_stmts(state_machine, state, &then, terminal)?;
-            for sub_transition in transitions.iter_mut() {
-                sub_transition.condition = Some(sub_transition.condition.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
-                sub_transition.actions.extend_front(actions.iter().cloned().rev());
+            for transition in transitions.iter_mut() {
+                transition.condition = Some(transition.condition.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
+                transition.actions.extend_front(actions.iter().cloned().rev());
             }
             Some(transitions)
         }
@@ -92,7 +92,7 @@ pub fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], termin
         }
     }
     while let Some(stmt) = stmts.next() {
-        match parse_transitions(state_machine, state, stmt, false) {
+        match parse_transitions(state_machine, state, stmt, true) {
             Ok(Some(_)) => return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() }),
             _ => (),
         }
