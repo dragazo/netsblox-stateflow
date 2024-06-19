@@ -57,10 +57,10 @@ pub fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr) -> Res
         x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
     })
 }
-pub fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool) -> Result<Option<VecDeque<(Transition, bool)>>, CompileError> {
+pub fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool) -> Result<Option<(VecDeque<(Transition, bool)>, Option<CompactString>)>, CompileError> {
     Ok(match &stmt.kind {
         ast::StmtKind::Assign { var, value } if var.name == state_machine => match &value.kind {
-            ast::ExprKind::Value(ast::Value::String(x)) => Some([(Transition { condition: None, actions: Default::default(), new_state: x.clone() }, terminal)].into_iter().collect()),
+            ast::ExprKind::Value(ast::Value::String(x)) => Some(([(Transition { condition: None, actions: Default::default(), new_state: x.clone() }, terminal)].into_iter().collect(), None)),
             _ => None,
         }
         ast::StmtKind::If { condition, then } => {
@@ -70,7 +70,7 @@ pub fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, ter
                 transition.condition = Some(transition.condition.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
                 transition.actions.extend_front(actions.iter().cloned());
             }
-            Some(transitions)
+            Some((transitions, Some(format_compact!("~({condition})"))))
         }
         _ => None,
     })
@@ -92,17 +92,11 @@ pub fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut te
     let mut last = true;
     while let Some(stmt) = stmts.peek() {
         match parse_transitions(state_machine, state, stmt, terminal && last)? {
-            Some(sub_transitions) => {
+            Some((sub_transitions, else_condition)) => {
                 if sub_transitions.iter().any(|x| !x.1) {
                     return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() });
                 }
 
-                let mut else_condition = None;
-                for (sub_transition, _) in sub_transitions.iter() {
-                    if let Some(condition) = sub_transition.condition.as_ref() {
-                        else_condition = Some(else_condition.take().map(|x| format_compact!("{x} & ~({condition})")).unwrap_or_else(|| format_compact!("~({condition})")));
-                    }
-                }
                 if let Some(else_condition) = else_condition {
                     for (transition, _) in transitions.iter_mut() {
                         transition.condition = Some(transition.condition.take().map(|x| format_compact!("{else_condition} & {x}")).unwrap_or_else(|| else_condition.clone()));
