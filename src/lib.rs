@@ -122,6 +122,10 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
             let (actions_1, mut transitions_1, body_terminal_1) = parse_stmts(state_machine, state, &then, terminal, context)?;
             let (actions_2, mut transitions_2, body_terminal_2) = parse_stmts(state_machine, state, &otherwise, terminal, context)?;
 
+            if (!actions_1.is_empty() && !body_terminal_1) || (!actions_2.is_empty() && !body_terminal_2) {
+                return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() });
+            }
+
             for transition in transitions_1.iter_mut() {
                 transition.condition = Some(transition.condition.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
                 transition.actions.extend_front(actions_1.iter().cloned());
