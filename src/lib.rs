@@ -1,7 +1,7 @@
 use netsblox_ast as ast;
 use netsblox_ast::compact_str::{CompactString, format_compact};
 
-use std::collections::{VecDeque, BTreeMap};
+use std::collections::{VecDeque, BTreeMap, BTreeSet};
 
 #[cfg(test)]
 mod test;
@@ -24,6 +24,7 @@ pub enum CompileError {
     UnknownRole { name: CompactString },
     UnsupportedBlock { state_machine: CompactString, state: CompactString, info: CompactString },
     NonTerminalTransition { state_machine: CompactString, state: CompactString },
+    MultipleHandlers { state_machine: CompactString, state: CompactString },
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -138,6 +139,7 @@ pub fn compile(xml: &str, role: Option<&str>) -> Result<Project, CompileError> {
     };
 
     let mut state_machines: BTreeMap<_, StateMachine> = Default::default();
+    let mut visited_handlers: BTreeSet<(CompactString, CompactString)> = Default::default();
     for entity in role.entities.iter() {
         for script in entity.scripts.iter() {
             let (state_machine_name, state_name) = match script.hat.as_ref().map(|x| &x.kind) {
@@ -152,8 +154,14 @@ pub fn compile(xml: &str, role: Option<&str>) -> Result<Project, CompileError> {
                 _ => continue,
             };
 
+            if !visited_handlers.insert((state_machine_name.clone(), state_name.clone())) {
+                return Err(CompileError::MultipleHandlers { state_machine: state_machine_name.clone(), state: state_name.clone() });
+            }
+
             let state_machine = state_machines.entry(state_machine_name.clone()).or_insert_with(|| StateMachine { states: Default::default(), initial_state: Default::default() });
             let state = state_machine.states.entry(state_name.clone()).or_insert_with(|| State { actions: Default::default(), transitions: Default::default() });
+            debug_assert_eq!(state.transitions.len(), 0);
+            debug_assert_eq!(state.actions.len(), 0);
 
             let (actions, transitions) = parse_stmts(&state_machine_name, &state_name, &script.stmts, true)?;
             let target_states = transitions.iter().map(|x| x.0.new_state.clone()).collect::<Vec<_>>();

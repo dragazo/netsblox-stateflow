@@ -669,3 +669,9 @@ fn test_simple_fall_through_2() {
     let err = compile(include_str!("projects/simple-fall-through-2.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
+
+#[test]
+fn test_multiple_handlers() {
+    let err = compile(include_str!("projects/multiple-handlers.xml"), None).unwrap_err();
+    assert_eq!(err, CompileError::MultipleHandlers { state_machine: "something".into(), state: "thing 1".into() });
+}
