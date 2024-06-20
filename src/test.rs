@@ -962,6 +962,83 @@ fn test_if_else_6() {
 }
 
 #[test]
+fn test_if_else_7() {
+    let proj = compile(include_str!("projects/if-else-7.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [
+                    "foo".into(),
+                    "bar".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                condition: Some("~(foo == bar)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                            Transition {
+                                condition: Some("foo == bar".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 4".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_if_else_8() {
+    let proj = compile(include_str!("projects/if-else-8.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [
+                    "foo".into(),
+                    "bar".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 4".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
 fn test_if_fall_through_1() {
     let err = compile(include_str!("projects/if-fall-through-1.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
