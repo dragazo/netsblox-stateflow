@@ -71,9 +71,24 @@ struct Context {
 
 fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &mut Context) -> Result<CompactString, CompileError> {
     Ok(match &expr.kind {
+        ast::ExprKind::Variable { var } => {
+            context.variables.push(var.clone());
+            var.trans_name.clone()
+        }
         ast::ExprKind::Value(ast::Value::String(x)) => x.clone(),
+        ast::ExprKind::Eq { left, right } => format_compact!("{} == {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
         ast::ExprKind::Greater { left, right } => format_compact!("{} > {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
         ast::ExprKind::Timer => "t".into(),
+        x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
+    })
+}
+fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &mut Context) -> Result<Vec<CompactString>, CompileError> {
+    Ok(match &stmt.kind {
+        ast::StmtKind::Assign { var, value } => {
+            context.variables.push(var.clone());
+            vec![format_compact!("{} = {}", var.trans_name, translate_expr(state_machine, state, value, context)?)]
+        }
+        ast::StmtKind::ResetTimer => vec!["t = 0".into()],
         x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
     })
 }
@@ -98,19 +113,28 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
                 transition.condition = Some(transition.condition.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
                 transition.actions.extend_front(actions.iter().cloned());
             }
-            Some((transitions, Some(format_compact!("~({condition})")), false))
+
+            Some((transitions, Some(format_compact!("~({condition})")), terminal))
+        }
+        ast::StmtKind::IfElse { condition, then, otherwise } => {
+            let condition = translate_expr(state_machine, state, condition, context)?;
+
+            let (actions_1, mut transitions_1, body_terminal_1) = parse_stmts(state_machine, state, &then, terminal, context)?;
+            let (actions_2, mut transitions_2, body_terminal_2) = parse_stmts(state_machine, state, &otherwise, terminal, context)?;
+
+            for transition in transitions_1.iter_mut() {
+                transition.condition = Some(transition.condition.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
+                transition.actions.extend_front(actions_1.iter().cloned());
+            }
+            for transition in transitions_2.iter_mut() {
+                transition.condition = Some(transition.condition.take().map(|x| format_compact!("~({condition}) & {x}")).unwrap_or_else(|| format_compact!("~({condition})")));
+                transition.actions.extend_front(actions_2.iter().cloned());
+            }
+
+            transitions_1.extend(transitions_2.into_iter());
+            Some((transitions_1, Some("false".into()), terminal || (body_terminal_1 && body_terminal_2)))
         }
         _ => None,
-    })
-}
-fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &mut Context) -> Result<Vec<CompactString>, CompileError> {
-    Ok(match &stmt.kind {
-        ast::StmtKind::Assign { var, value } => {
-            context.variables.push(var.clone());
-            vec![format_compact!("{} = {}", var.trans_name, translate_expr(state_machine, state, value, context)?)]
-        }
-        ast::StmtKind::ResetTimer => vec!["t = 0".into()],
-        x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
     })
 }
 fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut terminal: bool, context: &mut Context) -> Result<(VecDeque<CompactString>, VecDeque<Transition>, bool), CompileError> {
