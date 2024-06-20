@@ -830,7 +830,25 @@ fn test_simple_fall_through_2() {
 }
 
 #[test]
+fn test_complex_nonterminal() {
+    let err = compile(include_str!("projects/complex-nonterminal.xml"), None).unwrap_err();
+    assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
+}
+
+#[test]
 fn test_multiple_handlers() {
     let err = compile(include_str!("projects/multiple-handlers.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::MultipleHandlers { state_machine: "something".into(), state: "thing 1".into() });
+}
+
+#[test]
+fn test_complex_transition_1() {
+    let err = compile(include_str!("projects/complex-transition-1.xml"), None).unwrap_err();
+    assert_eq!(err, CompileError::ComplexTransitionName { state_machine: "something".into(), state: "thing 1".into() });
+}
+
+#[test]
+fn test_complex_transition_2() {
+    let err = compile(include_str!("projects/complex-transition-2.xml"), None).unwrap_err();
+    assert_eq!(err, CompileError::ComplexTransitionName { state_machine: "something".into(), state: "thing 1".into() });
 }
