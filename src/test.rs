@@ -18,6 +18,7 @@ fn test_simple() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -54,6 +55,7 @@ fn test_simple_no_handler() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -94,6 +96,7 @@ fn test_simple_if_timer() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -130,6 +133,7 @@ fn test_if_timer_reset_1() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [
@@ -168,6 +172,7 @@ fn test_if_timer_reset_2() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -206,6 +211,7 @@ fn test_if_timer_reset_3() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -244,6 +250,7 @@ fn test_no_transitions_1() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -276,6 +283,7 @@ fn test_no_transitions_2() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -306,6 +314,7 @@ fn test_if_chain_1() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -351,6 +360,7 @@ fn test_if_chain_2() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -405,6 +415,7 @@ fn test_nested_if_1() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -444,6 +455,7 @@ fn test_nested_if_2() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -483,6 +495,7 @@ fn test_nested_if_3() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -531,6 +544,7 @@ fn test_nested_if_4() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -588,6 +602,7 @@ fn test_nested_if_5() {
         role: "myRole".into(),
         state_machines: [
             ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
                         actions: [].into_iter().collect(),
@@ -638,6 +653,51 @@ fn test_nested_if_5() {
                     ("thing 5".into(), State {
                         actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_simple_variables() {
+    let proj = compile(include_str!("projects/simple-variables.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [
+                    "foo".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        actions: [
+                            "foo = 14".into(),
+                            "foo = 21".into(),
+                        ].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        actions: [
+                            "foo = 76".into(),
+                            "foo = 43".into(),
+                        ].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
