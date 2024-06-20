@@ -131,8 +131,15 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
                 transition.actions.extend_front(actions_2.iter().cloned());
             }
 
+            let tail_condition = match (body_terminal_1, body_terminal_2) {
+                (true, true) => Some("false".into()),
+                (true, false) => Some(format_compact!("~({condition})")),
+                (false, true) => Some(condition.clone()),
+                (false, false) => None,
+            };
+
             transitions_1.extend(transitions_2.into_iter());
-            Some((transitions_1, Some("false".into()), terminal || (body_terminal_1 && body_terminal_2)))
+            Some((transitions_1, tail_condition, terminal || (body_terminal_1 && body_terminal_2)))
         }
         _ => None,
     })
@@ -154,11 +161,11 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
     let mut last = true;
     for stmt in stmts {
         match parse_transitions(state_machine, state, stmt, terminal && last, context)? {
-            Some((sub_transitions, else_condition, sub_terminal)) => {
+            Some((sub_transitions, tail_condition, sub_terminal)) => {
                 terminal |= sub_terminal;
                 for transition in transitions.iter_mut() {
-                    if let Some(else_condition) = else_condition.as_ref() {
-                        transition.condition = Some(transition.condition.take().map(|x| format_compact!("{else_condition} & {x}")).unwrap_or_else(|| else_condition.clone()));
+                    if let Some(tail_condition) = tail_condition.as_ref() {
+                        transition.condition = Some(transition.condition.take().map(|x| format_compact!("{tail_condition} & {x}")).unwrap_or_else(|| tail_condition.clone()));
                     }
                     transition.actions.extend_front(actions.iter().cloned());
                 }

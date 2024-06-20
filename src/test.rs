@@ -849,6 +849,119 @@ fn test_if_else_1() {
 }
 
 #[test]
+fn test_if_else_2() {
+    let err = compile(include_str!("projects/if-else-2.xml"), None).unwrap_err();
+    assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
+}
+
+#[test]
+fn test_if_else_3() {
+    let err = compile(include_str!("projects/if-else-3.xml"), None).unwrap_err();
+    assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
+}
+
+#[test]
+fn test_if_else_4() {
+    let err = compile(include_str!("projects/if-else-4.xml"), None).unwrap_err();
+    assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
+}
+
+#[test]
+fn test_if_else_5() {
+    let proj = compile(include_str!("projects/if-else-5.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [
+                    "foo".into(),
+                    "bar".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                condition: Some("foo == bar".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                            Transition {
+                                condition: Some("~(foo == bar)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                            Transition {
+                                condition: Some("false".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 3".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 4".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_if_else_6() {
+    let proj = compile(include_str!("projects/if-else-6.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [
+                    "foo".into(),
+                    "bar".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                condition: Some("foo == bar".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                            Transition {
+                                condition: Some("~(foo == bar)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 4".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
 fn test_if_fall_through_1() {
     let err = compile(include_str!("projects/if-fall-through-1.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
