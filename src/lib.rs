@@ -119,32 +119,25 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
     }
 
     let mut last = true;
-    while let Some(stmt) = stmts.peek() {
+    for stmt in stmts {
         match parse_transitions(state_machine, state, stmt, terminal && last, context)? {
             Some((sub_transitions, else_condition)) => {
                 if sub_transitions.iter().any(|x| !x.1) {
                     return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() });
                 }
 
-                if let Some(else_condition) = else_condition {
-                    for (transition, _) in transitions.iter_mut() {
+                for (transition, _) in transitions.iter_mut() {
+                    if let Some(else_condition) = else_condition.as_ref() {
                         transition.condition = Some(transition.condition.take().map(|x| format_compact!("{else_condition} & {x}")).unwrap_or_else(|| else_condition.clone()));
                     }
+                    transition.actions.extend_front(actions.iter().cloned());
                 }
+                actions.clear();
                 transitions.extend_front(sub_transitions.into_iter());
             }
-            None => break,
+            None => actions.extend_front(parse_actions(state_machine, state, stmt, context)?.into_iter()),
         }
-        stmts.next();
         last = false;
-    }
-
-    while let Some(stmt) = stmts.next() {
-        match parse_transitions(state_machine, state, stmt, true, context) {
-            Ok(Some(_)) => return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() }),
-            _ => (),
-        }
-        actions.extend_front(parse_actions(state_machine, state, stmt, context)?.into_iter());
     }
 
     Ok((actions, transitions))

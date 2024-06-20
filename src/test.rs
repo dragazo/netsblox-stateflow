@@ -662,6 +662,105 @@ fn test_nested_if_5() {
 }
 
 #[test]
+fn test_nested_if_6() {
+    let proj = compile(include_str!("projects/nested-if-6.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [
+                    "foo".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        actions: [
+                            "foo = 12".into(),
+                            "foo = 32".into(),
+                        ].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                condition: Some("t > 10 & t > 9 & t > 7".into()),
+                                actions: [
+                                    "foo = 67".into(),
+                                    "foo = 54".into(),
+                                    "foo = 994".into(),
+                                    "foo = 786".into(),
+                                    "foo = 234".into(),
+                                    "foo = 652".into(),
+                                ].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                            Transition {
+                                condition: Some("t > 10 & t > 9 & ~(t > 7)".into()),
+                                actions: [
+                                    "foo = 67".into(),
+                                    "foo = 54".into(),
+                                    "foo = 994".into(),
+                                    "foo = 786".into(),
+                                    "foo = 123".into(),
+                                    "foo = 453".into(),
+                                ].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                            Transition {
+                                condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
+                                actions: [
+                                    "foo = 67".into(),
+                                    "foo = 54".into(),
+                                    "foo = 546".into(),
+                                    "foo = 876".into(),
+                                ].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                            Transition {
+                                condition: Some("t > 10 & ~(t > 9) & ~(t > 8)".into()),
+                                actions: [
+                                    "foo = 67".into(),
+                                    "foo = 54".into(),
+                                    "foo = 431".into(),
+                                    "foo = 197".into(),
+                                ].into_iter().collect(),
+                                new_state: "thing 5".into(),
+                            },
+                            Transition {
+                                condition: Some("~(t > 10)".into()),
+                                actions: [
+                                    "foo = 856".into(),
+                                    "foo = 465".into(),
+                                ].into_iter().collect(),
+                                new_state: "thing 0".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 0".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 3".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 4".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 5".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
 fn test_simple_variables() {
     let proj = compile(include_str!("projects/simple-variables.xml"), None).unwrap();
     assert_eq!(proj, Project {
