@@ -1,8 +1,14 @@
 {
     "cSpell.words": [
+        "acosd",
+        "asind",
+        "atand",
+        "consts",
+        "cosd",
         "Deque",
         "netsblox",
         "nonterminal",
-        "peekable"
+        "peekable",
+        "tand"
     ]
 }

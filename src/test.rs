@@ -1164,14 +1164,150 @@ fn test_tail_actions_1() {
                             Transition {
                                 condition: Some("~(foo > bar)".into()),
                                 actions: [
-                                    "foo = 2 * foo * 2".into(),
-                                    "bar = 3 * bar".into(),
+                                    "foo = (2 * foo * 2)".into(),
+                                    "bar = (3 * bar)".into(),
                                 ].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_operators() {
+    let proj = compile(include_str!("projects/operators.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [
+                    "foo".into(),
+                    "bar".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        actions: [
+                            "foo = (foo + bar)".into(),
+                            "foo = (foo + 7 + bar)".into(),
+                            "foo = (foo - bar)".into(),
+                            "foo = (foo * bar)".into(),
+                            "foo = (foo * 5 * bar)".into(),
+                            "foo = (bar / foo)".into(),
+                            "foo = (6 ^ foo)".into(),
+                            "foo = mod(bar, foo)".into(),
+                            "foo = round(3.14159)".into(),
+                            "foo = atan2d(foo, bar)".into(),
+                            "foo = abs(3.1415)".into(),
+                            "foo = -3.1415".into(),
+                            "foo = sign(3.1415)".into(),
+                            "foo = ceil(3.1415)".into(),
+                            "foo = floor(3.1415)".into(),
+                            "foo = sqrt(3.1415)".into(),
+                            "foo = sind(3.1415)".into(),
+                            "foo = cosd(3.1415)".into(),
+                            "foo = tand(3.1415)".into(),
+                            "foo = asind(3.1415)".into(),
+                            "foo = acosd(3.1415)".into(),
+                            "foo = atand(3.1415)".into(),
+                            "foo = (log(3.1415) / log(2.718281828459045))".into(),
+                            "foo = (log(3.1415) / log(10.0))".into(),
+                            "foo = (log(3.1415) / log(2.0))".into(),
+                            "foo = (2.718281828459045 ^ 3.1415)".into(),
+                            "foo = (10.0 ^ 3.1415)".into(),
+                            "foo = (2.0 ^ 3.1415)".into(),
+                            "foo = 3.1415".into(),
+                        ].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                condition: Some("foo < bar".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                            Transition {
+                                condition: Some("~(foo < bar) & foo <= bar".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                            Transition {
+                                condition: Some("~(foo < bar) & ~(foo <= bar) & foo > bar".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                            Transition {
+                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & foo >= bar".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 5".into(),
+                            },
+                            Transition {
+                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & foo == bar".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 6".into(),
+                            },
+                            Transition {
+                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & foo ~= bar".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 7".into(),
+                            },
+                            Transition {
+                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & foo < bar & false".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 8".into(),
+                            },
+                            Transition {
+                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & ~(foo < bar & false) & (true | foo > bar)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 9".into(),
+                            },
+                            Transition {
+                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & ~(foo < bar & false) & ~((true | foo > bar)) & ~(foo == bar)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 10".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 3".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 4".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 5".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 6".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 7".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 8".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 9".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 10".into(), State {
                         actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),

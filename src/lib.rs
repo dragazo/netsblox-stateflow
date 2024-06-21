@@ -1,5 +1,5 @@
 use netsblox_ast as ast;
-use netsblox_ast::compact_str::{CompactString, format_compact};
+use netsblox_ast::compact_str::{CompactString, ToCompactString, format_compact};
 
 use std::collections::{VecDeque, BTreeMap, BTreeSet};
 
@@ -88,6 +88,12 @@ struct Context {
 fn translate_value(state_machine: &str, state: &str, value: &ast::Value) -> Result<CompactString, CompileError> {
     Ok(match value {
         ast::Value::String(x) => x.clone(),
+        ast::Value::Number(x) => x.to_compact_string(),
+        ast::Value::Bool(x) => if *x { "true" } else { "false" }.into(),
+        ast::Value::Constant(x) => match x {
+            ast::Constant::E => core::f64::consts::E.to_compact_string(),
+            ast::Constant::Pi => core::f64::consts::PI.to_compact_string(),
+        }
         x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
     })
 }
@@ -105,9 +111,36 @@ fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &
             context.variables.push(var.clone());
             var.trans_name.clone()
         }
+        ast::ExprKind::Sin { value } => format_compact!("sind({})", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Cos { value } => format_compact!("cosd({})", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Tan { value } => format_compact!("tand({})", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Asin { value } => format_compact!("asind({})", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Acos { value } => format_compact!("acosd({})", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Atan { value } => format_compact!("atand({})", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Sqrt { value } => format_compact!("sqrt({})", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Floor { value } => format_compact!("floor({})", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Ceil { value } => format_compact!("ceil({})", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Round { value } => format_compact!("round({})", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Sign { value } => format_compact!("sign({})", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Neg { value } => format_compact!("-{}", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Abs { value } => format_compact!("abs({})", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Sub { left, right } => format_compact!("({} - {})", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
+        ast::ExprKind::Div { left, right } => format_compact!("({} / {})", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
+        ast::ExprKind::Mod { left, right } => format_compact!("mod({}, {})", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
+        ast::ExprKind::Log { value, base } => format_compact!("(log({}) / log({}))", translate_expr(state_machine, state, &value, context)?, translate_expr(state_machine, state, &base, context)?),
+        ast::ExprKind::Atan2 { y, x } => format_compact!("atan2d({}, {})", translate_expr(state_machine, state, &y, context)?, translate_expr(state_machine, state, &x, context)?),
+        ast::ExprKind::Add { values } => punctuate(&extract_fixed_variadic(state_machine,state, values, context)?, " + ").map(|x| format_compact!("({x})")).unwrap_or_else(|| "0".into()),
+        ast::ExprKind::Mul { values } => punctuate(&extract_fixed_variadic(state_machine,state, values, context)?, " * ").map(|x| format_compact!("({x})")).unwrap_or_else(|| "1".into()),
+        ast::ExprKind::Pow { base, power } => format_compact!("({} ^ {})", translate_expr(state_machine, state, &base, context)?, translate_expr(state_machine, state, &power, context)?),
         ast::ExprKind::Eq { left, right } => format_compact!("{} == {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
+        ast::ExprKind::Neq { left, right } => format_compact!("{} ~= {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
         ast::ExprKind::Greater { left, right } => format_compact!("{} > {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
-        ast::ExprKind::Mul { values } => punctuate(&extract_fixed_variadic(state_machine,state, values, context)?, " * ").unwrap_or_else(|| "1".into()),
+        ast::ExprKind::GreaterEq { left, right } => format_compact!("{} >= {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
+        ast::ExprKind::Less { left, right } => format_compact!("{} < {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
+        ast::ExprKind::LessEq { left, right } => format_compact!("{} <= {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
+        ast::ExprKind::And { left, right } => format_compact!("{} & {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
+        ast::ExprKind::Or { left, right } => format_compact!("({} | {})", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
+        ast::ExprKind::Not { value } => format_compact!("~({})", translate_expr(state_machine, state, &value, context)?),
         ast::ExprKind::Timer => "t".into(),
         x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
     })
