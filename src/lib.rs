@@ -12,6 +12,7 @@ macro_rules! count_exprs {
 }
 macro_rules! deque {
     ($($values:expr),* $(,)?) => {{
+        #[allow(unused_mut)]
         let mut res = VecDeque::with_capacity(count_exprs!($($values),*));
         $(res.push_back($values);)*
         res
@@ -92,11 +93,11 @@ fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &m
         x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
     })
 }
-fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool, context: &mut Context) -> Result<Option<(VecDeque<Transition>, Option<CompactString>, bool)>, CompileError> {
+fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool, context: &mut Context) -> Result<Option<(VecDeque<CompactString>, VecDeque<Transition>, Option<CompactString>, bool)>, CompileError> {
     Ok(match &stmt.kind {
         ast::StmtKind::Assign { var, value } if var.name == state_machine => match &value.kind {
             ast::ExprKind::Value(ast::Value::String(x)) => match terminal {
-                true => Some((deque![Transition { condition: None, actions: <_>::default(), new_state: x.clone() }], None, true)),
+                true => Some((deque![], deque![Transition { condition: None, actions: <_>::default(), new_state: x.clone() }], None, true)),
                 false => return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() }),
             }
             _ => return Err(CompileError::ComplexTransitionName { state_machine: state_machine.into(), state: state.into() }),
@@ -114,13 +115,21 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
                 transition.actions.extend_front(actions.iter().cloned());
             }
 
-            Some((transitions, Some(format_compact!("~({condition})")), terminal))
+            Some((deque![], transitions, Some(format_compact!("~({condition})")), terminal))
         }
         ast::StmtKind::IfElse { condition, then, otherwise } => {
             let condition = translate_expr(state_machine, state, condition, context)?;
 
-            let (actions_1, mut transitions_1, body_terminal_1) = parse_stmts(state_machine, state, &then, terminal, context)?;
-            let (actions_2, mut transitions_2, body_terminal_2) = parse_stmts(state_machine, state, &otherwise, terminal, context)?;
+            let (mut actions_1, mut transitions_1, body_terminal_1) = parse_stmts(state_machine, state, &then, terminal, context)?;
+            let (mut actions_2, mut transitions_2, body_terminal_2) = parse_stmts(state_machine, state, &otherwise, terminal, context)?;
+
+            let res_actions = match actions_1 == actions_2 {
+                true => {
+                    actions_2.clear();
+                    core::mem::take(&mut actions_1)
+                }
+                false => deque![],
+            };
 
             if (!actions_1.is_empty() && !body_terminal_1) || (!actions_2.is_empty() && !body_terminal_2) {
                 return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() });
@@ -143,7 +152,7 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
             };
 
             transitions_1.extend(transitions_2.into_iter());
-            Some((transitions_1, tail_condition, terminal || (body_terminal_1 && body_terminal_2)))
+            Some((res_actions, transitions_1, tail_condition, terminal || (body_terminal_1 && body_terminal_2)))
         }
         _ => None,
     })
@@ -165,7 +174,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
     let mut last = true;
     for stmt in stmts {
         match parse_transitions(state_machine, state, stmt, terminal && last, context)? {
-            Some((sub_transitions, tail_condition, sub_terminal)) => {
+            Some((sub_actions, sub_transitions, tail_condition, sub_terminal)) => {
                 terminal |= sub_terminal;
                 for transition in transitions.iter_mut() {
                     if let Some(tail_condition) = tail_condition.as_ref() {
@@ -173,7 +182,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
                     }
                     transition.actions.extend_front(actions.iter().cloned());
                 }
-                actions.clear();
+                actions = sub_actions;
                 transitions.extend_front(sub_transitions.into_iter());
             }
             None => actions.extend_front(parse_actions(state_machine, state, stmt, context)?.into_iter()),
