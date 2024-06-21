@@ -1139,3 +1139,45 @@ fn test_complex_transition_2() {
     let err = compile(include_str!("projects/complex-transition-2.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::ComplexTransitionName { state_machine: "something".into(), state: "thing 1".into() });
 }
+
+#[test]
+fn test_tail_actions_1() {
+    let proj = compile(include_str!("projects/tail-actions-1.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [
+                    "foo".into(),
+                    "bar".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                condition: Some("foo > bar".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                            Transition {
+                                condition: Some("~(foo > bar)".into()),
+                                actions: [
+                                    "foo = 2 * foo * 2".into(),
+                                    "bar = 3 * bar".into(),
+                                ].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        actions: [].into_iter().collect(),
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}

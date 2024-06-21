@@ -30,6 +30,20 @@ impl<T> VecDequeUtil<T> for VecDeque<T> {
     }
 }
 
+fn punctuate(values: &[CompactString], sep: &str) -> Option<CompactString> {
+    match values {
+        [] => None,
+        [h, t @ ..] => {
+            let mut res = h.clone();
+            for x in t {
+                res.push_str(sep);
+                res.push_str(x);
+            }
+            Some(res)
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum CompileError {
     ParseError(Box<ast::Error>),
@@ -39,6 +53,7 @@ pub enum CompileError {
     NonTerminalTransition { state_machine: CompactString, state: CompactString },
     MultipleHandlers { state_machine: CompactString, state: CompactString },
     ComplexTransitionName { state_machine: CompactString, state: CompactString },
+    VariadicBlocks { state_machine: CompactString, state: CompactString },
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -70,15 +85,29 @@ struct Context {
     variables: Vec<ast::VariableRef>,
 }
 
+fn translate_value(state_machine: &str, state: &str, value: &ast::Value) -> Result<CompactString, CompileError> {
+    Ok(match value {
+        ast::Value::String(x) => x.clone(),
+        x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
+    })
+}
 fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &mut Context) -> Result<CompactString, CompileError> {
+    fn extract_fixed_variadic<'a>(state_machine: &str, state: &str, values: &'a ast::Expr, context: &mut Context) -> Result<Vec<CompactString>, CompileError> {
+        match &values.kind {
+            ast::ExprKind::MakeList { values } => Ok(values.iter().map(|x| translate_expr(state_machine, state, x, context)).collect::<Result<_,_>>()?),
+            _ => Err(CompileError::VariadicBlocks { state_machine: state_machine.into(), state: state.into() }),
+        }
+    }
+
     Ok(match &expr.kind {
+        ast::ExprKind::Value(x) => translate_value(state_machine, state, x)?,
         ast::ExprKind::Variable { var } => {
             context.variables.push(var.clone());
             var.trans_name.clone()
         }
-        ast::ExprKind::Value(ast::Value::String(x)) => x.clone(),
         ast::ExprKind::Eq { left, right } => format_compact!("{} == {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
         ast::ExprKind::Greater { left, right } => format_compact!("{} > {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
+        ast::ExprKind::Mul { values } => punctuate(&extract_fixed_variadic(state_machine,state, values, context)?, " * ").unwrap_or_else(|| "1".into()),
         ast::ExprKind::Timer => "t".into(),
         x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
     })
@@ -176,6 +205,9 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
         match parse_transitions(state_machine, state, stmt, terminal && last, context)? {
             Some((sub_actions, sub_transitions, tail_condition, sub_terminal)) => {
                 terminal |= sub_terminal;
+                if !actions.is_empty() && transitions.is_empty() {
+                    transitions.push_back(Transition { condition: None, actions: deque![], new_state: state.into() });
+                }
                 for transition in transitions.iter_mut() {
                     if let Some(tail_condition) = tail_condition.as_ref() {
                         transition.condition = Some(transition.condition.take().map(|x| format_compact!("{tail_condition} & {x}")).unwrap_or_else(|| tail_condition.clone()));
