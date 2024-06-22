@@ -54,6 +54,7 @@ pub enum CompileError {
     MultipleHandlers { state_machine: CompactString, state: CompactString },
     ComplexTransitionName { state_machine: CompactString, state: CompactString },
     VariadicBlocks { state_machine: CompactString, state: CompactString },
+    ActionsOutsideTransition { state_machine: CompactString, state: CompactString },
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -70,7 +71,6 @@ pub struct StateMachine {
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct State {
-    pub actions: VecDeque<CompactString>,
     pub transitions: VecDeque<Transition>,
 }
 #[derive(Debug, PartialEq, Eq)]
@@ -155,55 +155,36 @@ fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &m
         x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
     })
 }
-fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool, context: &mut Context) -> Result<Option<(VecDeque<CompactString>, VecDeque<Transition>, Option<CompactString>, bool)>, CompileError> {
+fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool, context: &mut Context) -> Result<Option<(VecDeque<Transition>, Option<CompactString>, bool)>, CompileError> {
     Ok(match &stmt.kind {
         ast::StmtKind::Assign { var, value } if var.name == state_machine => match &value.kind {
             ast::ExprKind::Value(ast::Value::String(x)) => match terminal {
-                true => Some((deque![], deque![Transition { condition: None, actions: <_>::default(), new_state: x.clone() }], None, true)),
+                true => Some((deque![Transition { condition: None, actions: <_>::default(), new_state: x.clone() }], None, true)),
                 false => return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() }),
             }
             _ => return Err(CompileError::ComplexTransitionName { state_machine: state_machine.into(), state: state.into() }),
         }
         ast::StmtKind::If { condition, then } => {
             let condition = translate_expr(state_machine, state, condition, context)?;
-            let (actions, mut transitions, body_terminal) = parse_stmts(state_machine, state, &then, terminal, context)?;
-
-            if !actions.is_empty() && !body_terminal {
-                return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() });
-            }
+            let (mut transitions, body_terminal) = parse_stmts(state_machine, state, &then, terminal, context)?;
 
             for transition in transitions.iter_mut() {
                 transition.condition = Some(transition.condition.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
-                transition.actions.extend_front(actions.iter().cloned());
             }
 
-            Some((deque![], transitions, Some(format_compact!("~({condition})")), terminal))
+            Some((transitions, Some(format_compact!("~({condition})")), terminal))
         }
         ast::StmtKind::IfElse { condition, then, otherwise } => {
             let condition = translate_expr(state_machine, state, condition, context)?;
 
-            let (mut actions_1, mut transitions_1, body_terminal_1) = parse_stmts(state_machine, state, &then, terminal, context)?;
-            let (mut actions_2, mut transitions_2, body_terminal_2) = parse_stmts(state_machine, state, &otherwise, terminal, context)?;
-
-            let res_actions = match actions_1 == actions_2 {
-                true => {
-                    actions_2.clear();
-                    core::mem::take(&mut actions_1)
-                }
-                false => deque![],
-            };
-
-            if (!actions_1.is_empty() && !body_terminal_1) || (!actions_2.is_empty() && !body_terminal_2) {
-                return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() });
-            }
+            let (mut transitions_1, body_terminal_1) = parse_stmts(state_machine, state, &then, terminal, context)?;
+            let (mut transitions_2, body_terminal_2) = parse_stmts(state_machine, state, &otherwise, terminal, context)?;
 
             for transition in transitions_1.iter_mut() {
                 transition.condition = Some(transition.condition.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
-                transition.actions.extend_front(actions_1.iter().cloned());
             }
             for transition in transitions_2.iter_mut() {
                 transition.condition = Some(transition.condition.take().map(|x| format_compact!("~({condition}) & {x}")).unwrap_or_else(|| format_compact!("~({condition})")));
-                transition.actions.extend_front(actions_2.iter().cloned());
             }
 
             let tail_condition = match (body_terminal_1, body_terminal_2) {
@@ -214,12 +195,12 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
             };
 
             transitions_1.extend(transitions_2.into_iter());
-            Some((res_actions, transitions_1, tail_condition, terminal || (body_terminal_1 && body_terminal_2)))
+            Some((transitions_1, tail_condition, terminal || (body_terminal_1 && body_terminal_2)))
         }
         _ => None,
     })
 }
-fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut terminal: bool, context: &mut Context) -> Result<(VecDeque<CompactString>, VecDeque<Transition>, bool), CompileError> {
+fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut terminal: bool, context: &mut Context) -> Result<(VecDeque<Transition>, bool), CompileError> {
     let mut actions: VecDeque<CompactString> = <_>::default();
     let mut transitions: VecDeque<Transition> = <_>::default();
 
@@ -233,29 +214,45 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
         terminal = true;
     }
 
+    fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, terminal: bool) -> Result<(), CompileError> {
+        if !actions.is_empty() {
+            if terminal && transitions.is_empty() {
+                transitions.push_back(Transition { condition: None, actions: core::mem::take(actions), new_state: state.into() });
+            } else if transitions.len() == 1 && transitions[0].condition.is_none() {
+                transitions[0].actions.extend_front(core::mem::take(actions).into_iter());
+            } else {
+                return Err(CompileError::ActionsOutsideTransition { state_machine: state_machine.into(), state: state.into() });
+            }
+        }
+        Ok(())
+    }
+
     let mut last = true;
     for stmt in stmts {
         match parse_transitions(state_machine, state, stmt, terminal && last, context)? {
-            Some((sub_actions, sub_transitions, tail_condition, sub_terminal)) => {
+            Some((sub_transitions, tail_condition, sub_terminal)) => {
+                handle_actions(state_machine, state, &mut actions, &mut transitions, terminal)?;
+                debug_assert_eq!(actions.len(), 0);
+
                 terminal |= sub_terminal;
-                if !actions.is_empty() && transitions.is_empty() {
-                    transitions.push_back(Transition { condition: None, actions: deque![], new_state: state.into() });
-                }
-                for transition in transitions.iter_mut() {
-                    if let Some(tail_condition) = tail_condition.as_ref() {
+                if let Some(tail_condition) = tail_condition {
+                    for transition in transitions.iter_mut() {
                         transition.condition = Some(transition.condition.take().map(|x| format_compact!("{tail_condition} & {x}")).unwrap_or_else(|| tail_condition.clone()));
                     }
-                    transition.actions.extend_front(actions.iter().cloned());
                 }
-                actions = sub_actions;
                 transitions.extend_front(sub_transitions.into_iter());
             }
-            None => actions.extend_front(parse_actions(state_machine, state, stmt, context)?.into_iter()),
+            None => {
+                actions.extend_front(parse_actions(state_machine, state, stmt, context)?.into_iter());
+            }
         }
         last = false;
     }
 
-    Ok((actions, transitions, terminal))
+    handle_actions(state_machine, state, &mut actions, &mut transitions, terminal)?;
+    debug_assert_eq!(actions.len(), 0);
+
+    Ok((transitions, terminal))
 }
 
 pub fn compile(xml: &str, role: Option<&str>) -> Result<Project, CompileError> {
@@ -292,17 +289,15 @@ pub fn compile(xml: &str, role: Option<&str>) -> Result<Project, CompileError> {
             }
 
             let state_machine = state_machines.entry(state_machine_name.clone()).or_insert_with(|| StateMachine { variables: <_>::default(), states: <_>::default(), initial_state: <_>::default() });
-            let state = state_machine.states.entry(state_name.clone()).or_insert_with(|| State { actions: <_>::default(), transitions: <_>::default() });
+            let state = state_machine.states.entry(state_name.clone()).or_insert_with(|| State { transitions: <_>::default() });
             debug_assert_eq!(state.transitions.len(), 0);
-            debug_assert_eq!(state.actions.len(), 0);
 
             let mut context = Context::default();
-            let (actions, transitions, _) = parse_stmts(&state_machine_name, &state_name, &script.stmts, true, &mut context)?;
+            let (transitions, _) = parse_stmts(&state_machine_name, &state_name, &script.stmts, true, &mut context)?;
             let target_states = transitions.iter().map(|x| x.new_state.clone()).collect::<Vec<_>>();
             state.transitions.extend_front(transitions.into_iter());
-            state.actions.extend_front(actions.into_iter());
             for target_state in target_states {
-                state_machine.states.entry(target_state).or_insert_with(|| State { actions: <_>::default(), transitions: <_>::default() });
+                state_machine.states.entry(target_state).or_insert_with(|| State { transitions: <_>::default() });
             }
             for variable in context.variables {
                 state_machine.variables.insert(variable.trans_name);

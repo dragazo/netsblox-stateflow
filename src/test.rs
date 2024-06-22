@@ -21,7 +21,6 @@ fn test_simple() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: None,
@@ -31,7 +30,6 @@ fn test_simple() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: None,
@@ -58,7 +56,6 @@ fn test_simple_no_handler() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: None,
@@ -68,7 +65,6 @@ fn test_simple_no_handler() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: None,
@@ -78,7 +74,6 @@ fn test_simple_no_handler() {
                         ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -99,7 +94,6 @@ fn test_simple_if_timer() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 10".into()),
@@ -109,7 +103,6 @@ fn test_simple_if_timer() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: None,
@@ -136,19 +129,17 @@ fn test_if_timer_reset_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [
-                            "t = 0".into(),
-                        ].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 10".into()),
-                                actions: [].into_iter().collect(),
+                                actions: [
+                                    "t = 0".into(),
+                                ].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: None,
@@ -175,7 +166,6 @@ fn test_if_timer_reset_2() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 10".into()),
@@ -187,7 +177,6 @@ fn test_if_timer_reset_2() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: None,
@@ -214,7 +203,6 @@ fn test_if_timer_reset_3() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 10".into()),
@@ -224,13 +212,12 @@ fn test_if_timer_reset_3() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [
-                            "t = 0".into(),
-                        ].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: None,
-                                actions: [].into_iter().collect(),
+                                actions: [
+                                    "t = 0".into(),
+                                ].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
                         ].into_iter().collect(),
@@ -253,7 +240,6 @@ fn test_no_transitions_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 10".into()),
@@ -263,10 +249,15 @@ fn test_no_transitions_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [
-                            "t = 0".into(),
+                        transitions: [
+                            Transition {
+                                condition: None,
+                                actions: [
+                                    "t = 0".into(),
+                                ].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
                         ].into_iter().collect(),
-                        transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -286,7 +277,6 @@ fn test_no_transitions_2() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 10".into()),
@@ -296,7 +286,6 @@ fn test_no_transitions_2() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -317,7 +306,6 @@ fn test_if_chain_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 9".into()),
@@ -332,7 +320,6 @@ fn test_if_chain_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: None,
@@ -342,7 +329,6 @@ fn test_if_chain_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -363,7 +349,6 @@ fn test_if_chain_2() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 8".into()),
@@ -383,7 +368,6 @@ fn test_if_chain_2() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: None,
@@ -393,11 +377,9 @@ fn test_if_chain_2() {
                         ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -418,7 +400,6 @@ fn test_nested_if_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 10".into()),
@@ -433,11 +414,9 @@ fn test_nested_if_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 0".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -458,7 +437,6 @@ fn test_nested_if_2() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 10 & t > 9".into()),
@@ -473,11 +451,9 @@ fn test_nested_if_2() {
                         ].into_iter().collect(),
                     }),
                     ("thing 0".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -498,7 +474,6 @@ fn test_nested_if_3() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 10 & t > 9".into()),
@@ -518,15 +493,12 @@ fn test_nested_if_3() {
                         ].into_iter().collect(),
                     }),
                     ("thing 0".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -547,7 +519,6 @@ fn test_nested_if_4() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 10 & t > 9 & t > 7".into()),
@@ -572,19 +543,15 @@ fn test_nested_if_4() {
                         ].into_iter().collect(),
                     }),
                     ("thing 0".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -605,7 +572,6 @@ fn test_nested_if_5() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 10 & t > 9 & t > 7".into()),
@@ -635,23 +601,18 @@ fn test_nested_if_5() {
                         ].into_iter().collect(),
                     }),
                     ("thing 0".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 5".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -674,18 +635,10 @@ fn test_nested_if_6() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [
-                            "foo = 12".into(),
-                            "foo = 32".into(),
-                        ].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("t > 10 & t > 9 & t > 7".into()),
                                 actions: [
-                                    "foo = 67".into(),
-                                    "foo = 54".into(),
-                                    "foo = 994".into(),
-                                    "foo = 786".into(),
                                     "foo = 234".into(),
                                     "foo = 652".into(),
                                 ].into_iter().collect(),
@@ -694,10 +647,6 @@ fn test_nested_if_6() {
                             Transition {
                                 condition: Some("t > 10 & t > 9 & ~(t > 7)".into()),
                                 actions: [
-                                    "foo = 67".into(),
-                                    "foo = 54".into(),
-                                    "foo = 994".into(),
-                                    "foo = 786".into(),
                                     "foo = 123".into(),
                                     "foo = 453".into(),
                                 ].into_iter().collect(),
@@ -706,8 +655,6 @@ fn test_nested_if_6() {
                             Transition {
                                 condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
                                 actions: [
-                                    "foo = 67".into(),
-                                    "foo = 54".into(),
                                     "foo = 546".into(),
                                     "foo = 876".into(),
                                 ].into_iter().collect(),
@@ -716,8 +663,6 @@ fn test_nested_if_6() {
                             Transition {
                                 condition: Some("t > 10 & ~(t > 9) & ~(t > 8)".into()),
                                 actions: [
-                                    "foo = 67".into(),
-                                    "foo = 54".into(),
                                     "foo = 431".into(),
                                     "foo = 197".into(),
                                 ].into_iter().collect(),
@@ -734,23 +679,18 @@ fn test_nested_if_6() {
                         ].into_iter().collect(),
                     }),
                     ("thing 0".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 5".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -773,27 +713,25 @@ fn test_simple_variables() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [
-                            "foo = 14".into(),
-                            "foo = 21".into(),
-                        ].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: None,
-                                actions: [].into_iter().collect(),
+                                actions: [
+                                    "foo = 14".into(),
+                                    "foo = 21".into(),
+                                ].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [
-                            "foo = 76".into(),
-                            "foo = 43".into(),
-                        ].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: None,
-                                actions: [].into_iter().collect(),
+                                actions: [
+                                    "foo = 76".into(),
+                                    "foo = 43".into(),
+                                ].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
                         ].into_iter().collect(),
@@ -819,7 +757,6 @@ fn test_if_else_1() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("foo == bar".into()),
@@ -834,11 +771,9 @@ fn test_if_else_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -880,7 +815,6 @@ fn test_if_else_5() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("foo == bar".into()),
@@ -900,15 +834,12 @@ fn test_if_else_5() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -932,7 +863,6 @@ fn test_if_else_6() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("foo == bar".into()),
@@ -947,11 +877,9 @@ fn test_if_else_6() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -975,7 +903,6 @@ fn test_if_else_7() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("~(foo == bar)".into()),
@@ -990,11 +917,9 @@ fn test_if_else_7() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1018,7 +943,6 @@ fn test_if_else_8() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: None,
@@ -1028,7 +952,6 @@ fn test_if_else_8() {
                         ].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1041,55 +964,25 @@ fn test_if_else_8() {
 #[test]
 fn test_if_else_9() {
     let err = compile(include_str!("projects/if-else-9.xml"), None).unwrap_err();
-    assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
+    assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_10() {
     let err = compile(include_str!("projects/if-else-10.xml"), None).unwrap_err();
-    assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
+    assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_11() {
-    let proj = compile(include_str!("projects/if-else-11.xml"), None).unwrap();
-    assert_eq!(proj, Project {
-        name: "untitled".into(),
-        role: "myRole".into(),
-        state_machines: [
-            ("something".into(), StateMachine {
-                variables: [
-                    "foo".into(),
-                    "bar".into(),
-                ].into_iter().collect(),
-                states: [
-                    ("thing 1".into(), State {
-                        actions: [
-                            "t = 0".into(),
-                        ].into_iter().collect(),
-                        transitions: [
-                            Transition {
-                                condition: None,
-                                actions: [].into_iter().collect(),
-                                new_state: "thing 4".into(),
-                            },
-                        ].into_iter().collect(),
-                    }),
-                    ("thing 4".into(), State {
-                        actions: [].into_iter().collect(),
-                        transitions: [].into_iter().collect(),
-                    }),
-                ].into_iter().collect(),
-                initial_state: None,
-            }),
-        ].into_iter().collect(),
-    });
+    let err = compile(include_str!("projects/if-else-11.xml"), None).unwrap_err();
+    assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_12() {
     let err = compile(include_str!("projects/if-else-12.xml"), None).unwrap_err();
-    assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
+    assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
@@ -1113,12 +1006,6 @@ fn test_simple_fall_through_1() {
 #[test]
 fn test_simple_fall_through_2() {
     let err = compile(include_str!("projects/simple-fall-through-2.xml"), None).unwrap_err();
-    assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
-}
-
-#[test]
-fn test_complex_nonterminal() {
-    let err = compile(include_str!("projects/complex-nonterminal.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
@@ -1154,7 +1041,6 @@ fn test_tail_actions_1() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("foo > bar".into()),
@@ -1172,7 +1058,6 @@ fn test_tail_actions_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1196,37 +1081,6 @@ fn test_operators() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
-                        actions: [
-                            "foo = (foo + bar)".into(),
-                            "foo = (foo + 7 + bar)".into(),
-                            "foo = (foo - bar)".into(),
-                            "foo = (foo * bar)".into(),
-                            "foo = (foo * 5 * bar)".into(),
-                            "foo = (bar / foo)".into(),
-                            "foo = (6 ^ foo)".into(),
-                            "foo = mod(bar, foo)".into(),
-                            "foo = round(3.14159)".into(),
-                            "foo = atan2d(foo, bar)".into(),
-                            "foo = abs(3.1415)".into(),
-                            "foo = -3.1415".into(),
-                            "foo = sign(3.1415)".into(),
-                            "foo = ceil(3.1415)".into(),
-                            "foo = floor(3.1415)".into(),
-                            "foo = sqrt(3.1415)".into(),
-                            "foo = sind(3.1415)".into(),
-                            "foo = cosd(3.1415)".into(),
-                            "foo = tand(3.1415)".into(),
-                            "foo = asind(3.1415)".into(),
-                            "foo = acosd(3.1415)".into(),
-                            "foo = atand(3.1415)".into(),
-                            "foo = (log(3.1415) / log(2.718281828459045))".into(),
-                            "foo = (log(3.1415) / log(10.0))".into(),
-                            "foo = (log(3.1415) / log(2.0))".into(),
-                            "foo = (2.718281828459045 ^ 3.1415)".into(),
-                            "foo = (10.0 ^ 3.1415)".into(),
-                            "foo = (2.0 ^ 3.1415)".into(),
-                            "foo = 3.1415".into(),
-                        ].into_iter().collect(),
                         transitions: [
                             Transition {
                                 condition: Some("foo < bar".into()),
@@ -1273,42 +1127,68 @@ fn test_operators() {
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 10".into(),
                             },
+                            Transition {
+                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & ~(foo < bar & false) & ~((true | foo > bar)) & ~(~(foo == bar))".into()),
+                                actions: [
+                                    "foo = (foo + bar)".into(),
+                                    "foo = (foo + 7 + bar)".into(),
+                                    "foo = (foo - bar)".into(),
+                                    "foo = (foo * bar)".into(),
+                                    "foo = (foo * 5 * bar)".into(),
+                                    "foo = (bar / foo)".into(),
+                                    "foo = (6 ^ foo)".into(),
+                                    "foo = mod(bar, foo)".into(),
+                                    "foo = round(3.14159)".into(),
+                                    "foo = atan2d(foo, bar)".into(),
+                                    "foo = abs(3.1415)".into(),
+                                    "foo = -3.1415".into(),
+                                    "foo = sign(3.1415)".into(),
+                                    "foo = ceil(3.1415)".into(),
+                                    "foo = floor(3.1415)".into(),
+                                    "foo = sqrt(3.1415)".into(),
+                                    "foo = sind(3.1415)".into(),
+                                    "foo = cosd(3.1415)".into(),
+                                    "foo = tand(3.1415)".into(),
+                                    "foo = asind(3.1415)".into(),
+                                    "foo = acosd(3.1415)".into(),
+                                    "foo = atand(3.1415)".into(),
+                                    "foo = (log(3.1415) / log(2.718281828459045))".into(),
+                                    "foo = (log(3.1415) / log(10.0))".into(),
+                                    "foo = (log(3.1415) / log(2.0))".into(),
+                                    "foo = (2.718281828459045 ^ 3.1415)".into(),
+                                    "foo = (10.0 ^ 3.1415)".into(),
+                                    "foo = (2.0 ^ 3.1415)".into(),
+                                    "foo = 3.1415".into(),
+                                ].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            },
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 5".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 6".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 7".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 8".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 9".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 10".into(), State {
-                        actions: [].into_iter().collect(),
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1316,4 +1196,40 @@ fn test_operators() {
             }),
         ].into_iter().collect(),
     });
+}
+
+#[test]
+fn test_actions_1() {
+    let proj = compile(include_str!("projects/actions-1.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("state".into(), StateMachine {
+                variables: [
+                    "foo".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("state 1".into(), State {
+                        transitions: [
+                            Transition {
+                                condition: None,
+                                actions: [
+                                    "foo = 456".into()
+                                ].into_iter().collect(),
+                                new_state: "state 1".into(),
+                            }
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_actions_2() {
+    let err = compile(include_str!("projects/actions-2.xml"), None).unwrap_err();
+    assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "state".into(), state: "state 1".into() });
 }
