@@ -1,6 +1,8 @@
 use netsblox_ast as ast;
 use netsblox_ast::compact_str::{CompactString, ToCompactString, format_compact};
 
+use graphviz_rust::dot_structures as dot;
+
 use std::collections::{VecDeque, BTreeMap, BTreeSet};
 
 #[cfg(test)]
@@ -256,62 +258,90 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
     Ok((transitions, terminal))
 }
 
-pub fn compile(xml: &str, role: Option<&str>) -> Result<Project, CompileError> {
-    let proj = ast::Parser::default().parse(xml).map_err(|e| CompileError::ParseError(e))?;
-    let role = match role {
-        Some(name) => match proj.roles.iter().find(|r| r.name == name) {
-            Some(x) => x,
-            None => return Err(CompileError::UnknownRole { name: name.into() }),
-        }
-        None => match proj.roles.as_slice() {
-            [x] => x,
-            x => return Err(CompileError::RoleCount { count: x.len() }),
-        }
-    };
+fn dot_id(name: &str) -> dot::Id {
+    dot::Id::Escaped(format!("{name:?}"))
+}
 
-    let mut state_machines: BTreeMap<_, StateMachine> = <_>::default();
-    let mut visited_handlers: BTreeSet<(CompactString, CompactString)> = <_>::default();
-    for entity in role.entities.iter() {
-        for script in entity.scripts.iter() {
-            let (state_machine_name, state_name) = match script.hat.as_ref().map(|x| &x.kind) {
-                Some(ast::HatKind::When { condition }) => match &condition.kind {
-                    ast::ExprKind::Eq { left, right } => match (&left.kind, &right.kind) {
-                        (ast::ExprKind::Variable { var }, ast::ExprKind::Value(ast::Value::String(val))) => (&var.name, val),
-                        (ast::ExprKind::Value(ast::Value::String(val)), ast::ExprKind::Variable { var }) => (&var.name, val),
+impl Project {
+    pub fn compile(xml: &str, role: Option<&str>) -> Result<Project, CompileError> {
+        let proj = ast::Parser::default().parse(xml).map_err(|e| CompileError::ParseError(e))?;
+        let role = match role {
+            Some(name) => match proj.roles.iter().find(|r| r.name == name) {
+                Some(x) => x,
+                None => return Err(CompileError::UnknownRole { name: name.into() }),
+            }
+            None => match proj.roles.as_slice() {
+                [x] => x,
+                x => return Err(CompileError::RoleCount { count: x.len() }),
+            }
+        };
+
+        let mut state_machines: BTreeMap<_, StateMachine> = <_>::default();
+        let mut visited_handlers: BTreeSet<(CompactString, CompactString)> = <_>::default();
+        for entity in role.entities.iter() {
+            for script in entity.scripts.iter() {
+                let (state_machine_name, state_name) = match script.hat.as_ref().map(|x| &x.kind) {
+                    Some(ast::HatKind::When { condition }) => match &condition.kind {
+                        ast::ExprKind::Eq { left, right } => match (&left.kind, &right.kind) {
+                            (ast::ExprKind::Variable { var }, ast::ExprKind::Value(ast::Value::String(val))) => (&var.name, val),
+                            (ast::ExprKind::Value(ast::Value::String(val)), ast::ExprKind::Variable { var }) => (&var.name, val),
+                            _ => continue,
+                        }
                         _ => continue,
                     }
                     _ => continue,
+                };
+
+                if !visited_handlers.insert((state_machine_name.clone(), state_name.clone())) {
+                    return Err(CompileError::MultipleHandlers { state_machine: state_machine_name.clone(), state: state_name.clone() });
                 }
-                _ => continue,
-            };
 
-            if !visited_handlers.insert((state_machine_name.clone(), state_name.clone())) {
-                return Err(CompileError::MultipleHandlers { state_machine: state_machine_name.clone(), state: state_name.clone() });
-            }
+                let state_machine = state_machines.entry(state_machine_name.clone()).or_insert_with(|| StateMachine { variables: <_>::default(), states: <_>::default(), initial_state: <_>::default() });
+                let state = state_machine.states.entry(state_name.clone()).or_insert_with(|| State { transitions: <_>::default() });
+                debug_assert_eq!(state.transitions.len(), 0);
 
-            let state_machine = state_machines.entry(state_machine_name.clone()).or_insert_with(|| StateMachine { variables: <_>::default(), states: <_>::default(), initial_state: <_>::default() });
-            let state = state_machine.states.entry(state_name.clone()).or_insert_with(|| State { transitions: <_>::default() });
-            debug_assert_eq!(state.transitions.len(), 0);
-
-            let mut context = Context::default();
-            let (transitions, _) = parse_stmts(&state_machine_name, &state_name, &script.stmts, true, &mut context)?;
-            let target_states = transitions.iter().map(|x| x.new_state.clone()).collect::<Vec<_>>();
-            state.transitions.extend_front(transitions.into_iter());
-            for target_state in target_states {
-                state_machine.states.entry(target_state).or_insert_with(|| State { transitions: <_>::default() });
-            }
-            for variable in context.variables {
-                state_machine.variables.insert(variable.trans_name);
+                let mut context = Context::default();
+                let (transitions, _) = parse_stmts(&state_machine_name, &state_name, &script.stmts, true, &mut context)?;
+                let target_states = transitions.iter().map(|x| x.new_state.clone()).collect::<Vec<_>>();
+                state.transitions.extend_front(transitions.into_iter());
+                for target_state in target_states {
+                    state_machine.states.entry(target_state).or_insert_with(|| State { transitions: <_>::default() });
+                }
+                for variable in context.variables {
+                    state_machine.variables.insert(variable.trans_name);
+                }
             }
         }
-    }
 
-    let mut machines = state_machines.iter();
-    while let Some(machine_1) = machines.next() {
-        if let Some((machine_2, var)) = machines.clone().find_map(|machine_2| machine_1.1.variables.intersection(&machine_2.1.variables).next().map(|x| (machine_2, x))) {
-            return Err(CompileError::VariableOverlap { state_machines: (machine_1.0.clone(), machine_2.0.clone()), variable: var.clone() });
+        let mut machines = state_machines.iter();
+        while let Some(machine_1) = machines.next() {
+            if let Some((machine_2, var)) = machines.clone().find_map(|machine_2| machine_1.1.variables.intersection(&machine_2.1.variables).next().map(|x| (machine_2, x))) {
+                return Err(CompileError::VariableOverlap { state_machines: (machine_1.0.clone(), machine_2.0.clone()), variable: var.clone() });
+            }
         }
-    }
 
-    Ok(Project { name: proj.name, role: role.name.clone(), state_machines })
+        Ok(Project { name: proj.name, role: role.name.clone(), state_machines })
+    }
+    pub fn to_graphviz(&self) -> dot::Graph {
+        let stmts = self.state_machines.iter().map(|x| dot::Stmt::Subgraph(StateMachine::to_graphviz(x.1, x.0))).collect();
+        dot::Graph::DiGraph { id: dot_id(&self.name), strict: false, stmts }
+    }
+}
+impl StateMachine {
+    pub fn to_graphviz(&self, name: &str) -> dot::Subgraph {
+        let node_id = |state| dot::NodeId(dot_id(state), None);
+
+        let mut stmts = vec![
+            dot::Stmt::GAttribute(dot::GraphAttributes::Graph(vec![dot::Attribute(dot::Id::Plain("label".into()), dot_id(name))])),
+        ];
+        for state_name in self.states.keys() {
+            stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes: vec![] }));
+        }
+        for (state_name, state) in self.states.iter() {
+            for transition in state.transitions.iter() {
+                stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id(state_name)), dot::Vertex::N(node_id(&transition.new_state))), attributes: vec![] }));
+            }
+        }
+        dot::Subgraph { id: dot_id(&format!("cluster {name}")), stmts }
+    }
 }

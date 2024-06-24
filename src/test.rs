@@ -2,7 +2,7 @@ use crate::*;
 
 #[test]
 fn test_empty_project() {
-    let proj = compile(include_str!("projects/empty-project.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/empty-project.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -12,7 +12,7 @@ fn test_empty_project() {
 
 #[test]
 fn test_simple() {
-    let proj = compile(include_str!("projects/simple.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/simple.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -43,11 +43,22 @@ fn test_simple() {
             }),
         ].into_iter().collect(),
     });
+    assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
+digraph "untitled" {
+  subgraph "cluster something" {
+    graph[label="something"]
+    "thing 1"
+    "thing 2"
+    "thing 1" -> "thing 2"
+    "thing 2" -> "thing 1"
+  }
+}
+    "#.trim());
 }
 
 #[test]
 fn test_simple_no_handler() {
-    let proj = compile(include_str!("projects/simple-no-handler.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/simple-no-handler.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -85,7 +96,7 @@ fn test_simple_no_handler() {
 
 #[test]
 fn test_simple_if_timer() {
-    let proj = compile(include_str!("projects/simple-if-timer.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/simple-if-timer.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -120,7 +131,7 @@ fn test_simple_if_timer() {
 
 #[test]
 fn test_if_timer_reset_1() {
-    let proj = compile(include_str!("projects/if-timer-reset-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-timer-reset-1.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -157,7 +168,7 @@ fn test_if_timer_reset_1() {
 
 #[test]
 fn test_if_timer_reset_2() {
-    let proj = compile(include_str!("projects/if-timer-reset-2.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-timer-reset-2.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -194,7 +205,7 @@ fn test_if_timer_reset_2() {
 
 #[test]
 fn test_if_timer_reset_3() {
-    let proj = compile(include_str!("projects/if-timer-reset-3.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-timer-reset-3.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -231,7 +242,7 @@ fn test_if_timer_reset_3() {
 
 #[test]
 fn test_no_transitions_1() {
-    let proj = compile(include_str!("projects/no-transitions-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/no-transitions-1.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -268,7 +279,7 @@ fn test_no_transitions_1() {
 
 #[test]
 fn test_no_transitions_2() {
-    let proj = compile(include_str!("projects/no-transitions-2.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/no-transitions-2.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -297,7 +308,7 @@ fn test_no_transitions_2() {
 
 #[test]
 fn test_if_chain_1() {
-    let proj = compile(include_str!("projects/if-chain-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-chain-1.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -340,7 +351,7 @@ fn test_if_chain_1() {
 
 #[test]
 fn test_if_chain_2() {
-    let proj = compile(include_str!("projects/if-chain-2.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-chain-2.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -391,7 +402,7 @@ fn test_if_chain_2() {
 
 #[test]
 fn test_nested_if_1() {
-    let proj = compile(include_str!("projects/nested-if-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/nested-if-1.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -428,7 +439,7 @@ fn test_nested_if_1() {
 
 #[test]
 fn test_nested_if_2() {
-    let proj = compile(include_str!("projects/nested-if-2.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/nested-if-2.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -465,7 +476,7 @@ fn test_nested_if_2() {
 
 #[test]
 fn test_nested_if_3() {
-    let proj = compile(include_str!("projects/nested-if-3.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/nested-if-3.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -510,7 +521,7 @@ fn test_nested_if_3() {
 
 #[test]
 fn test_nested_if_4() {
-    let proj = compile(include_str!("projects/nested-if-4.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/nested-if-4.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -563,7 +574,7 @@ fn test_nested_if_4() {
 
 #[test]
 fn test_nested_if_5() {
-    let proj = compile(include_str!("projects/nested-if-5.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/nested-if-5.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -624,7 +635,7 @@ fn test_nested_if_5() {
 
 #[test]
 fn test_nested_if_6() {
-    let proj = compile(include_str!("projects/nested-if-6.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/nested-if-6.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -702,7 +713,7 @@ fn test_nested_if_6() {
 
 #[test]
 fn test_variables_1() {
-    let proj = compile(include_str!("projects/variables-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/variables-1.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -745,7 +756,7 @@ fn test_variables_1() {
 
 #[test]
 fn test_variables_2() {
-    let proj = compile(include_str!("projects/variables-2.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/variables-2.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -820,13 +831,13 @@ fn test_variables_2() {
 
 #[test]
 fn test_variables_3() {
-    let err = compile(include_str!("projects/variables-3.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/variables-3.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::VariableOverlap { state_machines: ("another".into(), "something".into()), variable: "foo".into() });
 }
 
 #[test]
 fn test_if_else_1() {
-    let proj = compile(include_str!("projects/if-else-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-else-1.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -866,25 +877,25 @@ fn test_if_else_1() {
 
 #[test]
 fn test_if_else_2() {
-    let err = compile(include_str!("projects/if-else-2.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-2.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_3() {
-    let err = compile(include_str!("projects/if-else-3.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-3.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_4() {
-    let err = compile(include_str!("projects/if-else-4.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-4.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_5() {
-    let proj = compile(include_str!("projects/if-else-5.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-else-5.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -932,7 +943,7 @@ fn test_if_else_5() {
 
 #[test]
 fn test_if_else_6() {
-    let proj = compile(include_str!("projects/if-else-6.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-else-6.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -972,7 +983,7 @@ fn test_if_else_6() {
 
 #[test]
 fn test_if_else_7() {
-    let proj = compile(include_str!("projects/if-else-7.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-else-7.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1012,7 +1023,7 @@ fn test_if_else_7() {
 
 #[test]
 fn test_if_else_8() {
-    let proj = compile(include_str!("projects/if-else-8.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-else-8.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1044,73 +1055,73 @@ fn test_if_else_8() {
 
 #[test]
 fn test_if_else_9() {
-    let err = compile(include_str!("projects/if-else-9.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-9.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_10() {
-    let err = compile(include_str!("projects/if-else-10.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-10.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_11() {
-    let err = compile(include_str!("projects/if-else-11.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-11.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_12() {
-    let err = compile(include_str!("projects/if-else-12.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-12.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_fall_through_1() {
-    let err = compile(include_str!("projects/if-fall-through-1.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-fall-through-1.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_fall_through_2() {
-    let err = compile(include_str!("projects/if-fall-through-2.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-fall-through-2.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_simple_fall_through_1() {
-    let err = compile(include_str!("projects/simple-fall-through-1.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/simple-fall-through-1.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_simple_fall_through_2() {
-    let err = compile(include_str!("projects/simple-fall-through-2.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/simple-fall-through-2.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_multiple_handlers() {
-    let err = compile(include_str!("projects/multiple-handlers.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/multiple-handlers.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::MultipleHandlers { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_complex_transition_1() {
-    let err = compile(include_str!("projects/complex-transition-1.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/complex-transition-1.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::ComplexTransitionName { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_complex_transition_2() {
-    let err = compile(include_str!("projects/complex-transition-2.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/complex-transition-2.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::ComplexTransitionName { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_tail_actions_1() {
-    let proj = compile(include_str!("projects/tail-actions-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/tail-actions-1.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1150,7 +1161,7 @@ fn test_tail_actions_1() {
 
 #[test]
 fn test_operators() {
-    let proj = compile(include_str!("projects/operators.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/operators.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1281,7 +1292,7 @@ fn test_operators() {
 
 #[test]
 fn test_actions_1() {
-    let proj = compile(include_str!("projects/actions-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/actions-1.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1311,6 +1322,6 @@ fn test_actions_1() {
 
 #[test]
 fn test_actions_2() {
-    let err = compile(include_str!("projects/actions-2.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/actions-2.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "state".into(), state: "state 1".into() });
 }
