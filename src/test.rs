@@ -701,8 +701,8 @@ fn test_nested_if_6() {
 }
 
 #[test]
-fn test_simple_variables() {
-    let proj = compile(include_str!("projects/simple-variables.xml"), None).unwrap();
+fn test_variables_1() {
+    let proj = compile(include_str!("projects/variables-1.xml"), None).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -741,6 +741,87 @@ fn test_simple_variables() {
             }),
         ].into_iter().collect(),
     });
+}
+
+#[test]
+fn test_variables_2() {
+    let proj = compile(include_str!("projects/variables-2.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [
+                    "foo".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        transitions: [
+                            Transition {
+                                condition: None,
+                                actions: [
+                                    "foo = 14".into(),
+                                    "foo = 21".into(),
+                                ].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        transitions: [
+                            Transition {
+                                condition: None,
+                                actions: [
+                                    "foo = 76".into(),
+                                    "foo = 43".into(),
+                                ].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+            ("another".into(), StateMachine {
+                variables: [
+                    "bar".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("test 1".into(), State {
+                        transitions: [
+                            Transition {
+                                condition: None,
+                                actions: [
+                                    "bar = 231".into(),
+                                    "bar = 453".into(),
+                                ].into_iter().collect(),
+                                new_state: "test 2".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("test 2".into(), State {
+                        transitions: [
+                            Transition {
+                                condition: None,
+                                actions: [
+                                    "bar = 432".into(),
+                                    "bar = 646".into(),
+                                ].into_iter().collect(),
+                                new_state: "test 1".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_variables_3() {
+    let err = compile(include_str!("projects/variables-3.xml"), None).unwrap_err();
+    assert_eq!(err, CompileError::VariableOverlap { state_machines: ("another".into(), "something".into()), variable: "foo".into() });
 }
 
 #[test]

@@ -55,6 +55,7 @@ pub enum CompileError {
     ComplexTransitionName { state_machine: CompactString, state: CompactString },
     VariadicBlocks { state_machine: CompactString, state: CompactString },
     ActionsOutsideTransition { state_machine: CompactString, state: CompactString },
+    VariableOverlap { state_machines: (CompactString, CompactString), variable: CompactString },
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -302,6 +303,13 @@ pub fn compile(xml: &str, role: Option<&str>) -> Result<Project, CompileError> {
             for variable in context.variables {
                 state_machine.variables.insert(variable.trans_name);
             }
+        }
+    }
+
+    let mut machines = state_machines.iter();
+    while let Some(machine_1) = machines.next() {
+        if let Some((machine_2, var)) = machines.clone().find_map(|machine_2| machine_1.1.variables.intersection(&machine_2.1.variables).next().map(|x| (machine_2, x))) {
+            return Err(CompileError::VariableOverlap { state_machines: (machine_1.0.clone(), machine_2.0.clone()), variable: var.clone() });
         }
     }
 
