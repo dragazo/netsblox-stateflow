@@ -348,8 +348,10 @@ impl StateMachine {
             stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes: vec![] }));
         }
         for (state_name, state) in self.states.iter() {
-            for transition in state.transitions.iter() {
-                stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id(state_name)), dot::Vertex::N(node_id(&transition.new_state))), attributes: vec![] }));
+            for (i, transition) in state.transitions.iter().enumerate() {
+                stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id(state_name)), dot::Vertex::N(node_id(&transition.new_state))), attributes: vec![
+                    dot::Attribute(dot::Id::Plain("label".into()), transition.ordered_condition.as_deref().map(|x| dot_id(&format!(" {}: {x} ", i + 1))).unwrap_or_else(|| dot_id(&format!(" {} ", i + 1)))),
+                ] }));
             }
         }
         dot::Subgraph { id: dot_id(&format!("cluster {name}")), stmts }

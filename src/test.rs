@@ -56,8 +56,8 @@ digraph "untitled" {
     graph[label="something",style="rounded"]
     "thing 1"
     "thing 2"
-    "thing 1" -> "thing 2"
-    "thing 2" -> "thing 1"
+    "thing 1" -> "thing 2" [label=" 1 "]
+    "thing 2" -> "thing 1" [label=" 1 "]
   }
 }
     "#.trim());
@@ -108,8 +108,8 @@ digraph "untitled" {
     "thing 1"
     "thing 2"
     "thing 3"
-    "thing 1" -> "thing 2"
-    "thing 2" -> "thing 3"
+    "thing 1" -> "thing 2" [label=" 1 "]
+    "thing 2" -> "thing 3" [label=" 1 "]
   }
 }
     "#.trim());
@@ -437,6 +437,21 @@ fn test_if_chain_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
+digraph "untitled" {
+  subgraph "cluster something" {
+    graph[label="something",style="rounded"]
+    "thing 1"
+    "thing 2"
+    "thing 3"
+    "thing 4"
+    "thing 1" -> "thing 4" [label=" 1: t > 8 "]
+    "thing 1" -> "thing 3" [label=" 2: t > 9 "]
+    "thing 1" -> "thing 2" [label=" 3: t > 10 "]
+    "thing 2" -> "thing 1" [label=" 1 "]
+  }
+}
+    "#.trim());
 }
 
 #[test]

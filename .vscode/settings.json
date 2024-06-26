@@ -10,6 +10,7 @@
         "netsblox",
         "nonterminal",
         "peekable",
+        "taillabel",
         "tand"
     ]
 }
