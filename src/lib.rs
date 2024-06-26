@@ -78,7 +78,8 @@ pub struct State {
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct Transition {
-    pub condition: Option<CompactString>,
+    pub ordered_condition: Option<CompactString>,
+    pub unordered_condition: Option<CompactString>,
     pub actions: VecDeque<CompactString>,
     pub new_state: CompactString,
 }
@@ -162,7 +163,7 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
     Ok(match &stmt.kind {
         ast::StmtKind::Assign { var, value } if var.name == state_machine => match &value.kind {
             ast::ExprKind::Value(ast::Value::String(x)) => match terminal {
-                true => Some((deque![Transition { condition: None, actions: <_>::default(), new_state: x.clone() }], None, true)),
+                true => Some((deque![Transition { ordered_condition: None, unordered_condition: None, actions: <_>::default(), new_state: x.clone() }], None, true)),
                 false => return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() }),
             }
             _ => return Err(CompileError::ComplexTransitionName { state_machine: state_machine.into(), state: state.into() }),
@@ -172,7 +173,9 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
             let (mut transitions, body_terminal) = parse_stmts(state_machine, state, &then, terminal, context)?;
 
             for transition in transitions.iter_mut() {
-                transition.condition = Some(transition.condition.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
+                for target in [&mut transition.unordered_condition, &mut transition.ordered_condition] {
+                    *target = Some(target.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
+                }
             }
 
             Some((transitions, Some(format_compact!("~({condition})")), terminal))
@@ -184,10 +187,14 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
             let (mut transitions_2, body_terminal_2) = parse_stmts(state_machine, state, &otherwise, terminal, context)?;
 
             for transition in transitions_1.iter_mut() {
-                transition.condition = Some(transition.condition.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
+                for target in [&mut transition.unordered_condition, &mut transition.ordered_condition] {
+                    *target = Some(target.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
+                }
             }
             for transition in transitions_2.iter_mut() {
-                transition.condition = Some(transition.condition.take().map(|x| format_compact!("~({condition}) & {x}")).unwrap_or_else(|| format_compact!("~({condition})")));
+                for target in [&mut transition.unordered_condition, &mut transition.ordered_condition] {
+                    *target = Some(target.take().map(|x| format_compact!("~({condition}) & {x}")).unwrap_or_else(|| format_compact!("~({condition})")));
+                }
             }
 
             let tail_condition = match (body_terminal_1, body_terminal_2) {
@@ -220,8 +227,8 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
     fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, terminal: bool) -> Result<(), CompileError> {
         if !actions.is_empty() {
             if terminal && transitions.is_empty() {
-                transitions.push_back(Transition { condition: None, actions: core::mem::take(actions), new_state: state.into() });
-            } else if transitions.len() == 1 && transitions[0].condition.is_none() {
+                transitions.push_back(Transition { ordered_condition: None, unordered_condition: None, actions: core::mem::take(actions), new_state: state.into() });
+            } else if transitions.len() == 1 && transitions[0].unordered_condition.is_none() {
                 transitions[0].actions.extend_front(core::mem::take(actions).into_iter());
             } else {
                 return Err(CompileError::ActionsOutsideTransition { state_machine: state_machine.into(), state: state.into() });
@@ -240,7 +247,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
                 terminal |= sub_terminal;
                 if let Some(tail_condition) = tail_condition {
                     for transition in transitions.iter_mut() {
-                        transition.condition = Some(transition.condition.take().map(|x| format_compact!("{tail_condition} & {x}")).unwrap_or_else(|| tail_condition.clone()));
+                        transition.unordered_condition = Some(transition.unordered_condition.take().map(|x| format_compact!("{tail_condition} & {x}")).unwrap_or_else(|| tail_condition.clone()));
                     }
                 }
                 transitions.extend_front(sub_transitions.into_iter());
@@ -332,7 +339,10 @@ impl StateMachine {
         let node_id = |state| dot::NodeId(dot_id(state), None);
 
         let mut stmts = vec![
-            dot::Stmt::GAttribute(dot::GraphAttributes::Graph(vec![dot::Attribute(dot::Id::Plain("label".into()), dot_id(name))])),
+            dot::Stmt::GAttribute(dot::GraphAttributes::Graph(vec![
+                dot::Attribute(dot::Id::Plain("label".into()), dot_id(name)),
+                dot::Attribute(dot::Id::Plain("style".into()), dot_id("rounded")),
+            ])),
         ];
         for state_name in self.states.keys() {
             stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes: vec![] }));

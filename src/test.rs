@@ -8,6 +8,11 @@ fn test_empty_project() {
         role: "myRole".into(),
         state_machines: [].into_iter().collect(),
     });
+    assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
+digraph "untitled" {
+
+}
+    "#.trim());
 }
 
 #[test]
@@ -23,7 +28,8 @@ fn test_simple() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                ordered_condition: None,
+                                unordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -32,7 +38,8 @@ fn test_simple() {
                     ("thing 2".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                ordered_condition: None,
+                                unordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -46,7 +53,7 @@ fn test_simple() {
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "cluster something" {
-    graph[label="something"]
+    graph[label="something",style="rounded"]
     "thing 1"
     "thing 2"
     "thing 1" -> "thing 2"
@@ -69,7 +76,8 @@ fn test_simple_no_handler() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                ordered_condition: None,
+                                unordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -78,7 +86,8 @@ fn test_simple_no_handler() {
                     ("thing 2".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                ordered_condition: None,
+                                unordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -92,6 +101,18 @@ fn test_simple_no_handler() {
             }),
         ].into_iter().collect(),
     });
+    assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
+digraph "untitled" {
+  subgraph "cluster something" {
+    graph[label="something",style="rounded"]
+    "thing 1"
+    "thing 2"
+    "thing 3"
+    "thing 1" -> "thing 2"
+    "thing 2" -> "thing 3"
+  }
+}
+    "#.trim());
 }
 
 #[test]
@@ -107,7 +128,8 @@ fn test_simple_if_timer() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 10".into()),
+                                unordered_condition: Some("t > 10".into()),
+                                ordered_condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -116,7 +138,8 @@ fn test_simple_if_timer() {
                     ("thing 2".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                ordered_condition: None,
+                                unordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -142,7 +165,8 @@ fn test_if_timer_reset_1() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 10".into()),
+                                unordered_condition: Some("t > 10".into()),
+                                ordered_condition: Some("t > 10".into()),
                                 actions: [
                                     "t = 0".into(),
                                 ].into_iter().collect(),
@@ -153,7 +177,8 @@ fn test_if_timer_reset_1() {
                     ("thing 2".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                ordered_condition: None,
+                                unordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -179,7 +204,8 @@ fn test_if_timer_reset_2() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 10".into()),
+                                unordered_condition: Some("t > 10".into()),
+                                ordered_condition: Some("t > 10".into()),
                                 actions: [
                                     "t = 0".into(),
                                 ].into_iter().collect(),
@@ -190,7 +216,8 @@ fn test_if_timer_reset_2() {
                     ("thing 2".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                ordered_condition: None,
+                                unordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -216,7 +243,8 @@ fn test_if_timer_reset_3() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 10".into()),
+                                unordered_condition: Some("t > 10".into()),
+                                ordered_condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -225,7 +253,8 @@ fn test_if_timer_reset_3() {
                     ("thing 2".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                ordered_condition: None,
+                                unordered_condition: None,
                                 actions: [
                                     "t = 0".into(),
                                 ].into_iter().collect(),
@@ -253,7 +282,8 @@ fn test_no_transitions_1() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 10".into()),
+                                unordered_condition: Some("t > 10".into()),
+                                ordered_condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -262,7 +292,8 @@ fn test_no_transitions_1() {
                     ("thing 2".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                ordered_condition: None,
+                                unordered_condition: None,
                                 actions: [
                                     "t = 0".into(),
                                 ].into_iter().collect(),
@@ -290,7 +321,8 @@ fn test_no_transitions_2() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 10".into()),
+                                unordered_condition: Some("t > 10".into()),
+                                ordered_condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -319,12 +351,14 @@ fn test_if_chain_1() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 9".into()),
+                                unordered_condition: Some("t > 9".into()),
+                                ordered_condition: Some("t > 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                condition: Some("~(t > 9) & t > 10".into()),
+                                unordered_condition: Some("~(t > 9) & t > 10".into()),
+                                ordered_condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -333,7 +367,8 @@ fn test_if_chain_1() {
                     ("thing 2".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                ordered_condition: None,
+                                unordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -362,17 +397,20 @@ fn test_if_chain_2() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 8".into()),
+                                unordered_condition: Some("t > 8".into()),
+                                ordered_condition: Some("t > 8".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
                             Transition {
-                                condition: Some("~(t > 8) & t > 9".into()),
+                                unordered_condition: Some("~(t > 8) & t > 9".into()),
+                                ordered_condition: Some("t > 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                condition: Some("~(t > 8) & ~(t > 9) & t > 10".into()),
+                                unordered_condition: Some("~(t > 8) & ~(t > 9) & t > 10".into()),
+                                ordered_condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -381,7 +419,8 @@ fn test_if_chain_2() {
                     ("thing 2".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                ordered_condition: None,
+                                unordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -413,12 +452,14 @@ fn test_nested_if_1() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 10".into()),
+                                unordered_condition: Some("t > 10".into()),
+                                ordered_condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                condition: Some("~(t > 10)".into()),
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -450,12 +491,14 @@ fn test_nested_if_2() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 10 & t > 9".into()),
+                                unordered_condition: Some("t > 10 & t > 9".into()),
+                                ordered_condition: Some("t > 10 & t > 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                condition: Some("~(t > 10)".into()),
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -487,17 +530,20 @@ fn test_nested_if_3() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 10 & t > 9".into()),
+                                unordered_condition: Some("t > 10 & t > 9".into()),
+                                ordered_condition: Some("t > 10 & t > 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
+                                unordered_condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
+                                ordered_condition: Some("t > 10 & t > 8".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                condition: Some("~(t > 10)".into()),
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -532,22 +578,26 @@ fn test_nested_if_4() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 10 & t > 9 & t > 7".into()),
+                                unordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
+                                ordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
                             Transition {
-                                condition: Some("t > 10 & t > 9 & ~(t > 7)".into()),
+                                unordered_condition: Some("t > 10 & t > 9 & ~(t > 7)".into()),
+                                ordered_condition: Some("t > 10 & t > 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
+                                unordered_condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
+                                ordered_condition: Some("t > 10 & t > 8".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                condition: Some("~(t > 10)".into()),
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -585,27 +635,32 @@ fn test_nested_if_5() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 10 & t > 9 & t > 7".into()),
+                                unordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
+                                ordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
                             Transition {
-                                condition: Some("t > 10 & t > 9 & ~(t > 7)".into()),
+                                unordered_condition: Some("t > 10 & t > 9 & ~(t > 7)".into()),
+                                ordered_condition: Some("t > 10 & t > 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
+                                unordered_condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
+                                ordered_condition: Some("t > 10 & t > 8".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                condition: Some("t > 10 & ~(t > 9) & ~(t > 8)".into()),
+                                unordered_condition: Some("t > 10 & ~(t > 9) & ~(t > 8)".into()),
+                                ordered_condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 5".into(),
                             },
                             Transition {
-                                condition: Some("~(t > 10)".into()),
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -648,7 +703,8 @@ fn test_nested_if_6() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("t > 10 & t > 9 & t > 7".into()),
+                                unordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
+                                ordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
                                 actions: [
                                     "foo = 234".into(),
                                     "foo = 652".into(),
@@ -656,7 +712,8 @@ fn test_nested_if_6() {
                                 new_state: "thing 4".into(),
                             },
                             Transition {
-                                condition: Some("t > 10 & t > 9 & ~(t > 7)".into()),
+                                unordered_condition: Some("t > 10 & t > 9 & ~(t > 7)".into()),
+                                ordered_condition: Some("t > 10 & t > 9".into()),
                                 actions: [
                                     "foo = 123".into(),
                                     "foo = 453".into(),
@@ -664,7 +721,8 @@ fn test_nested_if_6() {
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
+                                unordered_condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
+                                ordered_condition: Some("t > 10 & t > 8".into()),
                                 actions: [
                                     "foo = 546".into(),
                                     "foo = 876".into(),
@@ -672,7 +730,8 @@ fn test_nested_if_6() {
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                condition: Some("t > 10 & ~(t > 9) & ~(t > 8)".into()),
+                                unordered_condition: Some("t > 10 & ~(t > 9) & ~(t > 8)".into()),
+                                ordered_condition: Some("t > 10".into()),
                                 actions: [
                                     "foo = 431".into(),
                                     "foo = 197".into(),
@@ -680,7 +739,8 @@ fn test_nested_if_6() {
                                 new_state: "thing 5".into(),
                             },
                             Transition {
-                                condition: Some("~(t > 10)".into()),
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
                                 actions: [
                                     "foo = 856".into(),
                                     "foo = 465".into(),
@@ -726,7 +786,8 @@ fn test_variables_1() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                unordered_condition: None,
+                                ordered_condition: None,
                                 actions: [
                                     "foo = 14".into(),
                                     "foo = 21".into(),
@@ -738,7 +799,8 @@ fn test_variables_1() {
                     ("thing 2".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                unordered_condition: None,
+                                ordered_condition: None,
                                 actions: [
                                     "foo = 76".into(),
                                     "foo = 43".into(),
@@ -769,7 +831,8 @@ fn test_variables_2() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                unordered_condition: None,
+                                ordered_condition: None,
                                 actions: [
                                     "foo = 14".into(),
                                     "foo = 21".into(),
@@ -781,7 +844,8 @@ fn test_variables_2() {
                     ("thing 2".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                unordered_condition: None,
+                                ordered_condition: None,
                                 actions: [
                                     "foo = 76".into(),
                                     "foo = 43".into(),
@@ -801,7 +865,8 @@ fn test_variables_2() {
                     ("test 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                unordered_condition: None,
+                                ordered_condition: None,
                                 actions: [
                                     "bar = 231".into(),
                                     "bar = 453".into(),
@@ -813,7 +878,8 @@ fn test_variables_2() {
                     ("test 2".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                unordered_condition: None,
+                                ordered_condition: None,
                                 actions: [
                                     "bar = 432".into(),
                                     "bar = 646".into(),
@@ -851,12 +917,14 @@ fn test_if_else_1() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("foo == bar".into()),
+                                unordered_condition: Some("foo == bar".into()),
+                                ordered_condition: Some("foo == bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                condition: Some("~(foo == bar)".into()),
+                                unordered_condition: Some("~(foo == bar)".into()),
+                                ordered_condition: Some("~(foo == bar)".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -909,17 +977,20 @@ fn test_if_else_5() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("foo == bar".into()),
+                                unordered_condition: Some("foo == bar".into()),
+                                ordered_condition: Some("foo == bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                condition: Some("~(foo == bar)".into()),
+                                unordered_condition: Some("~(foo == bar)".into()),
+                                ordered_condition: Some("~(foo == bar)".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                condition: Some("false".into()),
+                                unordered_condition: Some("false".into()),
+                                ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -957,12 +1028,14 @@ fn test_if_else_6() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("foo == bar".into()),
+                                unordered_condition: Some("foo == bar".into()),
+                                ordered_condition: Some("foo == bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                condition: Some("~(foo == bar)".into()),
+                                unordered_condition: Some("~(foo == bar)".into()),
+                                ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -997,12 +1070,14 @@ fn test_if_else_7() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("~(foo == bar)".into()),
+                                unordered_condition: Some("~(foo == bar)".into()),
+                                ordered_condition: Some("~(foo == bar)".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                condition: Some("foo == bar".into()),
+                                unordered_condition: Some("foo == bar".into()),
+                                ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -1037,7 +1112,8 @@ fn test_if_else_8() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                unordered_condition: None,
+                                ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -1135,12 +1211,14 @@ fn test_tail_actions_1() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("foo > bar".into()),
+                                unordered_condition: Some("foo > bar".into()),
+                                ordered_condition: Some("foo > bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                condition: Some("~(foo > bar)".into()),
+                                unordered_condition: Some("~(foo > bar)".into()),
+                                ordered_condition: None,
                                 actions: [
                                     "foo = (2 * foo * 2)".into(),
                                     "bar = (3 * bar)".into(),
@@ -1175,52 +1253,62 @@ fn test_operators() {
                     ("thing 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: Some("foo < bar".into()),
+                                unordered_condition: Some("foo < bar".into()),
+                                ordered_condition: Some("foo < bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                condition: Some("~(foo < bar) & foo <= bar".into()),
+                                unordered_condition: Some("~(foo < bar) & foo <= bar".into()),
+                                ordered_condition: Some("foo <= bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                condition: Some("~(foo < bar) & ~(foo <= bar) & foo > bar".into()),
+                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & foo > bar".into()),
+                                ordered_condition: Some("foo > bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
                             Transition {
-                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & foo >= bar".into()),
+                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & foo >= bar".into()),
+                                ordered_condition: Some("foo >= bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 5".into(),
                             },
                             Transition {
-                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & foo == bar".into()),
+                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & foo == bar".into()),
+                                ordered_condition: Some("foo == bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 6".into(),
                             },
                             Transition {
-                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & foo ~= bar".into()),
+                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & foo ~= bar".into()),
+                                ordered_condition: Some("foo ~= bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 7".into(),
                             },
                             Transition {
-                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & foo < bar & false".into()),
+                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & foo < bar & false".into()),
+                                ordered_condition: Some("foo < bar & false".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 8".into(),
                             },
                             Transition {
-                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & ~(foo < bar & false) & (true | foo > bar)".into()),
+                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & ~(foo < bar & false) & (true | foo > bar)".into()),
+                                ordered_condition: Some("(true | foo > bar)".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 9".into(),
                             },
                             Transition {
-                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & ~(foo < bar & false) & ~((true | foo > bar)) & ~(foo == bar)".into()),
+                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & ~(foo < bar & false) & ~((true | foo > bar)) & ~(foo == bar)".into()),
+                                ordered_condition: Some("~(foo == bar)".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 10".into(),
                             },
                             Transition {
-                                condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & ~(foo < bar & false) & ~((true | foo > bar)) & ~(~(foo == bar))".into()),
+                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & ~(foo < bar & false) & ~((true | foo > bar)) & ~(~(foo == bar))".into()),
+                                ordered_condition: None,
                                 actions: [
                                     "foo = (foo + bar)".into(),
                                     "foo = (foo + 7 + bar)".into(),
@@ -1305,7 +1393,8 @@ fn test_actions_1() {
                     ("state 1".into(), State {
                         transitions: [
                             Transition {
-                                condition: None,
+                                unordered_condition: None,
+                                ordered_condition: None,
                                 actions: [
                                     "foo = 456".into()
                                 ].into_iter().collect(),
