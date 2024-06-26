@@ -1435,3 +1435,69 @@ fn test_actions_2() {
     let err = Project::compile(include_str!("projects/actions-2.xml"), None).unwrap_err();
     assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "state".into(), state: "state 1".into() });
 }
+
+#[test]
+fn test_ext_blocks_1() {
+    let proj = Project::compile(include_str!("projects/ext-blocks-1.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
+                                ordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("t > 10 & t > 9 & ~(t > 7)".into()),
+                                ordered_condition: Some("t > 10 & t > 9".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
+                                ordered_condition: Some("t > 10 & t > 8".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("t > 10 & ~(t > 9) & ~(t > 8)".into()),
+                                ordered_condition: Some("t > 10".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 5".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 0".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 0".into(), State {
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 3".into(), State {
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 4".into(), State {
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 5".into(), State {
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}

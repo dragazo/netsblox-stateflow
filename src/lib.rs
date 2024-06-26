@@ -113,7 +113,7 @@ fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &
         ast::ExprKind::Value(x) => translate_value(state_machine, state, x)?,
         ast::ExprKind::Variable { var } => {
             context.variables.push(var.clone());
-            var.trans_name.clone()
+            var.name.clone()
         }
         ast::ExprKind::Sin { value } => format_compact!("sind({})", translate_expr(state_machine, state, &value, context)?),
         ast::ExprKind::Cos { value } => format_compact!("cosd({})", translate_expr(state_machine, state, &value, context)?),
@@ -153,7 +153,7 @@ fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &m
     Ok(match &stmt.kind {
         ast::StmtKind::Assign { var, value } => {
             context.variables.push(var.clone());
-            vec![format_compact!("{} = {}", var.trans_name, translate_expr(state_machine, state, value, context)?)]
+            vec![format_compact!("{} = {}", var.name, translate_expr(state_machine, state, value, context)?)]
         }
         ast::StmtKind::ResetTimer => vec!["t = 0".into()],
         x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
@@ -161,6 +161,16 @@ fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &m
 }
 fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool, context: &mut Context) -> Result<Option<(VecDeque<Transition>, Option<CompactString>, bool)>, CompileError> {
     Ok(match &stmt.kind {
+        ast::StmtKind::UnknownBlock { name, args } => match (name.as_str(), args.as_slice()) {
+            ("smTransition", [var, value]) => match &var.kind {
+                ast::ExprKind::Value(ast::Value::String(var)) if *var == state_machine => match &value.kind {
+                    ast::ExprKind::Value(ast::Value::String(x)) => Some((deque![Transition { ordered_condition: None, unordered_condition: None, actions: <_>::default(), new_state: x.clone() }], None, true)),
+                    _ => return Err(CompileError::ComplexTransitionName { state_machine: state_machine.into(), state: state.into() }),
+                }
+                _ => None,
+            }
+            _ => None,
+        }
         ast::StmtKind::Assign { var, value } if var.name == state_machine => match &value.kind {
             ast::ExprKind::Value(ast::Value::String(x)) => match terminal {
                 true => Some((deque![Transition { ordered_condition: None, unordered_condition: None, actions: <_>::default(), new_state: x.clone() }], None, true)),
@@ -294,6 +304,13 @@ impl Project {
                             (ast::ExprKind::Value(ast::Value::String(val)), ast::ExprKind::Variable { var }) => (&var.name, val),
                             _ => continue,
                         }
+                        ast::ExprKind::UnknownBlock { name, args } => match (name.as_str(), args.as_slice()) {
+                            ("smInState", [var, val]) => match (&var.kind, &val.kind) {
+                                (ast::ExprKind::Value(ast::Value::String(var)), ast::ExprKind::Value(ast::Value::String(val))) => (var, val),
+                                _ => continue,
+                            }
+                            _ => continue,
+                        }
                         _ => continue,
                     }
                     _ => continue,
@@ -315,7 +332,7 @@ impl Project {
                     state_machine.states.entry(target_state).or_insert_with(|| State { transitions: <_>::default() });
                 }
                 for variable in context.variables {
-                    state_machine.variables.insert(variable.trans_name);
+                    state_machine.variables.insert(variable.name);
                 }
             }
         }
