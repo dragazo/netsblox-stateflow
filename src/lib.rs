@@ -325,6 +325,9 @@ impl Project {
             if let Some((machine_2, var)) = machines.clone().find_map(|machine_2| machine_1.1.variables.intersection(&machine_2.1.variables).next().map(|x| (machine_2, x))) {
                 return Err(CompileError::VariableOverlap { state_machines: (machine_1.0.clone(), machine_2.0.clone()), variable: var.clone() });
             }
+            if let Some(var) = machine_1.1.variables.iter().find(|&x| state_machines.contains_key(x)) {
+                return Err(CompileError::VariableOverlap { state_machines: (machine_1.0.clone(), var.clone()), variable: var.clone() });
+            }
         }
 
         Ok(Project { name: proj.name, role: role.name.clone(), state_machines })

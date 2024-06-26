@@ -917,6 +917,12 @@ fn test_variables_3() {
 }
 
 #[test]
+fn test_variables_4() {
+    let err = Project::compile(include_str!("projects/variables-4.xml"), None).unwrap_err();
+    assert_eq!(err, CompileError::VariableOverlap { state_machines: ("something".into(), "another".into()), variable: "another".into() });
+}
+
+#[test]
 fn test_if_else_1() {
     let proj = Project::compile(include_str!("projects/if-else-1.xml"), None).unwrap();
     assert_eq!(proj, Project {
