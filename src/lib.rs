@@ -8,6 +8,8 @@ use std::collections::{VecDeque, BTreeMap, BTreeSet};
 #[cfg(test)]
 mod test;
 
+pub use graphviz_rust as graphviz;
+
 macro_rules! count_exprs {
     () => { 0usize };
     ($head:expr $(,$tail:expr)* $(,)?) => { 1usize + count_exprs!($($tail),*) };
