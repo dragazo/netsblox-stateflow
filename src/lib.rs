@@ -182,7 +182,7 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
         }
         ast::StmtKind::If { condition, then } => {
             let condition = translate_expr(state_machine, state, condition, context)?;
-            let (mut transitions, body_terminal) = parse_stmts(state_machine, state, &then, terminal, context)?;
+            let (mut transitions, _) = parse_stmts(state_machine, state, &then, terminal, context)?;
 
             for transition in transitions.iter_mut() {
                 for target in [&mut transition.unordered_condition, &mut transition.ordered_condition] {

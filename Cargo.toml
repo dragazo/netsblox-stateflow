@@ -1,7 +1,12 @@
 [package]
-name = "stateflow-trans"
+name = "netsblox-stateflow"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["Devin Jean <emailcruzjean@yahoo.com>"]
+repository = "https://github.com/dragazo/netsblox-stateflow"
+documentation = "https://docs.rs/netsblox-stateflow"
+description = "A crate for extracting state machines from NetsBlox code."
 
 [dependencies]
 netsblox-ast = "=0.5.11"
