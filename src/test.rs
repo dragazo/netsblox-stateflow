@@ -1501,3 +1501,99 @@ fn test_ext_blocks_1() {
         ].into_iter().collect(),
     });
 }
+
+#[test]
+fn test_ite_1() {
+    let proj = Project::compile(include_str!("projects/ite-1.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thing".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("foo".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("t < 10".into()),
+                                ordered_condition: Some("t < 10".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "bar".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~(t < 10)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "baz".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("bar".into(), State {
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("baz".into(), State {
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_ite_2() {
+    let proj = Project::compile(include_str!("projects/ite-2.xml"), None).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thing".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("foo".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("t < 10 & t < 9".into()),
+                                ordered_condition: Some("t < 10 & t < 9".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "bar1".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("t < 10 & ~(t < 9)".into()),
+                                ordered_condition: Some("t < 10".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "bar2".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~(t < 10) & t < 8".into()),
+                                ordered_condition: Some("t < 8".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "baz1".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~(t < 10) & ~(t < 8)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "baz2".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("bar1".into(), State {
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("bar2".into(), State {
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("baz1".into(), State {
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("baz2".into(), State {
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}

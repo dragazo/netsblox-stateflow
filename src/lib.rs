@@ -162,23 +162,41 @@ fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &m
     })
 }
 fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool, context: &mut Context) -> Result<Option<(VecDeque<Transition>, Option<CompactString>, bool)>, CompileError> {
+    fn parse_transition_target(state_machine: &str, state: &str, expr: &ast::Expr, context: &mut Context) -> Result<VecDeque<Transition>, CompileError> {
+        Ok(match &expr.kind {
+            ast::ExprKind::Value(ast::Value::String(x)) => deque![Transition { ordered_condition: None, unordered_condition: None, actions: <_>::default(), new_state: x.clone() }],
+            ast::ExprKind::Conditional { condition, then, otherwise } => {
+                let condition = translate_expr(state_machine, state, condition, context)?;
+                let mut then_transitions = parse_transition_target(state_machine, state, then, context)?;
+                let mut otherwise_transitions = parse_transition_target(state_machine, state, otherwise, context)?;
+
+                for transition in then_transitions.iter_mut() {
+                    for target in [&mut transition.unordered_condition, &mut transition.ordered_condition] {
+                        *target = Some(target.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
+                    }
+                }
+                for transition in otherwise_transitions.iter_mut() {
+                    transition.unordered_condition = Some(transition.unordered_condition.take().map(|x| format_compact!("~({condition}) & {x}")).unwrap_or_else(|| format_compact!("~({condition})")));
+                }
+
+                then_transitions.extend(otherwise_transitions);
+                then_transitions
+            }
+            _ => return Err(CompileError::ComplexTransitionName { state_machine: state_machine.into(), state: state.into() }),
+        })
+    }
+
     Ok(match &stmt.kind {
         ast::StmtKind::UnknownBlock { name, args } => match (name.as_str(), args.as_slice()) {
             ("smTransition", [var, value]) => match &var.kind {
-                ast::ExprKind::Value(ast::Value::String(var)) if *var == state_machine => match &value.kind {
-                    ast::ExprKind::Value(ast::Value::String(x)) => Some((deque![Transition { ordered_condition: None, unordered_condition: None, actions: <_>::default(), new_state: x.clone() }], None, true)),
-                    _ => return Err(CompileError::ComplexTransitionName { state_machine: state_machine.into(), state: state.into() }),
-                }
+                ast::ExprKind::Value(ast::Value::String(var)) if *var == state_machine => Some((parse_transition_target(state_machine, state, value, context)?, None, true)),
                 _ => None,
             }
             _ => None,
         }
-        ast::StmtKind::Assign { var, value } if var.name == state_machine => match &value.kind {
-            ast::ExprKind::Value(ast::Value::String(x)) => match terminal {
-                true => Some((deque![Transition { ordered_condition: None, unordered_condition: None, actions: <_>::default(), new_state: x.clone() }], None, true)),
-                false => return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() }),
-            }
-            _ => return Err(CompileError::ComplexTransitionName { state_machine: state_machine.into(), state: state.into() }),
+        ast::StmtKind::Assign { var, value } if var.name == state_machine => match terminal {
+            true => Some((parse_transition_target(state_machine, state, value, context)?, None, true)),
+            false => return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() }),
         }
         ast::StmtKind::If { condition, then } => {
             let condition = translate_expr(state_machine, state, condition, context)?;
