@@ -222,7 +222,11 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
                 }
             }
             for transition in transitions_2.iter_mut() {
-                for target in [&mut transition.unordered_condition, &mut transition.ordered_condition] {
+                let targets = match body_terminal_1 {
+                    true => vec![&mut transition.unordered_condition],
+                    false => vec![&mut transition.unordered_condition, &mut transition.ordered_condition],
+                };
+                for target in targets {
                     *target = Some(target.take().map(|x| format_compact!("~({condition}) & {x}")).unwrap_or_else(|| format_compact!("~({condition})")));
                 }
             }

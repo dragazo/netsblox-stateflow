@@ -945,7 +945,7 @@ fn test_if_else_1() {
                             },
                             Transition {
                                 unordered_condition: Some("~(foo == bar)".into()),
-                                ordered_condition: Some("~(foo == bar)".into()),
+                                ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -1005,7 +1005,7 @@ fn test_if_else_5() {
                             },
                             Transition {
                                 unordered_condition: Some("~(foo == bar)".into()),
-                                ordered_condition: Some("~(foo == bar)".into()),
+                                ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
