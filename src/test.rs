@@ -2,7 +2,7 @@ use crate::*;
 
 #[test]
 fn test_empty_project() {
-    let proj = Project::compile(include_str!("projects/empty-project.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/empty-project.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -17,7 +17,7 @@ digraph "untitled" {
 
 #[test]
 fn test_simple() {
-    let proj = Project::compile(include_str!("projects/simple.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/simple.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -65,7 +65,7 @@ digraph "untitled" {
 
 #[test]
 fn test_simple_no_handler() {
-    let proj = Project::compile(include_str!("projects/simple-no-handler.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/simple-no-handler.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -117,7 +117,7 @@ digraph "untitled" {
 
 #[test]
 fn test_simple_if_timer() {
-    let proj = Project::compile(include_str!("projects/simple-if-timer.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/simple-if-timer.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -154,7 +154,7 @@ fn test_simple_if_timer() {
 
 #[test]
 fn test_if_timer_reset_1() {
-    let proj = Project::compile(include_str!("projects/if-timer-reset-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-timer-reset-1.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -193,7 +193,7 @@ fn test_if_timer_reset_1() {
 
 #[test]
 fn test_if_timer_reset_2() {
-    let proj = Project::compile(include_str!("projects/if-timer-reset-2.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-timer-reset-2.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -232,7 +232,7 @@ fn test_if_timer_reset_2() {
 
 #[test]
 fn test_if_timer_reset_3() {
-    let proj = Project::compile(include_str!("projects/if-timer-reset-3.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-timer-reset-3.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -271,7 +271,7 @@ fn test_if_timer_reset_3() {
 
 #[test]
 fn test_no_transitions_1() {
-    let proj = Project::compile(include_str!("projects/no-transitions-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/no-transitions-1.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -310,7 +310,7 @@ fn test_no_transitions_1() {
 
 #[test]
 fn test_no_transitions_2() {
-    let proj = Project::compile(include_str!("projects/no-transitions-2.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/no-transitions-2.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -340,7 +340,7 @@ fn test_no_transitions_2() {
 
 #[test]
 fn test_if_chain_1() {
-    let proj = Project::compile(include_str!("projects/if-chain-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-chain-1.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -386,7 +386,7 @@ fn test_if_chain_1() {
 
 #[test]
 fn test_if_chain_2() {
-    let proj = Project::compile(include_str!("projects/if-chain-2.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-chain-2.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -456,7 +456,7 @@ digraph "untitled" {
 
 #[test]
 fn test_nested_if_1() {
-    let proj = Project::compile(include_str!("projects/nested-if-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/nested-if-1.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -495,7 +495,7 @@ fn test_nested_if_1() {
 
 #[test]
 fn test_nested_if_2() {
-    let proj = Project::compile(include_str!("projects/nested-if-2.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/nested-if-2.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -534,7 +534,7 @@ fn test_nested_if_2() {
 
 #[test]
 fn test_nested_if_3() {
-    let proj = Project::compile(include_str!("projects/nested-if-3.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/nested-if-3.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -582,7 +582,7 @@ fn test_nested_if_3() {
 
 #[test]
 fn test_nested_if_4() {
-    let proj = Project::compile(include_str!("projects/nested-if-4.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/nested-if-4.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -639,7 +639,7 @@ fn test_nested_if_4() {
 
 #[test]
 fn test_nested_if_5() {
-    let proj = Project::compile(include_str!("projects/nested-if-5.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/nested-if-5.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -705,7 +705,7 @@ fn test_nested_if_5() {
 
 #[test]
 fn test_nested_if_6() {
-    let proj = Project::compile(include_str!("projects/nested-if-6.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/nested-if-6.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -788,7 +788,7 @@ fn test_nested_if_6() {
 
 #[test]
 fn test_variables_1() {
-    let proj = Project::compile(include_str!("projects/variables-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/variables-1.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -833,7 +833,7 @@ fn test_variables_1() {
 
 #[test]
 fn test_variables_2() {
-    let proj = Project::compile(include_str!("projects/variables-2.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/variables-2.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -912,19 +912,19 @@ fn test_variables_2() {
 
 #[test]
 fn test_variables_3() {
-    let err = Project::compile(include_str!("projects/variables-3.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/variables-3.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::VariableOverlap { state_machines: ("another".into(), "something".into()), variable: "foo".into() });
 }
 
 #[test]
 fn test_variables_4() {
-    let err = Project::compile(include_str!("projects/variables-4.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/variables-4.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::VariableOverlap { state_machines: ("something".into(), "another".into()), variable: "another".into() });
 }
 
 #[test]
 fn test_if_else_1() {
-    let proj = Project::compile(include_str!("projects/if-else-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-else-1.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -966,25 +966,25 @@ fn test_if_else_1() {
 
 #[test]
 fn test_if_else_2() {
-    let err = Project::compile(include_str!("projects/if-else-2.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-2.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_3() {
-    let err = Project::compile(include_str!("projects/if-else-3.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-3.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_4() {
-    let err = Project::compile(include_str!("projects/if-else-4.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-4.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_5() {
-    let proj = Project::compile(include_str!("projects/if-else-5.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-else-5.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1035,7 +1035,7 @@ fn test_if_else_5() {
 
 #[test]
 fn test_if_else_6() {
-    let proj = Project::compile(include_str!("projects/if-else-6.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-else-6.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1077,7 +1077,7 @@ fn test_if_else_6() {
 
 #[test]
 fn test_if_else_7() {
-    let proj = Project::compile(include_str!("projects/if-else-7.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-else-7.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1119,7 +1119,7 @@ fn test_if_else_7() {
 
 #[test]
 fn test_if_else_8() {
-    let proj = Project::compile(include_str!("projects/if-else-8.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/if-else-8.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1152,73 +1152,73 @@ fn test_if_else_8() {
 
 #[test]
 fn test_if_else_9() {
-    let err = Project::compile(include_str!("projects/if-else-9.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-9.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_10() {
-    let err = Project::compile(include_str!("projects/if-else-10.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-10.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_11() {
-    let err = Project::compile(include_str!("projects/if-else-11.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-11.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_else_12() {
-    let err = Project::compile(include_str!("projects/if-else-12.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-else-12.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_fall_through_1() {
-    let err = Project::compile(include_str!("projects/if-fall-through-1.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-fall-through-1.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_if_fall_through_2() {
-    let err = Project::compile(include_str!("projects/if-fall-through-2.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/if-fall-through-2.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_simple_fall_through_1() {
-    let err = Project::compile(include_str!("projects/simple-fall-through-1.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/simple-fall-through-1.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_simple_fall_through_2() {
-    let err = Project::compile(include_str!("projects/simple-fall-through-2.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/simple-fall-through-2.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_multiple_handlers() {
-    let err = Project::compile(include_str!("projects/multiple-handlers.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/multiple-handlers.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::MultipleHandlers { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_complex_transition_1() {
-    let err = Project::compile(include_str!("projects/complex-transition-1.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/complex-transition-1.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::ComplexTransitionName { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_complex_transition_2() {
-    let err = Project::compile(include_str!("projects/complex-transition-2.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/complex-transition-2.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::ComplexTransitionName { state_machine: "something".into(), state: "thing 1".into() });
 }
 
 #[test]
 fn test_tail_actions_1() {
-    let proj = Project::compile(include_str!("projects/tail-actions-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/tail-actions-1.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1260,7 +1260,7 @@ fn test_tail_actions_1() {
 
 #[test]
 fn test_operators() {
-    let proj = Project::compile(include_str!("projects/operators.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/operators.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1401,7 +1401,7 @@ fn test_operators() {
 
 #[test]
 fn test_actions_1() {
-    let proj = Project::compile(include_str!("projects/actions-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/actions-1.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1432,13 +1432,13 @@ fn test_actions_1() {
 
 #[test]
 fn test_actions_2() {
-    let err = Project::compile(include_str!("projects/actions-2.xml"), None).unwrap_err();
+    let err = Project::compile(include_str!("projects/actions-2.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "state".into(), state: "state 1".into() });
 }
 
 #[test]
 fn test_ext_blocks_1() {
-    let proj = Project::compile(include_str!("projects/ext-blocks-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/ext-blocks-1.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1504,7 +1504,7 @@ fn test_ext_blocks_1() {
 
 #[test]
 fn test_ite_1() {
-    let proj = Project::compile(include_str!("projects/ite-1.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/ite-1.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1543,7 +1543,7 @@ fn test_ite_1() {
 
 #[test]
 fn test_ite_2() {
-    let proj = Project::compile(include_str!("projects/ite-2.xml"), None).unwrap();
+    let proj = Project::compile(include_str!("projects/ite-2.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1590,6 +1590,116 @@ fn test_ite_2() {
                     }),
                     ("baz2".into(), State {
                         transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_unknown_blocks_1() {
+    let err = Project::compile(include_str!("projects/unknown-blocks-1.xml"), None, Settings::default()).unwrap_err();
+    assert_eq!(err, CompileError::UnsupportedBlock { state_machine: "thing".into(), state: "foo".into(), info: "CallRpc { host: None, service: \"CloudVariables\", rpc: \"deleteVariable\", args: [(\"name\", Expr { kind: Value(String(\"foo\")), info: BlockInfo { comment: None, location: None } }), (\"password\", Expr { kind: Value(String(\"bar\")), info: BlockInfo { comment: None, location: None } })] }".into() });
+
+    let proj = Project::compile(include_str!("projects/unknown-blocks-1.xml"), None, Settings { omit_unknown_actions: true, ..Settings::default() }).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thing".into(), StateMachine {
+                variables: [
+                    "derp".into(),
+                    "merp".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("foo".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [
+                                    "merp = 10".into(),
+                                    "merp = 20".into(),
+                                    "merp = 30".into(),
+                                ].into_iter().collect(),
+                                new_state: "foo".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_unknown_blocks_2() {
+    let err = Project::compile(include_str!("projects/unknown-blocks-2.xml"), None, Settings::default()).unwrap_err();
+    assert_eq!(err, CompileError::UnsupportedBlock { state_machine: "thing".into(), state: "foo".into(), info: "CallRpc { host: None, service: \"CloudVariables\", rpc: \"deleteVariable\", args: [(\"name\", Expr { kind: Value(String(\"foo\")), info: BlockInfo { comment: None, location: None } }), (\"password\", Expr { kind: Value(String(\"bar\")), info: BlockInfo { comment: None, location: None } })] }".into() });
+
+    let proj = Project::compile(include_str!("projects/unknown-blocks-2.xml"), None, Settings { omit_unknown_actions: true, ..Settings::default() }).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thing".into(), StateMachine {
+                variables: [
+                    "derp".into(),
+                    "merp".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("foo".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [
+                                    "merp = 10".into(),
+                                    "merp = 20".into(),
+                                    "merp = 30".into(),
+                                ].into_iter().collect(),
+                                new_state: "foo".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_unknown_blocks_3() {
+    let err = Project::compile(include_str!("projects/unknown-blocks-3.xml"), None, Settings::default()).unwrap_err();
+    assert_eq!(err, CompileError::UnsupportedBlock { state_machine: "thing".into(), state: "foo".into(), info: "TurnRight { angle: Expr { kind: Value(String(\"15\")), info: BlockInfo { comment: None, location: None } } }".into() });
+
+    let proj = Project::compile(include_str!("projects/unknown-blocks-3.xml"), None, Settings { omit_unknown_actions: true, ..Settings::default() }).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thing".into(), StateMachine {
+                variables: [
+                    "merp".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("foo".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [
+                                    "merp = 10".into(),
+                                    "merp = 20".into(),
+                                    "merp = 30".into(),
+                                ].into_iter().collect(),
+                                new_state: "foo".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,

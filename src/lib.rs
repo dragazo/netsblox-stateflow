@@ -86,9 +86,13 @@ pub struct Transition {
     pub new_state: CompactString,
 }
 
-#[derive(Default)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Settings {
+    pub omit_unknown_actions: bool,
+}
 struct Context {
     variables: Vec<ast::VariableRef>,
+    settings: Settings,
 }
 
 fn translate_value(state_machine: &str, state: &str, value: &ast::Value) -> Result<CompactString, CompileError> {
@@ -152,13 +156,22 @@ fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &
     })
 }
 fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &mut Context) -> Result<Vec<CompactString>, CompileError> {
+    macro_rules! handle_errors {
+        ($v:expr) => {
+            match $v {
+                Err(CompileError::UnsupportedBlock { .. }) if context.settings.omit_unknown_actions => return Ok(vec![]),
+                x => x,
+            }
+        }
+    }
+
     Ok(match &stmt.kind {
         ast::StmtKind::Assign { var, value } => {
             context.variables.push(var.clone());
-            vec![format_compact!("{} = {}", var.name, translate_expr(state_machine, state, value, context)?)]
+            vec![format_compact!("{} = {}", var.name, handle_errors!(translate_expr(state_machine, state, value, context))?)]
         }
         ast::StmtKind::ResetTimer => vec!["t = 0".into()],
-        x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
+        x => return handle_errors!(Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") })),
     })
 }
 fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool, context: &mut Context) -> Result<Option<(VecDeque<Transition>, Option<CompactString>, bool)>, CompileError> {
@@ -304,7 +317,7 @@ fn dot_id(name: &str) -> dot::Id {
 }
 
 impl Project {
-    pub fn compile(xml: &str, role: Option<&str>) -> Result<Project, CompileError> {
+    pub fn compile(xml: &str, role: Option<&str>, settings: Settings) -> Result<Project, CompileError> {
         let proj = ast::Parser::default().parse(xml).map_err(|e| CompileError::ParseError(e))?;
         let role = match role {
             Some(name) => match proj.roles.iter().find(|r| r.name == name) {
@@ -348,7 +361,7 @@ impl Project {
                 let state = state_machine.states.entry(state_name.clone()).or_insert_with(|| State { transitions: <_>::default() });
                 debug_assert_eq!(state.transitions.len(), 0);
 
-                let mut context = Context::default();
+                let mut context = Context { variables: vec![], settings };
                 let (transitions, _) = parse_stmts(&state_machine_name, &state_name, &script.stmts, true, &mut context)?;
                 let target_states = transitions.iter().map(|x| x.new_state.clone()).collect::<Vec<_>>();
                 state.transitions.extend_front(transitions.into_iter());
