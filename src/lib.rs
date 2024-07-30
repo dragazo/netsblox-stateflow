@@ -88,7 +88,7 @@ pub struct Transition {
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Settings {
-    pub omit_unknown_actions: bool,
+    pub omit_unknown_blocks: bool,
 }
 struct Context {
     variables: Vec<ast::VariableRef>,
@@ -152,26 +152,23 @@ fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &
         ast::ExprKind::Or { left, right } => format_compact!("({} | {})", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
         ast::ExprKind::Not { value } => format_compact!("~({})", translate_expr(state_machine, state, &value, context)?),
         ast::ExprKind::Timer => "t".into(),
-        x => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
+        x => match context.settings.omit_unknown_blocks {
+            true => "?".into(),
+            false => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
+        }
     })
 }
 fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &mut Context) -> Result<Vec<CompactString>, CompileError> {
-    macro_rules! handle_errors {
-        ($v:expr) => {
-            match $v {
-                Err(CompileError::UnsupportedBlock { .. }) if context.settings.omit_unknown_actions => return Ok(vec![]),
-                x => x,
-            }
-        }
-    }
-
     Ok(match &stmt.kind {
         ast::StmtKind::Assign { var, value } => {
             context.variables.push(var.clone());
-            vec![format_compact!("{} = {}", var.name, handle_errors!(translate_expr(state_machine, state, value, context))?)]
+            vec![format_compact!("{} = {}", var.name, translate_expr(state_machine, state, value, context)?)]
         }
         ast::StmtKind::ResetTimer => vec!["t = 0".into()],
-        x => return handle_errors!(Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") })),
+        x => match context.settings.omit_unknown_blocks {
+            true => vec!["?".into()],
+            false => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),
+        }
     })
 }
 fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool, context: &mut Context) -> Result<Option<(VecDeque<Transition>, Option<CompactString>, bool)>, CompileError> {

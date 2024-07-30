@@ -1603,7 +1603,7 @@ fn test_unknown_blocks_1() {
     let err = Project::compile(include_str!("projects/unknown-blocks-1.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::UnsupportedBlock { state_machine: "thing".into(), state: "foo".into(), info: "CallRpc { host: None, service: \"CloudVariables\", rpc: \"deleteVariable\", args: [(\"name\", Expr { kind: Value(String(\"foo\")), info: BlockInfo { comment: None, location: None } }), (\"password\", Expr { kind: Value(String(\"bar\")), info: BlockInfo { comment: None, location: None } })] }".into() });
 
-    let proj = Project::compile(include_str!("projects/unknown-blocks-1.xml"), None, Settings { omit_unknown_actions: true, ..Settings::default() }).unwrap();
+    let proj = Project::compile(include_str!("projects/unknown-blocks-1.xml"), None, Settings { omit_unknown_blocks: true, ..Settings::default() }).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1621,7 +1621,9 @@ fn test_unknown_blocks_1() {
                                 ordered_condition: None,
                                 actions: [
                                     "merp = 10".into(),
+                                    "?".into(),
                                     "merp = 20".into(),
+                                    "derp = ?".into(),
                                     "merp = 30".into(),
                                 ].into_iter().collect(),
                                 new_state: "foo".into(),
@@ -1640,7 +1642,7 @@ fn test_unknown_blocks_2() {
     let err = Project::compile(include_str!("projects/unknown-blocks-2.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::UnsupportedBlock { state_machine: "thing".into(), state: "foo".into(), info: "CallRpc { host: None, service: \"CloudVariables\", rpc: \"deleteVariable\", args: [(\"name\", Expr { kind: Value(String(\"foo\")), info: BlockInfo { comment: None, location: None } }), (\"password\", Expr { kind: Value(String(\"bar\")), info: BlockInfo { comment: None, location: None } })] }".into() });
 
-    let proj = Project::compile(include_str!("projects/unknown-blocks-2.xml"), None, Settings { omit_unknown_actions: true, ..Settings::default() }).unwrap();
+    let proj = Project::compile(include_str!("projects/unknown-blocks-2.xml"), None, Settings { omit_unknown_blocks: true, ..Settings::default() }).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1659,6 +1661,7 @@ fn test_unknown_blocks_2() {
                                 actions: [
                                     "merp = 10".into(),
                                     "merp = 20".into(),
+                                    "derp = ?".into(),
                                     "merp = 30".into(),
                                 ].into_iter().collect(),
                                 new_state: "foo".into(),
@@ -1677,7 +1680,7 @@ fn test_unknown_blocks_3() {
     let err = Project::compile(include_str!("projects/unknown-blocks-3.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::UnsupportedBlock { state_machine: "thing".into(), state: "foo".into(), info: "TurnRight { angle: Expr { kind: Value(String(\"15\")), info: BlockInfo { comment: None, location: None } } }".into() });
 
-    let proj = Project::compile(include_str!("projects/unknown-blocks-3.xml"), None, Settings { omit_unknown_actions: true, ..Settings::default() }).unwrap();
+    let proj = Project::compile(include_str!("projects/unknown-blocks-3.xml"), None, Settings { omit_unknown_blocks: true, ..Settings::default() }).unwrap();
     assert_eq!(proj, Project {
         name: "untitled".into(),
         role: "myRole".into(),
@@ -1694,10 +1697,53 @@ fn test_unknown_blocks_3() {
                                 ordered_condition: None,
                                 actions: [
                                     "merp = 10".into(),
+                                    "?".into(),
                                     "merp = 20".into(),
                                     "merp = 30".into(),
                                 ].into_iter().collect(),
                                 new_state: "foo".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_unknown_blocks_4() {
+    let err = Project::compile(include_str!("projects/unknown-blocks-4.xml"), None, Settings::default()).unwrap_err();
+    assert_eq!(err, CompileError::UnsupportedBlock { state_machine: "player state".into(), state: "me stop".into(), info: "KeyDown { key: Expr { kind: Value(String(\"space\")), info: BlockInfo { comment: None, location: None } } }".into() });
+
+    let proj = Project::compile(include_str!("projects/unknown-blocks-4.xml"), None, Settings { omit_unknown_blocks: true, ..Settings::default() }).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("player state".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("me stop".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("?".into()),
+                                ordered_condition: Some("?".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "me go".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("me go".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [
+                                    "?".into(),
+                                ].into_iter().collect(),
+                                new_state: "me stop".into(),
                             },
                         ].into_iter().collect(),
                     }),
