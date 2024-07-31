@@ -392,12 +392,7 @@ impl StateMachine {
     pub fn to_graphviz(&self, name: &str) -> dot::Subgraph {
         let node_id = |state| dot::NodeId(dot_id(state), None);
 
-        let mut stmts = vec![
-            dot::Stmt::GAttribute(dot::GraphAttributes::Graph(vec![
-                dot::Attribute(dot::Id::Plain("label".into()), dot_id(name)),
-                dot::Attribute(dot::Id::Plain("style".into()), dot_id("rounded")),
-            ])),
-        ];
+        let mut stmts = vec![];
         for state_name in self.states.keys() {
             stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes: vec![] }));
         }
@@ -408,6 +403,6 @@ impl StateMachine {
                 ] }));
             }
         }
-        dot::Subgraph { id: dot_id(&format!("cluster {name}")), stmts }
+        dot::Subgraph { id: dot_id(&name), stmts }
     }
 }

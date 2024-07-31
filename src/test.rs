@@ -52,8 +52,7 @@ fn test_simple() {
     });
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
-  subgraph "cluster something" {
-    graph[label="something",style="rounded"]
+  subgraph "something" {
     "thing 1"
     "thing 2"
     "thing 1" -> "thing 2" [label=" 1 "]
@@ -103,8 +102,7 @@ fn test_simple_no_handler() {
     });
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
-  subgraph "cluster something" {
-    graph[label="something",style="rounded"]
+  subgraph "something" {
     "thing 1"
     "thing 2"
     "thing 3"
@@ -439,8 +437,7 @@ fn test_if_chain_2() {
     });
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
-  subgraph "cluster something" {
-    graph[label="something",style="rounded"]
+  subgraph "something" {
     "thing 1"
     "thing 2"
     "thing 3"
