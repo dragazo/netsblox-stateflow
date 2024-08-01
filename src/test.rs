@@ -1596,6 +1596,41 @@ fn test_ite_2() {
 }
 
 #[test]
+fn test_var_names_1() {
+    let proj = Project::compile(include_str!("projects/var-names-1.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("my state".into(), StateMachine {
+                variables: [
+                    "another_var".into(),
+                    "some_var".into(),
+                ].into_iter().collect(),
+                states: [
+                    ("first state".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [
+                                    "some_var = (some_var * another_var)".into(),
+                                ].into_iter().collect(),
+                                new_state: "second state".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("second state".into(), State {
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
 fn test_unknown_blocks_1() {
     let err = Project::compile(include_str!("projects/unknown-blocks-1.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::UnsupportedBlock { state_machine: "thing".into(), state: "foo".into(), info: "CallRpc { host: None, service: \"CloudVariables\", rpc: \"deleteVariable\", args: [(\"name\", Expr { kind: Value(String(\"foo\")), info: BlockInfo { comment: None, location: None } }), (\"password\", Expr { kind: Value(String(\"bar\")), info: BlockInfo { comment: None, location: None } })] }".into() });

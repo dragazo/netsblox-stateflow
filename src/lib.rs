@@ -119,7 +119,7 @@ fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &
         ast::ExprKind::Value(x) => translate_value(state_machine, state, x)?,
         ast::ExprKind::Variable { var } => {
             context.variables.push(var.clone());
-            var.name.clone()
+            var.trans_name.clone()
         }
         ast::ExprKind::Sin { value } => format_compact!("sind({})", translate_expr(state_machine, state, &value, context)?),
         ast::ExprKind::Cos { value } => format_compact!("cosd({})", translate_expr(state_machine, state, &value, context)?),
@@ -162,7 +162,7 @@ fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &m
     Ok(match &stmt.kind {
         ast::StmtKind::Assign { var, value } => {
             context.variables.push(var.clone());
-            vec![format_compact!("{} = {}", var.name, translate_expr(state_machine, state, value, context)?)]
+            vec![format_compact!("{} = {}", var.trans_name, translate_expr(state_machine, state, value, context)?)]
         }
         ast::StmtKind::ResetTimer => vec!["t = 0".into()],
         x => match context.settings.omit_unknown_blocks {
@@ -315,7 +315,11 @@ fn dot_id(name: &str) -> dot::Id {
 
 impl Project {
     pub fn compile(xml: &str, role: Option<&str>, settings: Settings) -> Result<Project, CompileError> {
-        let proj = ast::Parser::default().parse(xml).map_err(|e| CompileError::ParseError(e))?;
+        let parser = ast::Parser {
+            name_transformer: Box::new(ast::util::c_ident),
+            ..Default::default()
+        };
+        let proj = parser.parse(xml).map_err(|e| CompileError::ParseError(e))?;
         let role = match role {
             Some(name) => match proj.roles.iter().find(|r| r.name == name) {
                 Some(x) => x,
@@ -366,7 +370,7 @@ impl Project {
                     state_machine.states.entry(target_state).or_insert_with(|| State { transitions: <_>::default() });
                 }
                 for variable in context.variables {
-                    state_machine.variables.insert(variable.name);
+                    state_machine.variables.insert(variable.trans_name);
                 }
             }
         }
