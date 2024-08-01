@@ -1631,6 +1631,194 @@ fn test_var_names_1() {
 }
 
 #[test]
+fn test_initial_state_1() {
+    let proj = Project::compile(include_str!("projects/initial-state-1.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("foo 3".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "foo 4".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("foo 4".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "barb".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("barb".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "foo 3".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("foo 4".into()),
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_initial_state_2() {
+    let proj = Project::compile(include_str!("projects/initial-state-2.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("foo 3".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "foo 4".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("foo 4".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "barb".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("barb".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "foo 3".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_initial_state_3() {
+    let proj = Project::compile(include_str!("projects/initial-state-3.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("foo 3".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "foo 4".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("foo 4".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "barb".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("barb".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "foo 3".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("foo 3".into()),
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_initial_state_4() {
+    let proj = Project::compile(include_str!("projects/initial-state-4.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("foo 3".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "foo 4".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("foo 4".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "barb".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("barb".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "foo 3".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("barb".into()),
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
 fn test_unknown_blocks_1() {
     let err = Project::compile(include_str!("projects/unknown-blocks-1.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::UnsupportedBlock { state_machine: "thing".into(), state: "foo".into(), info: "CallRpc { host: None, service: \"CloudVariables\", rpc: \"deleteVariable\", args: [(\"name\", Expr { kind: Value(String(\"foo\")), info: BlockInfo { comment: None, location: None } }), (\"password\", Expr { kind: Value(String(\"bar\")), info: BlockInfo { comment: None, location: None } })] }".into() });
@@ -1780,7 +1968,7 @@ fn test_unknown_blocks_4() {
                         ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
-                initial_state: None,
+                initial_state: Some("me stop".into()),
             }),
         ].into_iter().collect(),
     });

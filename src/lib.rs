@@ -331,8 +331,9 @@ impl Project {
             }
         };
 
-        let mut state_machines: BTreeMap<_, StateMachine> = <_>::default();
+        let mut state_machines: BTreeMap<CompactString, StateMachine> = <_>::default();
         let mut visited_handlers: BTreeSet<(CompactString, CompactString)> = <_>::default();
+
         for entity in role.entities.iter() {
             for script in entity.scripts.iter() {
                 let (state_machine_name, state_name) = match script.hat.as_ref().map(|x| &x.kind) {
@@ -371,6 +372,34 @@ impl Project {
                 }
                 for variable in context.variables {
                     state_machine.variables.insert(variable.trans_name);
+                }
+            }
+        }
+
+        for entity in role.entities.iter() {
+            for script in entity.scripts.iter() {
+                if let Some(ast::HatKind::OnFlag) = script.hat.as_ref().map(|x| &x.kind) {
+                    for stmt in script.stmts.iter() {
+                        let (state_machine_name, initial_state) = match &stmt.kind {
+                            ast::StmtKind::Assign { var, value } => match &value.kind {
+                                ast::ExprKind::Value(ast::Value::String(value)) => (&var.name, value),
+                                _ => continue,
+                            }
+                            ast::StmtKind::UnknownBlock { name, args } => match (name.as_str(), args.as_slice()) {
+                                ("smTransition", [var, value]) => match (&var.kind, &value.kind) {
+                                    (ast::ExprKind::Value(ast::Value::String(var)), ast::ExprKind::Value(ast::Value::String(value))) => (var, value),
+                                    _ => continue,
+                                }
+                                _ => continue,
+                            }
+                            _ => continue,
+                        };
+                        if let Some(state_machine) = state_machines.get_mut(state_machine_name) {
+                            if state_machine.states.contains_key(initial_state) {
+                                state_machine.initial_state = Some(initial_state.clone());
+                            }
+                        }
+                    }
                 }
             }
         }
