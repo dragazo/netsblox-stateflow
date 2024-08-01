@@ -53,10 +53,10 @@ fn test_simple() {
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "something" {
-    "thing 1"
-    "thing 2"
-    "thing 1" -> "thing 2" [label=" 1 "]
-    "thing 2" -> "thing 1" [label=" 1 "]
+    "something thing 1"[label="thing 1"]
+    "something thing 2"[label="thing 2"]
+    "something thing 1" -> "something thing 2" [label=" 1 "]
+    "something thing 2" -> "something thing 1" [label=" 1 "]
   }
 }
     "#.trim());
@@ -103,11 +103,11 @@ fn test_simple_no_handler() {
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "something" {
-    "thing 1"
-    "thing 2"
-    "thing 3"
-    "thing 1" -> "thing 2" [label=" 1 "]
-    "thing 2" -> "thing 3" [label=" 1 "]
+    "something thing 1"[label="thing 1"]
+    "something thing 2"[label="thing 2"]
+    "something thing 3"[label="thing 3"]
+    "something thing 1" -> "something thing 2" [label=" 1 "]
+    "something thing 2" -> "something thing 3" [label=" 1 "]
   }
 }
     "#.trim());
@@ -438,14 +438,14 @@ fn test_if_chain_2() {
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "something" {
-    "thing 1"
-    "thing 2"
-    "thing 3"
-    "thing 4"
-    "thing 1" -> "thing 4" [label=" 1: t > 8 "]
-    "thing 1" -> "thing 3" [label=" 2: t > 9 "]
-    "thing 1" -> "thing 2" [label=" 3: t > 10 "]
-    "thing 2" -> "thing 1" [label=" 1 "]
+    "something thing 1"[label="thing 1"]
+    "something thing 2"[label="thing 2"]
+    "something thing 3"[label="thing 3"]
+    "something thing 4"[label="thing 4"]
+    "something thing 1" -> "something thing 4" [label=" 1: t > 8 "]
+    "something thing 1" -> "something thing 3" [label=" 2: t > 9 "]
+    "something thing 1" -> "something thing 2" [label=" 3: t > 10 "]
+    "something thing 2" -> "something thing 1" [label=" 1 "]
   }
 }
     "#.trim());
@@ -1675,6 +1675,20 @@ fn test_initial_state_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
+digraph "untitled" {
+  subgraph "something" {
+    "something"[style=invis]
+    "something" -> "something foo 4"
+    "something barb"[label="barb"]
+    "something foo 3"[label="foo 3"]
+    "something foo 4"[label="foo 4"]
+    "something barb" -> "something foo 3" [label=" 1 "]
+    "something foo 3" -> "something foo 4" [label=" 1 "]
+    "something foo 4" -> "something barb" [label=" 1 "]
+  }
+}
+    "#.trim());
 }
 
 #[test]

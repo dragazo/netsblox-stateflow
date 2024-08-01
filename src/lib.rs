@@ -423,11 +423,15 @@ impl Project {
 }
 impl StateMachine {
     pub fn to_graphviz(&self, name: &str) -> dot::Subgraph {
-        let node_id = |state| dot::NodeId(dot_id(state), None);
+        let node_id = |state: &str| dot::NodeId(if !state.is_empty() { dot_id(&format!("{name} {state}")) } else { dot_id(name) }, None);
 
         let mut stmts = vec![];
+        if let Some(init) = self.initial_state.as_ref() {
+            stmts.push(dot::Stmt::Node(dot::Node { id: node_id(""), attributes: vec![dot::Attribute(dot::Id::Plain("style".into()), dot::Id::Plain("invis".into()))] }));
+            stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id("")), dot::Vertex::N(node_id(init))), attributes: vec![] }));
+        }
         for state_name in self.states.keys() {
-            stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes: vec![] }));
+            stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes: vec![dot::Attribute(dot::Id::Plain("label".into()), dot_id(state_name))] }));
         }
         for (state_name, state) in self.states.iter() {
             for (i, transition) in state.transitions.iter().enumerate() {
