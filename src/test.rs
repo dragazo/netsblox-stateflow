@@ -55,8 +55,8 @@ digraph "untitled" {
   subgraph "something" {
     "something thing 1"[label="thing 1"]
     "something thing 2"[label="thing 2"]
-    "something thing 1" -> "something thing 2" [label=" 1 "]
-    "something thing 2" -> "something thing 1" [label=" 1 "]
+    "something thing 1" -> "something thing 2" [label=""]
+    "something thing 2" -> "something thing 1" [label=""]
   }
 }
     "#.trim());
@@ -106,8 +106,162 @@ digraph "untitled" {
     "something thing 1"[label="thing 1"]
     "something thing 2"[label="thing 2"]
     "something thing 3"[label="thing 3"]
-    "something thing 1" -> "something thing 2" [label=" 1 "]
-    "something thing 2" -> "something thing 3" [label=" 1 "]
+    "something thing 1" -> "something thing 2" [label=""]
+    "something thing 2" -> "something thing 3" [label=""]
+  }
+}
+    "#.trim());
+}
+
+#[test]
+fn test_single_transition() {
+    let proj = Project::compile(include_str!("projects/single-transition.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        transitions: [
+                            Transition {
+                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: Some("t > 10".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
+digraph "untitled" {
+  subgraph "something" {
+    "something thing 1"[label="thing 1"]
+    "something thing 2"[label="thing 2"]
+    "something thing 1" -> "something thing 2" [label=" t > 10 "]
+    "something thing 2" -> "something thing 1" [label=""]
+  }
+}
+    "#.trim());
+}
+
+#[test]
+fn test_multiple_machines_1() {
+    let proj = Project::compile(include_str!("projects/multiple-machines-1.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("machine 1".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("foo".into(), State {
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "bar".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("bar".into(), State {
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "buz".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("buz".into(), State {
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "foo".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("foo".into()),
+            }),
+            ("machine 2".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("bar".into(), State {
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "baz".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("baz".into(), State {
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "buzz".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("buzz".into(), State {
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "bar".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("bar".into()),
+            }),
+        ].into_iter().collect(),
+    });
+    assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
+digraph "untitled" {
+  subgraph "machine 1" {
+    "machine 1"[style=invis]
+    "machine 1" -> "machine 1 foo"
+    "machine 1 bar"[label="bar"]
+    "machine 1 buz"[label="buz"]
+    "machine 1 foo"[label="foo"]
+    "machine 1 bar" -> "machine 1 buz" [label=""]
+    "machine 1 buz" -> "machine 1 foo" [label=""]
+    "machine 1 foo" -> "machine 1 bar" [label=""]
+  }
+  subgraph "machine 2" {
+    "machine 2"[style=invis]
+    "machine 2" -> "machine 2 bar"
+    "machine 2 bar"[label="bar"]
+    "machine 2 baz"[label="baz"]
+    "machine 2 buzz"[label="buzz"]
+    "machine 2 bar" -> "machine 2 baz" [label=""]
+    "machine 2 baz" -> "machine 2 buzz" [label=""]
+    "machine 2 buzz" -> "machine 2 bar" [label=""]
   }
 }
     "#.trim());
@@ -445,7 +599,7 @@ digraph "untitled" {
     "something thing 1" -> "something thing 4" [label=" 1: t > 8 "]
     "something thing 1" -> "something thing 3" [label=" 2: t > 9 "]
     "something thing 1" -> "something thing 2" [label=" 3: t > 10 "]
-    "something thing 2" -> "something thing 1" [label=" 1 "]
+    "something thing 2" -> "something thing 1" [label=""]
   }
 }
     "#.trim());
@@ -1683,9 +1837,9 @@ digraph "untitled" {
     "something barb"[label="barb"]
     "something foo 3"[label="foo 3"]
     "something foo 4"[label="foo 4"]
-    "something barb" -> "something foo 3" [label=" 1 "]
-    "something foo 3" -> "something foo 4" [label=" 1 "]
-    "something foo 4" -> "something barb" [label=" 1 "]
+    "something barb" -> "something foo 3" [label=""]
+    "something foo 3" -> "something foo 4" [label=""]
+    "something foo 4" -> "something barb" [label=""]
   }
 }
     "#.trim());

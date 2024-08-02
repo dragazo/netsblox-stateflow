@@ -434,9 +434,13 @@ impl StateMachine {
             stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes: vec![dot::Attribute(dot::Id::Plain("label".into()), dot_id(state_name))] }));
         }
         for (state_name, state) in self.states.iter() {
+            let labeler: fn (usize, Option<&str>) -> dot::Id = match state.transitions.len() {
+                1 => |_, t| t.map(|t| dot_id(&format!(" {t} "))).unwrap_or_else(|| dot_id("")),
+                _ => |i, t| t.map(|t| dot_id(&format!(" {}: {t} ", i + 1))).unwrap_or_else(|| dot_id(&format!(" {} ", i + 1))),
+            };
             for (i, transition) in state.transitions.iter().enumerate() {
                 stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id(state_name)), dot::Vertex::N(node_id(&transition.new_state))), attributes: vec![
-                    dot::Attribute(dot::Id::Plain("label".into()), transition.ordered_condition.as_deref().map(|x| dot_id(&format!(" {}: {x} ", i + 1))).unwrap_or_else(|| dot_id(&format!(" {} ", i + 1)))),
+                    dot::Attribute(dot::Id::Plain("label".into()), labeler(i, transition.ordered_condition.as_deref())),
                 ] }));
             }
         }
