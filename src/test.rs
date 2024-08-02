@@ -47,6 +47,7 @@ fn test_simple() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -97,6 +98,7 @@ fn test_simple_no_handler() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -145,6 +147,7 @@ fn test_single_transition() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -202,6 +205,7 @@ fn test_multiple_machines_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: Some("foo".into()),
+                current_state: None,
             }),
             ("machine 2".into(), StateMachine {
                 variables: [].into_iter().collect(),
@@ -238,13 +242,14 @@ fn test_multiple_machines_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: Some("bar".into()),
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "machine 1" {
-    "machine 1"[style=invis]
+    "machine 1"[shape=point]
     "machine 1" -> "machine 1 foo"
     "machine 1 bar"[label="bar"]
     "machine 1 buz"[label="buz"]
@@ -254,7 +259,7 @@ digraph "untitled" {
     "machine 1 foo" -> "machine 1 bar" [label=""]
   }
   subgraph "machine 2" {
-    "machine 2"[style=invis]
+    "machine 2"[shape=point]
     "machine 2" -> "machine 2 bar"
     "machine 2 bar"[label="bar"]
     "machine 2 baz"[label="baz"]
@@ -299,6 +304,7 @@ fn test_simple_if_timer() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -338,6 +344,7 @@ fn test_if_timer_reset_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -377,6 +384,7 @@ fn test_if_timer_reset_2() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -416,6 +424,7 @@ fn test_if_timer_reset_3() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -455,6 +464,7 @@ fn test_no_transitions_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -485,6 +495,7 @@ fn test_no_transitions_2() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -531,6 +542,7 @@ fn test_if_chain_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -586,6 +598,7 @@ fn test_if_chain_2() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -639,6 +652,7 @@ fn test_nested_if_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -678,6 +692,7 @@ fn test_nested_if_2() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -726,6 +741,7 @@ fn test_nested_if_3() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -783,6 +799,7 @@ fn test_nested_if_4() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -849,6 +866,7 @@ fn test_nested_if_5() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -932,6 +950,7 @@ fn test_nested_if_6() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -977,6 +996,7 @@ fn test_variables_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1022,6 +1042,7 @@ fn test_variables_2() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
             ("another".into(), StateMachine {
                 variables: [
@@ -1056,6 +1077,7 @@ fn test_variables_2() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1110,6 +1132,7 @@ fn test_if_else_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1179,6 +1202,7 @@ fn test_if_else_5() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1221,6 +1245,7 @@ fn test_if_else_6() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1263,6 +1288,7 @@ fn test_if_else_7() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1296,6 +1322,7 @@ fn test_if_else_8() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1404,6 +1431,7 @@ fn test_tail_actions_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1545,6 +1573,7 @@ fn test_operators() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1576,6 +1605,7 @@ fn test_actions_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1648,6 +1678,7 @@ fn test_ext_blocks_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1687,6 +1718,7 @@ fn test_ite_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1744,6 +1776,7 @@ fn test_ite_2() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1779,6 +1812,7 @@ fn test_var_names_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1826,13 +1860,14 @@ fn test_initial_state_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: Some("foo 4".into()),
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "something" {
-    "something"[style=invis]
+    "something"[shape=point]
     "something" -> "something foo 4"
     "something barb"[label="barb"]
     "something foo 3"[label="foo 3"]
@@ -1887,6 +1922,7 @@ fn test_initial_state_2() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1934,6 +1970,7 @@ fn test_initial_state_3() {
                     }),
                 ].into_iter().collect(),
                 initial_state: Some("foo 3".into()),
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -1981,6 +2018,7 @@ fn test_initial_state_4() {
                     }),
                 ].into_iter().collect(),
                 initial_state: Some("barb".into()),
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -2020,6 +2058,7 @@ fn test_unknown_blocks_1() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -2058,6 +2097,7 @@ fn test_unknown_blocks_2() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -2095,6 +2135,7 @@ fn test_unknown_blocks_3() {
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
@@ -2137,7 +2178,158 @@ fn test_unknown_blocks_4() {
                     }),
                 ].into_iter().collect(),
                 initial_state: Some("me stop".into()),
+                current_state: None,
             }),
         ].into_iter().collect(),
     });
+}
+
+#[test]
+fn test_current_state_1() {
+    let proj = Project::compile(include_str!("projects/current-state-1.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("a".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "b".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("b".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "a".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("a".into()),
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
+digraph "untitled" {
+  subgraph "thingy" {
+    "thingy"[shape=point]
+    "thingy" -> "thingy a"
+    "thingy a"[label="a"]
+    "thingy b"[label="b"]
+    "thingy a" -> "thingy b" [label=""]
+    "thingy b" -> "thingy a" [label=""]
+  }
+}
+    "#.trim());
+}
+
+#[test]
+fn test_current_state_2() {
+    let proj = Project::compile(include_str!("projects/current-state-2.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("a".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "b".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("b".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "a".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("a".into()),
+                current_state: Some("a".into()),
+            }),
+        ].into_iter().collect(),
+    });
+    assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
+digraph "untitled" {
+  subgraph "thingy" {
+    "thingy"[shape=point]
+    "thingy" -> "thingy a"
+    "thingy a"[label="a",style=filled]
+    "thingy b"[label="b"]
+    "thingy a" -> "thingy b" [label=""]
+    "thingy b" -> "thingy a" [label=""]
+  }
+}
+    "#.trim());
+}
+
+#[test]
+fn test_current_state_3() {
+    let proj = Project::compile(include_str!("projects/current-state-3.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("a".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "b".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("b".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "a".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("a".into()),
+                current_state: Some("b".into()),
+            }),
+        ].into_iter().collect(),
+    });
+    assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
+digraph "untitled" {
+  subgraph "thingy" {
+    "thingy"[shape=point]
+    "thingy" -> "thingy a"
+    "thingy a"[label="a"]
+    "thingy b"[label="b",style=filled]
+    "thingy a" -> "thingy b" [label=""]
+    "thingy b" -> "thingy a" [label=""]
+  }
+}
+    "#.trim());
 }

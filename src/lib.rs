@@ -73,6 +73,7 @@ pub struct StateMachine {
     pub variables: BTreeSet<CompactString>,
     pub states: BTreeMap<CompactString, State>,
     pub initial_state: Option<CompactString>,
+    pub current_state: Option<CompactString>,
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct State {
@@ -359,7 +360,7 @@ impl Project {
                     return Err(CompileError::MultipleHandlers { state_machine: state_machine_name.clone(), state: state_name.clone() });
                 }
 
-                let state_machine = state_machines.entry(state_machine_name.clone()).or_insert_with(|| StateMachine { variables: <_>::default(), states: <_>::default(), initial_state: <_>::default() });
+                let state_machine = state_machines.entry(state_machine_name.clone()).or_insert_with(|| StateMachine { variables: <_>::default(), states: <_>::default(), initial_state: None, current_state: None });
                 let state = state_machine.states.entry(state_name.clone()).or_insert_with(|| State { transitions: <_>::default() });
                 debug_assert_eq!(state.transitions.len(), 0);
 
@@ -404,6 +405,14 @@ impl Project {
             }
         }
 
+        for (state_machine_name, state_machine) in state_machines.iter_mut() {
+            if let Some(ast::Value::String(init)) = role.globals.iter().find(|g| g.def.name == state_machine_name).map(|g| &g.init) {
+                if state_machine.states.contains_key(init) {
+                    state_machine.current_state = Some(init.clone());
+                }
+            }
+        }
+
         let mut machines = state_machines.iter();
         while let Some(machine_1) = machines.next() {
             if let Some((machine_2, var)) = machines.clone().find_map(|machine_2| machine_1.1.variables.intersection(&machine_2.1.variables).next().map(|x| (machine_2, x))) {
@@ -427,11 +436,15 @@ impl StateMachine {
 
         let mut stmts = vec![];
         if let Some(init) = self.initial_state.as_ref() {
-            stmts.push(dot::Stmt::Node(dot::Node { id: node_id(""), attributes: vec![dot::Attribute(dot::Id::Plain("style".into()), dot::Id::Plain("invis".into()))] }));
+            stmts.push(dot::Stmt::Node(dot::Node { id: node_id(""), attributes: vec![dot::Attribute(dot::Id::Plain("shape".into()), dot::Id::Plain("point".into()))] }));
             stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id("")), dot::Vertex::N(node_id(init))), attributes: vec![] }));
         }
         for state_name in self.states.keys() {
-            stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes: vec![dot::Attribute(dot::Id::Plain("label".into()), dot_id(state_name))] }));
+            let mut attributes = vec![dot::Attribute(dot::Id::Plain("label".into()), dot_id(state_name))];
+            if self.current_state.as_ref().map(|x| x == state_name).unwrap_or(false) {
+                attributes.push(dot::Attribute(dot::Id::Plain("style".into()), dot::Id::Plain("filled".into())));
+            }
+            stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes }));
         }
         for (state_name, state) in self.states.iter() {
             let labeler: fn (usize, Option<&str>) -> dot::Id = match state.transitions.len() {
