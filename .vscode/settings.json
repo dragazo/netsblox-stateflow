@@ -10,6 +10,10 @@
         "netsblox",
         "nonterminal",
         "peekable",
+        "sflib",
+        "sfnew",
+        "sfroot",
+        "stateflow",
         "taillabel",
         "tand"
     ]

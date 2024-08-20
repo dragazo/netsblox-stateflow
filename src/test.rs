@@ -61,6 +61,25 @@ digraph "untitled" {
   }
 }
     "#.trim());
+    assert_eq!(proj.to_stateflow().unwrap(), r#"
+sfnew untitled
+chart = find(sfroot, "-isa", "Stateflow.Chart", Path = "untitled/Chart")
+chart.Name = "something"
+s0 = Stateflow.State(chart)
+s0.Name = "thing_1"
+s0.Position = [0, 0, 100, 100]
+s1 = Stateflow.State(chart)
+s1.Name = "thing_2"
+s1.Position = [200, 0, 100, 100]
+t = Stateflow.Transition(chart)
+t.Source = s0
+t.Destination = s1
+t.LabelString = "[]{}"
+t = Stateflow.Transition(chart)
+t.Source = s1
+t.Destination = s0
+t.LabelString = "[]{}"
+    "#.trim());
 }
 
 #[test]

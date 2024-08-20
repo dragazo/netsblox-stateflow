@@ -4,6 +4,7 @@ use netsblox_ast::compact_str::{CompactString, ToCompactString, format_compact};
 use graphviz_rust::dot_structures as dot;
 
 use std::collections::{VecDeque, BTreeMap, BTreeSet};
+use std::fmt::Write as _;
 
 #[cfg(test)]
 mod test;
@@ -48,11 +49,41 @@ fn punctuate(values: &[CompactString], sep: &str) -> Option<CompactString> {
     }
 }
 
+struct RenamePool<F: for<'a> FnMut(&'a str) -> Result<CompactString, ()>> {
+    forward: BTreeMap<CompactString, CompactString>,
+    backward: BTreeMap<CompactString, CompactString>,
+    f: F,
+}
+impl<F: for<'a> FnMut(&'a str) -> Result<CompactString, ()>> RenamePool<F> {
+    fn new(f: F) -> Self {
+        Self { forward: Default::default(), backward: Default::default(), f }
+    }
+    fn rename(&mut self, x: &str) -> Result<CompactString, CompileError> {
+        if let Some(res) = self.forward.get(x) {
+            return Ok(res.clone());
+        }
+
+        let y = (self.f)(x).map_err(|()| CompileError::RenameFailure { before: x.into() })?;
+        assert!(self.forward.insert(x.into(), y.clone()).is_none());
+
+        if let Some(prev) = self.backward.insert(y.clone(), x.into()) {
+            return Err(CompileError::RenameConflict { before: (x.into(), prev.clone()), after: y });
+        }
+
+        Ok(y)
+    }
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum CompileError {
     ParseError(Box<ast::Error>),
+
     RoleCount { count: usize },
     UnknownRole { name: CompactString },
+
+    RenameFailure { before: CompactString },
+    RenameConflict { before: (CompactString, CompactString), after: CompactString },
+
     UnsupportedBlock { state_machine: CompactString, state: CompactString, info: CompactString },
     NonTerminalTransition { state_machine: CompactString, state: CompactString },
     MultipleHandlers { state_machine: CompactString, state: CompactString },
@@ -426,37 +457,77 @@ impl Project {
         Ok(Project { name: proj.name, role: role.name.clone(), state_machines })
     }
     pub fn to_graphviz(&self) -> dot::Graph {
-        let stmts = self.state_machines.iter().map(|x| dot::Stmt::Subgraph(StateMachine::to_graphviz(x.1, x.0))).collect();
+        let stmts = self.state_machines.iter().map(|(name, state_machine)| {
+            let node_id = |state: &str| dot::NodeId(if !state.is_empty() { dot_id(&format!("{name} {state}")) } else { dot_id(name) }, None);
+
+            let mut stmts = vec![];
+            if let Some(init) = state_machine.initial_state.as_ref() {
+                stmts.push(dot::Stmt::Node(dot::Node { id: node_id(""), attributes: vec![dot::Attribute(dot::Id::Plain("shape".into()), dot::Id::Plain("point".into()))] }));
+                stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id("")), dot::Vertex::N(node_id(init))), attributes: vec![] }));
+            }
+            for state_name in state_machine.states.keys() {
+                let mut attributes = vec![dot::Attribute(dot::Id::Plain("label".into()), dot_id(state_name))];
+                if state_machine.current_state.as_ref().map(|x| x == state_name).unwrap_or(false) {
+                    attributes.push(dot::Attribute(dot::Id::Plain("style".into()), dot::Id::Plain("filled".into())));
+                }
+                stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes }));
+            }
+            for (state_name, state) in state_machine.states.iter() {
+                let labeler: fn (usize, Option<&str>) -> dot::Id = match state.transitions.len() {
+                    1 => |_, t| t.map(|t| dot_id(&format!(" {t} "))).unwrap_or_else(|| dot_id("")),
+                    _ => |i, t| t.map(|t| dot_id(&format!(" {}: {t} ", i + 1))).unwrap_or_else(|| dot_id(&format!(" {} ", i + 1))),
+                };
+                for (i, transition) in state.transitions.iter().enumerate() {
+                    stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id(state_name)), dot::Vertex::N(node_id(&transition.new_state))), attributes: vec![
+                        dot::Attribute(dot::Id::Plain("label".into()), labeler(i, transition.ordered_condition.as_deref())),
+                    ] }));
+                }
+            }
+            dot::Stmt::Subgraph(dot::Subgraph { id: dot_id(&name), stmts })
+        }).collect();
         dot::Graph::DiGraph { id: dot_id(&self.name), strict: false, stmts }
     }
-}
-impl StateMachine {
-    pub fn to_graphviz(&self, name: &str) -> dot::Subgraph {
-        let node_id = |state: &str| dot::NodeId(if !state.is_empty() { dot_id(&format!("{name} {state}")) } else { dot_id(name) }, None);
+    pub fn to_stateflow(&self) -> Result<CompactString, CompileError> {
+        let mut rename_pool = RenamePool::new(ast::util::c_ident);
+        let mut rename = move |x| rename_pool.rename(x);
+        let model_name = rename(&self.name)?;
 
-        let mut stmts = vec![];
-        if let Some(init) = self.initial_state.as_ref() {
-            stmts.push(dot::Stmt::Node(dot::Node { id: node_id(""), attributes: vec![dot::Attribute(dot::Id::Plain("shape".into()), dot::Id::Plain("point".into()))] }));
-            stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id("")), dot::Vertex::N(node_id(init))), attributes: vec![] }));
-        }
-        for state_name in self.states.keys() {
-            let mut attributes = vec![dot::Attribute(dot::Id::Plain("label".into()), dot_id(state_name))];
-            if self.current_state.as_ref().map(|x| x == state_name).unwrap_or(false) {
-                attributes.push(dot::Attribute(dot::Id::Plain("style".into()), dot::Id::Plain("filled".into())));
+        let size = (100, 100);
+        let padding = (100, 100);
+
+        let mut res = CompactString::default();
+        writeln!(res, "sfnew {model_name}").unwrap();
+        for (state_machine_idx, (state_machine_name, state_machine)) in self.state_machines.iter().enumerate() {
+            if state_machine_idx == 0 {
+                writeln!(res, "chart = find(sfroot, \"-isa\", \"Stateflow.Chart\", Path = \"{model_name}/Chart\")").unwrap();
+                writeln!(res, "chart.Name = {state_machine_name:?}").unwrap();
+            } else {
+                writeln!(res, "chart = add_block(\"sflib/Chart\", {:?})", format!("{model_name}/{state_machine_name}")).unwrap();
             }
-            stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes }));
-        }
-        for (state_name, state) in self.states.iter() {
-            let labeler: fn (usize, Option<&str>) -> dot::Id = match state.transitions.len() {
-                1 => |_, t| t.map(|t| dot_id(&format!(" {t} "))).unwrap_or_else(|| dot_id("")),
-                _ => |i, t| t.map(|t| dot_id(&format!(" {}: {t} ", i + 1))).unwrap_or_else(|| dot_id(&format!(" {} ", i + 1))),
-            };
-            for (i, transition) in state.transitions.iter().enumerate() {
-                stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id(state_name)), dot::Vertex::N(node_id(&transition.new_state))), attributes: vec![
-                    dot::Attribute(dot::Id::Plain("label".into()), labeler(i, transition.ordered_condition.as_deref())),
-                ] }));
+
+            for (state_idx, (state_name, _)) in state_machine.states.iter().enumerate() {
+                writeln!(res, "s{state_idx} = Stateflow.State(chart)").unwrap();
+                writeln!(res, "s{state_idx}.Name = {:?}", rename(state_name)?).unwrap();
+                writeln!(res, "s{state_idx}.Position = [{}, {}, {}, {}]", state_idx * (size.0 + padding.0), 0, size.0, size.1).unwrap();
+            }
+            for (state_idx, (_, state)) in state_machine.states.iter().enumerate() {
+                for transition in state.transitions.iter() {
+                    writeln!(res, "t = Stateflow.Transition(chart)").unwrap();
+                    writeln!(res, "t.Source = s{state_idx}").unwrap();
+                    writeln!(res, "t.Destination = s{}", state_machine.states.iter().enumerate().find(|x| *x.1.0 == transition.new_state).unwrap().0).unwrap();
+
+                    let mut label = CompactString::default();
+                    write!(label, "[{}]{{", transition.unordered_condition.as_deref().unwrap_or_default()).unwrap();
+                    for action in transition.actions.iter() {
+                        write!(label, "{action};").unwrap();
+                    }
+                    label.push('}');
+                    writeln!(res, "t.LabelString = {label:?}").unwrap();
+                }
             }
         }
-        dot::Subgraph { id: dot_id(&name), stmts }
+        debug_assert_eq!(res.chars().next_back(), Some('\n'));
+        res.pop();
+        Ok(res)
     }
 }
