@@ -498,6 +498,8 @@ impl Project {
         let mut res = CompactString::default();
         writeln!(res, "sfnew {model_name}").unwrap();
         for (state_machine_idx, (state_machine_name, state_machine)) in self.state_machines.iter().enumerate() {
+            let state_number = |name: &str| { state_machine.states.iter().enumerate().find(|x| *x.1.0 == name).unwrap().0 };
+
             if state_machine_idx == 0 {
                 writeln!(res, "chart = find(sfroot, \"-isa\", \"Stateflow.Chart\", Path = \"{model_name}/Chart\")").unwrap();
                 writeln!(res, "chart.Name = {state_machine_name:?}").unwrap();
@@ -514,7 +516,7 @@ impl Project {
                 for transition in state.transitions.iter() {
                     writeln!(res, "t = Stateflow.Transition(chart)").unwrap();
                     writeln!(res, "t.Source = s{state_idx}").unwrap();
-                    writeln!(res, "t.Destination = s{}", state_machine.states.iter().enumerate().find(|x| *x.1.0 == transition.new_state).unwrap().0).unwrap();
+                    writeln!(res, "t.Destination = s{}", state_number(&transition.new_state)).unwrap();
 
                     let mut label = CompactString::default();
                     write!(label, "[{}]{{", transition.unordered_condition.as_deref().unwrap_or_default()).unwrap();
@@ -524,6 +526,13 @@ impl Project {
                     label.push('}');
                     writeln!(res, "t.LabelString = {label:?}").unwrap();
                 }
+            }
+            if let Some(initial_state) = &state_machine.initial_state {
+                writeln!(res, "t = Stateflow.Transition(chart)").unwrap();
+                writeln!(res, "t.Destination = s{}", state_number(initial_state)).unwrap();
+                writeln!(res, "t.DestinationOClock = 0").unwrap();
+                writeln!(res, "t.SourceEndpoint = t.DestinationEndpoint - [0 30]").unwrap();
+                writeln!(res, "t.Midpoint = t.DestinationEndpoint - [0 15]").unwrap();
             }
         }
         debug_assert_eq!(res.chars().next_back(), Some('\n'));
