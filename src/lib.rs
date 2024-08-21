@@ -91,6 +91,7 @@ pub enum CompileError {
     VariadicBlocks { state_machine: CompactString, state: CompactString },
     ActionsOutsideTransition { state_machine: CompactString, state: CompactString },
     VariableOverlap { state_machines: (CompactString, CompactString), variable: CompactString },
+    TransitionForeignMachine { state_machine: CompactString, state: CompactString, foreign_machine: CompactString },
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -101,7 +102,7 @@ pub struct Project {
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct StateMachine {
-    pub variables: BTreeSet<CompactString>,
+    pub variables: BTreeMap<CompactString, CompactString>,
     pub states: BTreeMap<CompactString, State>,
     pub initial_state: Option<CompactString>,
     pub current_state: Option<CompactString>,
@@ -143,6 +144,7 @@ fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &
     fn extract_fixed_variadic<'a>(state_machine: &str, state: &str, values: &'a ast::Expr, context: &mut Context) -> Result<Vec<CompactString>, CompileError> {
         match &values.kind {
             ast::ExprKind::MakeList { values } => Ok(values.iter().map(|x| translate_expr(state_machine, state, x, context)).collect::<Result<_,_>>()?),
+            ast::ExprKind::Value(ast::Value::List(values, _)) => Ok(values.iter().map(|x| translate_value(state_machine, state, x)).collect::<Result<_,_>>()?),
             _ => Err(CompileError::VariadicBlocks { state_machine: state_machine.into(), state: state.into() }),
         }
     }
@@ -196,6 +198,10 @@ fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &m
             context.variables.push(var.clone());
             vec![format_compact!("{} = {}", var.trans_name, translate_expr(state_machine, state, value, context)?)]
         }
+        ast::StmtKind::AddAssign { var, value } => {
+            context.variables.push(var.clone());
+            vec![format_compact!("{} = {} + {}", var.trans_name, var.trans_name, translate_expr(state_machine, state, value, context)?)]
+        }
         ast::StmtKind::ResetTimer => vec!["t = 0".into()],
         x => match context.settings.omit_unknown_blocks {
             true => vec!["?".into()],
@@ -231,7 +237,10 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
     Ok(match &stmt.kind {
         ast::StmtKind::UnknownBlock { name, args } => match (name.as_str(), args.as_slice()) {
             ("smTransition", [var, value]) => match &var.kind {
-                ast::ExprKind::Value(ast::Value::String(var)) if *var == state_machine => Some((parse_transition_target(state_machine, state, value, context)?, None, true)),
+                ast::ExprKind::Value(ast::Value::String(var)) => match *var == state_machine {
+                    true => Some((parse_transition_target(state_machine, state, value, context)?, None, true)),
+                    false => return Err(CompileError::TransitionForeignMachine { state_machine: state_machine.into(), state: state.into(), foreign_machine: var.clone() }),
+                }
                 _ => None,
             }
             _ => None,
@@ -403,53 +412,62 @@ impl Project {
                     state_machine.states.entry(target_state).or_insert_with(|| State { transitions: <_>::default() });
                 }
                 for variable in context.variables {
-                    state_machine.variables.insert(variable.trans_name);
+                    state_machine.variables.insert(variable.trans_name, "0".into());
                 }
             }
         }
 
+        let mut var_inits = BTreeMap::new();
         for entity in role.entities.iter() {
             for script in entity.scripts.iter() {
                 if let Some(ast::HatKind::OnFlag) = script.hat.as_ref().map(|x| &x.kind) {
                     for stmt in script.stmts.iter() {
-                        let (state_machine_name, initial_state) = match &stmt.kind {
-                            ast::StmtKind::Assign { var, value } => match &value.kind {
-                                ast::ExprKind::Value(ast::Value::String(value)) => (&var.name, value),
-                                _ => continue,
+                        match &stmt.kind {
+                            ast::StmtKind::Assign { var, value } => match state_machines.get_mut(&var.name) {
+                                Some(state_machine) => match &value.kind {
+                                    ast::ExprKind::Value(ast::Value::String(value)) if state_machine.states.contains_key(value) => state_machine.initial_state = Some(value.clone()),
+                                    _ => (),
+                                }
+                                None => { var_inits.insert(&var.trans_name, value); }
                             }
                             ast::StmtKind::UnknownBlock { name, args } => match (name.as_str(), args.as_slice()) {
                                 ("smTransition", [var, value]) => match (&var.kind, &value.kind) {
-                                    (ast::ExprKind::Value(ast::Value::String(var)), ast::ExprKind::Value(ast::Value::String(value))) => (var, value),
-                                    _ => continue,
+                                    (ast::ExprKind::Value(ast::Value::String(var)), ast::ExprKind::Value(ast::Value::String(value))) => match state_machines.get_mut(var) {
+                                        Some(state_machine) if state_machine.states.contains_key(value) => state_machine.initial_state = Some(value.clone()),
+                                        _ => (),
+                                    }
+                                    _ => (),
                                 }
-                                _ => continue,
+                                _ => (),
                             }
-                            _ => continue,
-                        };
-                        if let Some(state_machine) = state_machines.get_mut(state_machine_name) {
-                            if state_machine.states.contains_key(initial_state) {
-                                state_machine.initial_state = Some(initial_state.clone());
-                            }
+                            _ => (),
                         }
                     }
                 }
             }
         }
 
+        let mut var_inits_context = Context { variables: vec![], settings };
         for (state_machine_name, state_machine) in state_machines.iter_mut() {
             if let Some(ast::Value::String(init)) = role.globals.iter().find(|g| g.def.name == state_machine_name).map(|g| &g.init) {
                 if state_machine.states.contains_key(init) {
                     state_machine.current_state = Some(init.clone());
                 }
             }
+
+            for (var, value) in state_machine.variables.iter_mut() {
+                if let Some(init) = var_inits.get(var) {
+                    *value = translate_expr(state_machine_name, "<init>", init, &mut var_inits_context)?;
+                }
+            }
         }
 
         let mut machines = state_machines.iter();
         while let Some(machine_1) = machines.next() {
-            if let Some((machine_2, var)) = machines.clone().find_map(|machine_2| machine_1.1.variables.intersection(&machine_2.1.variables).next().map(|x| (machine_2, x))) {
+            if let Some((machine_2, var)) = machines.clone().find_map(|machine_2| machine_1.1.variables.keys().filter(|&k| machine_2.1.variables.contains_key(k)).next().map(|x| (machine_2, x))) {
                 return Err(CompileError::VariableOverlap { state_machines: (machine_1.0.clone(), machine_2.0.clone()), variable: var.clone() });
             }
-            if let Some(var) = machine_1.1.variables.iter().find(|&x| state_machines.contains_key(x)) {
+            if let Some(var) = machine_1.1.variables.keys().find(|&x| state_machines.contains_key(x)) {
                 return Err(CompileError::VariableOverlap { state_machines: (machine_1.0.clone(), var.clone()), variable: var.clone() });
             }
         }
@@ -533,6 +551,11 @@ impl Project {
                 writeln!(res, "t.DestinationOClock = 0").unwrap();
                 writeln!(res, "t.SourceEndpoint = t.DestinationEndpoint - [0 30]").unwrap();
                 writeln!(res, "t.Midpoint = t.DestinationEndpoint - [0 15]").unwrap();
+            }
+            for (var, init) in state_machine.variables.iter() {
+                writeln!(res, "d = Stateflow.Data(chart)").unwrap();
+                writeln!(res, "d.Name = {var:?}").unwrap();
+                writeln!(res, "d.Props.InitialValue = {init:?}").unwrap();
             }
         }
         debug_assert_eq!(res.chars().next_back(), Some('\n'));

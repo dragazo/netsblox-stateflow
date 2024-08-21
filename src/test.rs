@@ -900,7 +900,7 @@ fn test_nested_if_6() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    "foo".into(),
+                    ("foo".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -984,7 +984,7 @@ fn test_variables_1() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    "foo".into(),
+                    ("foo".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1030,7 +1030,7 @@ fn test_variables_2() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    "foo".into(),
+                    ("foo".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1065,7 +1065,7 @@ fn test_variables_2() {
             }),
             ("another".into(), StateMachine {
                 variables: [
-                    "bar".into(),
+                    ("bar".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("test 1".into(), State {
@@ -1115,6 +1115,89 @@ fn test_variables_4() {
 }
 
 #[test]
+fn test_var_inits() {
+    let proj = Project::compile(include_str!("projects/var-inits.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "something cool".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy g".into(), StateMachine {
+                variables: [
+                    ("foo_3".into(), "(7 + 2)".into()),
+                    ("bar_5".into(), "(4 * 4)".into()),
+                    ("baz_b".into(), "(3 ^ 2)".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("merp derp".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [
+                                    "foo_3 = (foo_3 * 2)".into(),
+                                    "bar_5 = bar_5 + (1 + 1)".into(),
+                                    "baz_b = (bar_5 + foo_3)".into(),
+                                ].into_iter().collect(),
+                                new_state: "derp merp".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("derp merp".into(), State {
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [
+                                    "foo_3 = (foo_3 * 0.1)".into(),
+                                    "bar_5 = bar_5 + (1 + -4)".into(),
+                                    "baz_b = (bar_5 - foo_3)".into(),
+                                ].into_iter().collect(),
+                                new_state: "merp derp".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("merp derp".into()),
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_eq!(proj.to_stateflow().unwrap(), r#"
+sfnew something_cool
+chart = find(sfroot, "-isa", "Stateflow.Chart", Path = "something_cool/Chart")
+chart.Name = "thingy g"
+s0 = Stateflow.State(chart)
+s0.Name = "derp_merp"
+s0.Position = [0, 0, 100, 100]
+s1 = Stateflow.State(chart)
+s1.Name = "merp_derp"
+s1.Position = [200, 0, 100, 100]
+t = Stateflow.Transition(chart)
+t.Source = s0
+t.Destination = s1
+t.LabelString = "[]{foo_3 = (foo_3 * 0.1);bar_5 = bar_5 + (1 + -4);baz_b = (bar_5 - foo_3);}"
+t = Stateflow.Transition(chart)
+t.Source = s1
+t.Destination = s0
+t.LabelString = "[]{foo_3 = (foo_3 * 2);bar_5 = bar_5 + (1 + 1);baz_b = (bar_5 + foo_3);}"
+t = Stateflow.Transition(chart)
+t.Destination = s1
+t.DestinationOClock = 0
+t.SourceEndpoint = t.DestinationEndpoint - [0 30]
+t.Midpoint = t.DestinationEndpoint - [0 15]
+d = Stateflow.Data(chart)
+d.Name = "bar_5"
+d.Props.InitialValue = "(4 * 4)"
+d = Stateflow.Data(chart)
+d.Name = "baz_b"
+d.Props.InitialValue = "(3 ^ 2)"
+d = Stateflow.Data(chart)
+d.Name = "foo_3"
+d.Props.InitialValue = "(7 + 2)"
+    "#.trim());
+}
+
+#[test]
 fn test_if_else_1() {
     let proj = Project::compile(include_str!("projects/if-else-1.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
@@ -1123,8 +1206,8 @@ fn test_if_else_1() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    "foo".into(),
-                    "bar".into(),
+                    ("foo".into(), "0".into()),
+                    ("bar".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1184,8 +1267,8 @@ fn test_if_else_5() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    "foo".into(),
-                    "bar".into(),
+                    ("foo".into(), "0".into()),
+                    ("bar".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1236,8 +1319,8 @@ fn test_if_else_6() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    "foo".into(),
-                    "bar".into(),
+                    ("foo".into(), "0".into()),
+                    ("bar".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1279,8 +1362,8 @@ fn test_if_else_7() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    "foo".into(),
-                    "bar".into(),
+                    ("foo".into(), "0".into()),
+                    ("bar".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1322,8 +1405,8 @@ fn test_if_else_8() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    "foo".into(),
-                    "bar".into(),
+                    ("foo".into(), "0".into()),
+                    ("bar".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1422,8 +1505,8 @@ fn test_tail_actions_1() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    "foo".into(),
-                    "bar".into(),
+                    ("foo".into(), "0".into()),
+                    ("bar".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1465,8 +1548,8 @@ fn test_operators() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    "foo".into(),
-                    "bar".into(),
+                    ("foo".into(), "0".into()),
+                    ("bar".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1607,7 +1690,7 @@ fn test_actions_1() {
         state_machines: [
             ("state".into(), StateMachine {
                 variables: [
-                    "foo".into(),
+                    ("foo".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("state 1".into(), State {
@@ -1810,8 +1893,8 @@ fn test_var_names_1() {
         state_machines: [
             ("my state".into(), StateMachine {
                 variables: [
-                    "another_var".into(),
-                    "some_var".into(),
+                    ("another_var".into(), "0".into()),
+                    ("some_var".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("first state".into(), State {
@@ -2086,8 +2169,8 @@ fn test_unknown_blocks_1() {
         state_machines: [
             ("thing".into(), StateMachine {
                 variables: [
-                    "derp".into(),
-                    "merp".into(),
+                    ("derp".into(), "0".into()),
+                    ("merp".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("foo".into(), State {
@@ -2126,8 +2209,8 @@ fn test_unknown_blocks_2() {
         state_machines: [
             ("thing".into(), StateMachine {
                 variables: [
-                    "derp".into(),
-                    "merp".into(),
+                    ("derp".into(), "0".into()),
+                    ("merp".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("foo".into(), State {
@@ -2165,7 +2248,7 @@ fn test_unknown_blocks_3() {
         state_machines: [
             ("thing".into(), StateMachine {
                 variables: [
-                    "merp".into(),
+                    ("merp".into(), "0".into()),
                 ].into_iter().collect(),
                 states: [
                     ("foo".into(), State {
