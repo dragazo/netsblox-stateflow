@@ -9,5 +9,5 @@ documentation = "https://docs.rs/netsblox-stateflow"
 description = "A crate for extracting state machines from NetsBlox code."
 
 [dependencies]
-netsblox-ast = "=0.5.11"
-graphviz-rust = "0.9.0"
+netsblox-ast = { version = "=0.5.11", default-features = false }
+graphviz-rust = { version = "0.9.0", default-features = false }

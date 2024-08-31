@@ -26,6 +26,7 @@ fn test_simple() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -36,6 +37,7 @@ fn test_simple() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -93,6 +95,7 @@ fn test_simple_no_handler() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -103,6 +106,7 @@ fn test_simple_no_handler() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -113,6 +117,7 @@ fn test_simple_no_handler() {
                         ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -145,6 +150,7 @@ fn test_single_transition() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: Some("t > 10".into()),
@@ -155,6 +161,7 @@ fn test_single_transition() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -193,6 +200,7 @@ fn test_multiple_machines_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("foo".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -203,6 +211,7 @@ fn test_multiple_machines_1() {
                         ].into_iter().collect(),
                     }),
                     ("bar".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -213,6 +222,7 @@ fn test_multiple_machines_1() {
                         ].into_iter().collect(),
                     }),
                     ("buz".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -230,6 +240,7 @@ fn test_multiple_machines_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("bar".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -240,6 +251,7 @@ fn test_multiple_machines_1() {
                         ].into_iter().collect(),
                     }),
                     ("baz".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -250,6 +262,7 @@ fn test_multiple_machines_1() {
                         ].into_iter().collect(),
                     }),
                     ("buzz".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -302,6 +315,7 @@ fn test_simple_if_timer() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 10".into()),
@@ -312,6 +326,7 @@ fn test_simple_if_timer() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -340,6 +355,7 @@ fn test_if_timer_reset_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 10".into()),
@@ -352,6 +368,7 @@ fn test_if_timer_reset_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -380,6 +397,7 @@ fn test_if_timer_reset_2() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 10".into()),
@@ -392,6 +410,7 @@ fn test_if_timer_reset_2() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -420,6 +439,7 @@ fn test_if_timer_reset_3() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 10".into()),
@@ -430,6 +450,7 @@ fn test_if_timer_reset_3() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -460,6 +481,7 @@ fn test_no_transitions_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 10".into()),
@@ -470,6 +492,7 @@ fn test_no_transitions_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -500,6 +523,7 @@ fn test_no_transitions_2() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 10".into()),
@@ -510,6 +534,7 @@ fn test_no_transitions_2() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -531,6 +556,7 @@ fn test_if_chain_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 9".into()),
@@ -547,6 +573,7 @@ fn test_if_chain_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -557,6 +584,7 @@ fn test_if_chain_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -578,6 +606,7 @@ fn test_if_chain_2() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 8".into()),
@@ -600,6 +629,7 @@ fn test_if_chain_2() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 ordered_condition: None,
@@ -610,9 +640,11 @@ fn test_if_chain_2() {
                         ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -648,6 +680,7 @@ fn test_nested_if_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 10".into()),
@@ -664,9 +697,11 @@ fn test_nested_if_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 0".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -688,6 +723,7 @@ fn test_nested_if_2() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 10 & t > 9".into()),
@@ -704,9 +740,11 @@ fn test_nested_if_2() {
                         ].into_iter().collect(),
                     }),
                     ("thing 0".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -728,6 +766,7 @@ fn test_nested_if_3() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 10 & t > 9".into()),
@@ -750,12 +789,15 @@ fn test_nested_if_3() {
                         ].into_iter().collect(),
                     }),
                     ("thing 0".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -777,6 +819,7 @@ fn test_nested_if_4() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
@@ -805,15 +848,19 @@ fn test_nested_if_4() {
                         ].into_iter().collect(),
                     }),
                     ("thing 0".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -835,6 +882,7 @@ fn test_nested_if_5() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
@@ -869,18 +917,23 @@ fn test_nested_if_5() {
                         ].into_iter().collect(),
                     }),
                     ("thing 0".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 5".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -904,6 +957,7 @@ fn test_nested_if_6() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
@@ -953,18 +1007,23 @@ fn test_nested_if_6() {
                         ].into_iter().collect(),
                     }),
                     ("thing 0".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 5".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -988,6 +1047,7 @@ fn test_variables_1() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -1001,6 +1061,7 @@ fn test_variables_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -1034,6 +1095,7 @@ fn test_variables_2() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -1047,6 +1109,7 @@ fn test_variables_2() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -1069,6 +1132,7 @@ fn test_variables_2() {
                 ].into_iter().collect(),
                 states: [
                     ("test 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -1082,6 +1146,7 @@ fn test_variables_2() {
                         ].into_iter().collect(),
                     }),
                     ("test 2".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -1129,6 +1194,7 @@ fn test_var_inits() {
                 ].into_iter().collect(),
                 states: [
                     ("merp derp".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -1143,6 +1209,7 @@ fn test_var_inits() {
                         ].into_iter().collect(),
                     }),
                     ("derp merp".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -1211,6 +1278,7 @@ fn test_if_else_1() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("foo == bar".into()),
@@ -1227,9 +1295,11 @@ fn test_if_else_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1272,6 +1342,7 @@ fn test_if_else_5() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("foo == bar".into()),
@@ -1294,12 +1365,15 @@ fn test_if_else_5() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1324,6 +1398,7 @@ fn test_if_else_6() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("foo == bar".into()),
@@ -1340,9 +1415,11 @@ fn test_if_else_6() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1367,6 +1444,7 @@ fn test_if_else_7() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("~(foo == bar)".into()),
@@ -1383,9 +1461,11 @@ fn test_if_else_7() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1410,6 +1490,7 @@ fn test_if_else_8() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -1420,6 +1501,7 @@ fn test_if_else_8() {
                         ].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1510,6 +1592,7 @@ fn test_tail_actions_1() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("foo > bar".into()),
@@ -1529,6 +1612,7 @@ fn test_tail_actions_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1553,6 +1637,7 @@ fn test_operators() {
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("foo < bar".into()),
@@ -1647,30 +1732,39 @@ fn test_operators() {
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 5".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 6".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 7".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 8".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 9".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 10".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1694,6 +1788,7 @@ fn test_actions_1() {
                 ].into_iter().collect(),
                 states: [
                     ("state 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -1715,8 +1810,57 @@ fn test_actions_1() {
 
 #[test]
 fn test_actions_2() {
-    let err = Project::compile(include_str!("projects/actions-2.xml"), None, Settings::default()).unwrap_err();
-    assert_eq!(err, CompileError::ActionsOutsideTransition { state_machine: "state".into(), state: "state 1".into() });
+    let proj = Project::compile(include_str!("projects/actions-2.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("state".into(), StateMachine {
+                variables: [
+                    ("foo".into(), "0".into()),
+                    ("bar".into(), "0".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("state 1".into(), State {
+                        junction: false,
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [
+                                    "foo = (foo + bar)".into()
+                                ].into_iter().collect(),
+                                new_state: "::junction-0::".into(),
+                            }
+                        ].into_iter().collect(),
+                    }),
+                    ("state 2".into(), State {
+                        junction: false,
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("::junction-0::".into(), State {
+                        junction: true,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("foo < 7".into()),
+                                ordered_condition: Some("foo < 7".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "state 2".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~(foo < 7)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "state 1".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
 }
 
 #[test]
@@ -1730,6 +1874,7 @@ fn test_ext_blocks_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
@@ -1764,18 +1909,23 @@ fn test_ext_blocks_1() {
                         ].into_iter().collect(),
                     }),
                     ("thing 0".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("thing 5".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1797,6 +1947,7 @@ fn test_ite_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("foo".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t < 10".into()),
@@ -1813,9 +1964,11 @@ fn test_ite_1() {
                         ].into_iter().collect(),
                     }),
                     ("bar".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("baz".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1837,6 +1990,7 @@ fn test_ite_2() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("foo".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("t < 10 & t < 9".into()),
@@ -1865,15 +2019,19 @@ fn test_ite_2() {
                         ].into_iter().collect(),
                     }),
                     ("bar1".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("bar2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("baz1".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                     ("baz2".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1898,6 +2056,7 @@ fn test_var_names_1() {
                 ].into_iter().collect(),
                 states: [
                     ("first state".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -1910,6 +2069,7 @@ fn test_var_names_1() {
                         ].into_iter().collect(),
                     }),
                     ("second state".into(), State {
+                        junction: false,
                         transitions: [].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
@@ -1931,6 +2091,7 @@ fn test_initial_state_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("foo 3".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -1941,6 +2102,7 @@ fn test_initial_state_1() {
                         ].into_iter().collect(),
                     }),
                     ("foo 4".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -1951,6 +2113,7 @@ fn test_initial_state_1() {
                         ].into_iter().collect(),
                     }),
                     ("barb".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2024,6 +2187,7 @@ fn test_initial_state_2() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("foo 3".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2034,6 +2198,7 @@ fn test_initial_state_2() {
                         ].into_iter().collect(),
                     }),
                     ("foo 4".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2044,6 +2209,7 @@ fn test_initial_state_2() {
                         ].into_iter().collect(),
                     }),
                     ("barb".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2072,6 +2238,7 @@ fn test_initial_state_3() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("foo 3".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2082,6 +2249,7 @@ fn test_initial_state_3() {
                         ].into_iter().collect(),
                     }),
                     ("foo 4".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2092,6 +2260,7 @@ fn test_initial_state_3() {
                         ].into_iter().collect(),
                     }),
                     ("barb".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2120,6 +2289,7 @@ fn test_initial_state_4() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("foo 3".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2130,6 +2300,7 @@ fn test_initial_state_4() {
                         ].into_iter().collect(),
                     }),
                     ("foo 4".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2140,6 +2311,7 @@ fn test_initial_state_4() {
                         ].into_iter().collect(),
                     }),
                     ("barb".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2174,6 +2346,7 @@ fn test_unknown_blocks_1() {
                 ].into_iter().collect(),
                 states: [
                     ("foo".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2214,6 +2387,7 @@ fn test_unknown_blocks_2() {
                 ].into_iter().collect(),
                 states: [
                     ("foo".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2252,6 +2426,7 @@ fn test_unknown_blocks_3() {
                 ].into_iter().collect(),
                 states: [
                     ("foo".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2288,6 +2463,7 @@ fn test_unknown_blocks_4() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("me stop".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: Some("?".into()),
@@ -2298,6 +2474,7 @@ fn test_unknown_blocks_4() {
                         ].into_iter().collect(),
                     }),
                     ("me go".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2328,6 +2505,7 @@ fn test_current_state_1() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("a".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2338,6 +2516,7 @@ fn test_current_state_1() {
                         ].into_iter().collect(),
                     }),
                     ("b".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2378,6 +2557,7 @@ fn test_current_state_2() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("a".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2388,6 +2568,7 @@ fn test_current_state_2() {
                         ].into_iter().collect(),
                     }),
                     ("b".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2428,6 +2609,7 @@ fn test_current_state_3() {
                 variables: [].into_iter().collect(),
                 states: [
                     ("a".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2438,6 +2620,7 @@ fn test_current_state_3() {
                         ].into_iter().collect(),
                     }),
                     ("b".into(), State {
+                        junction: false,
                         transitions: [
                             Transition {
                                 unordered_condition: None,
@@ -2465,4 +2648,58 @@ digraph "untitled" {
   }
 }
     "#.trim());
+}
+
+#[test]
+fn test_junctions_1() {
+    let proj = Project::compile(include_str!("projects/junctions-1.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "junctions".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("my state".into(), StateMachine {
+                variables: [
+                    ("foo".into(), "43".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("abc".into(), State {
+                        junction: false,
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [
+                                    "foo = (2 * foo)".into(),
+                                ].into_iter().collect(),
+                                new_state: "::junction-0::".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("::junction-0::".into(), State {
+                        junction: true,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("foo > 1024".into()),
+                                ordered_condition: Some("foo > 1024".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "xyz".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~(foo > 1024)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "abc".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("xyz".into(), State {
+                        junction: false,
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("abc".into()),
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
 }

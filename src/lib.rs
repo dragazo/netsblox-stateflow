@@ -3,7 +3,7 @@ use netsblox_ast::compact_str::{CompactString, ToCompactString, format_compact};
 
 use graphviz_rust::dot_structures as dot;
 
-use std::collections::{VecDeque, BTreeMap, BTreeSet};
+use std::collections::{VecDeque, BTreeMap};
 use std::fmt::Write as _;
 
 #[cfg(test)]
@@ -109,6 +109,7 @@ pub struct StateMachine {
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct State {
+    pub junction: bool,
     pub transitions: VecDeque<Transition>,
 }
 #[derive(Debug, PartialEq, Eq)]
@@ -125,6 +126,7 @@ pub struct Settings {
 }
 struct Context {
     variables: Vec<ast::VariableRef>,
+    junctions: Vec<(CompactString, State)>,
     settings: Settings,
 }
 
@@ -309,12 +311,26 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
         terminal = true;
     }
 
-    fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, terminal: bool) -> Result<(), CompileError> {
+    fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, terminal: bool, context: &mut Context) -> Result<(), CompileError> {
         if !actions.is_empty() {
             if terminal && transitions.is_empty() {
-                transitions.push_back(Transition { ordered_condition: None, unordered_condition: None, actions: core::mem::take(actions), new_state: state.into() });
+                transitions.push_front(Transition { ordered_condition: None, unordered_condition: None, actions: core::mem::take(actions), new_state: state.into() });
             } else if transitions.len() == 1 && transitions[0].unordered_condition.is_none() {
                 transitions[0].actions.extend_front(core::mem::take(actions).into_iter());
+            } else if terminal {
+                let junction = format_compact!("::junction-{}::", context.junctions.len());
+                let mut junction_state = State { junction: true, transitions: core::mem::take(transitions) };
+
+                let return_condition: CompactString = junction_state.transitions.iter().flat_map(|t| t.unordered_condition.as_ref()).map(|c| format_compact!("~({c})")).collect::<Vec<_>>().join(" & ").into();
+                junction_state.transitions.push_back(Transition {
+                    unordered_condition: if return_condition.is_empty() { None } else { Some(return_condition) },
+                    ordered_condition: None,
+                    actions: deque![],
+                    new_state: state.into(),
+                });
+
+                transitions.push_front(Transition { ordered_condition: None, unordered_condition: None, actions: core::mem::take(actions), new_state: junction.clone() });
+                context.junctions.push((junction, junction_state));
             } else {
                 return Err(CompileError::ActionsOutsideTransition { state_machine: state_machine.into(), state: state.into() });
             }
@@ -326,7 +342,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
     for stmt in stmts {
         match parse_transitions(state_machine, state, stmt, terminal && last, context)? {
             Some((sub_transitions, tail_condition, sub_terminal)) => {
-                handle_actions(state_machine, state, &mut actions, &mut transitions, terminal)?;
+                handle_actions(state_machine, state, &mut actions, &mut transitions, terminal, context)?;
                 debug_assert_eq!(actions.len(), 0);
 
                 terminal |= sub_terminal;
@@ -344,7 +360,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
         last = false;
     }
 
-    handle_actions(state_machine, state, &mut actions, &mut transitions, terminal)?;
+    handle_actions(state_machine, state, &mut actions, &mut transitions, terminal, context)?;
     debug_assert_eq!(actions.len(), 0);
 
     Ok((transitions, terminal))
@@ -373,7 +389,6 @@ impl Project {
         };
 
         let mut state_machines: BTreeMap<CompactString, StateMachine> = <_>::default();
-        let mut visited_handlers: BTreeSet<(CompactString, CompactString)> = <_>::default();
 
         for entity in role.entities.iter() {
             for script in entity.scripts.iter() {
@@ -396,24 +411,27 @@ impl Project {
                     _ => continue,
                 };
 
-                if !visited_handlers.insert((state_machine_name.clone(), state_name.clone())) {
+                let state_machine = state_machines.entry(state_machine_name.clone()).or_insert_with(|| StateMachine { variables: <_>::default(), states: <_>::default(), initial_state: None, current_state: None });
+                if state_machine.states.contains_key(state_name.as_str()) {
                     return Err(CompileError::MultipleHandlers { state_machine: state_machine_name.clone(), state: state_name.clone() });
                 }
 
-                let state_machine = state_machines.entry(state_machine_name.clone()).or_insert_with(|| StateMachine { variables: <_>::default(), states: <_>::default(), initial_state: None, current_state: None });
-                let state = state_machine.states.entry(state_name.clone()).or_insert_with(|| State { transitions: <_>::default() });
-                debug_assert_eq!(state.transitions.len(), 0);
-
-                let mut context = Context { variables: vec![], settings };
+                let mut context = Context { variables: vec![], junctions: vec![], settings };
                 let (transitions, _) = parse_stmts(&state_machine_name, &state_name, &script.stmts, true, &mut context)?;
-                let target_states = transitions.iter().map(|x| x.new_state.clone()).collect::<Vec<_>>();
-                state.transitions.extend_front(transitions.into_iter());
-                for target_state in target_states {
-                    state_machine.states.entry(target_state).or_insert_with(|| State { transitions: <_>::default() });
+                assert!(state_machine.states.insert(state_name.clone(), State { junction: false, transitions }).is_none());
+                for (name, junction) in context.junctions {
+                    assert!(state_machine.states.insert(name, junction).is_none());
                 }
                 for variable in context.variables {
                     state_machine.variables.insert(variable.trans_name, "0".into());
                 }
+            }
+        }
+
+        for state_machine in state_machines.values_mut() {
+            let target_states: Vec<_> = state_machine.states.values().flat_map(|s| s.transitions.iter().map(|t| t.new_state.clone())).collect();
+            for target_state in target_states {
+                state_machine.states.entry(target_state).or_insert_with(|| State { junction: false, transitions: <_>::default() });
             }
         }
 
@@ -447,7 +465,7 @@ impl Project {
             }
         }
 
-        let mut var_inits_context = Context { variables: vec![], settings };
+        let mut var_inits_context = Context { variables: vec![], junctions: vec![], settings };
         for (state_machine_name, state_machine) in state_machines.iter_mut() {
             if let Some(ast::Value::String(init)) = role.globals.iter().find(|g| g.def.name == state_machine_name).map(|g| &g.init) {
                 if state_machine.states.contains_key(init) {
@@ -461,6 +479,9 @@ impl Project {
                 }
             }
         }
+        debug_assert_eq!(var_inits_context.variables.len(), 0);
+        debug_assert_eq!(var_inits_context.junctions.len(), 0);
+        drop(var_inits_context);
 
         let mut machines = state_machines.iter();
         while let Some(machine_1) = machines.next() {
