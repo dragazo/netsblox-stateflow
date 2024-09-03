@@ -109,7 +109,7 @@ pub struct StateMachine {
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct State {
-    pub junction: bool,
+    pub parent: Option<CompactString>,
     pub transitions: VecDeque<Transition>,
 }
 #[derive(Debug, PartialEq, Eq)]
@@ -319,7 +319,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
                 transitions[0].actions.extend_front(core::mem::take(actions).into_iter());
             } else if terminal {
                 let junction = format_compact!("::junction-{}::", context.junctions.len());
-                let mut junction_state = State { junction: true, transitions: core::mem::take(transitions) };
+                let mut junction_state = State { parent: Some(state.into()), transitions: core::mem::take(transitions) };
 
                 let return_condition: CompactString = junction_state.transitions.iter().flat_map(|t| t.unordered_condition.as_ref()).map(|c| format_compact!("~({c})")).collect::<Vec<_>>().join(" & ").into();
                 junction_state.transitions.push_back(Transition {
@@ -418,7 +418,7 @@ impl Project {
 
                 let mut context = Context { variables: vec![], junctions: vec![], settings };
                 let (transitions, _) = parse_stmts(&state_machine_name, &state_name, &script.stmts, true, &mut context)?;
-                assert!(state_machine.states.insert(state_name.clone(), State { junction: false, transitions }).is_none());
+                assert!(state_machine.states.insert(state_name.clone(), State { parent: None, transitions }).is_none());
                 for (name, junction) in context.junctions {
                     assert!(state_machine.states.insert(name, junction).is_none());
                 }
@@ -431,7 +431,7 @@ impl Project {
         for state_machine in state_machines.values_mut() {
             let target_states: Vec<_> = state_machine.states.values().flat_map(|s| s.transitions.iter().map(|t| t.new_state.clone())).collect();
             for target_state in target_states {
-                state_machine.states.entry(target_state).or_insert_with(|| State { junction: false, transitions: <_>::default() });
+                state_machine.states.entry(target_state).or_insert_with(|| State { parent: None, transitions: <_>::default() });
             }
         }
 
@@ -511,12 +511,12 @@ impl Project {
             for (state_name, state) in state_machine.states.iter() {
                 let mut attributes = vec![];
 
-                if state.junction {
+                if state.parent.is_none() {
+                    attributes.push(dot::Attribute(dot::Id::Plain("label".into()), dot_id(state_name)));
+                } else {
                     attributes.push(dot::Attribute(dot::Id::Plain("label".into()), dot_id("")));
                     attributes.push(dot::Attribute(dot::Id::Plain("shape".into()), dot::Id::Plain("circle".into())));
                     attributes.push(dot::Attribute(dot::Id::Plain("width".into()), dot::Id::Plain("0.1".into())));
-                } else {
-                    attributes.push(dot::Attribute(dot::Id::Plain("label".into()), dot_id(state_name)));
                 }
 
                 if state_machine.current_state.as_ref().map(|x| x == state_name).unwrap_or(false) {
