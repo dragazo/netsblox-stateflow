@@ -297,9 +297,10 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
         _ => None,
     })
 }
-fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut terminal: bool, context: &mut Context) -> Result<(VecDeque<Transition>, bool), CompileError> {
+fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_terminal: bool, context: &mut Context) -> Result<(VecDeque<Transition>, bool), CompileError> {
     let mut actions: VecDeque<CompactString> = <_>::default();
     let mut transitions: VecDeque<Transition> = <_>::default();
+    let mut body_terminal = false;
 
     let mut stmts = stmts.iter().rev().peekable();
     while let Some(stmt) = stmts.peek() {
@@ -308,7 +309,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
             _ => break,
         }
         stmts.next();
-        terminal = true;
+        body_terminal = true;
     }
 
     fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, terminal: bool, context: &mut Context) -> Result<(), CompileError> {
@@ -342,12 +343,12 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
 
     let mut last = true;
     for stmt in stmts {
-        match parse_transitions(state_machine, state, stmt, terminal && last, context)? {
-            Some((sub_transitions, tail_condition, sub_terminal)) => {
-                handle_actions(state_machine, state, &mut actions, &mut transitions, terminal, context)?;
+        match parse_transitions(state_machine, state, stmt, (script_terminal || body_terminal) && last, context)? {
+            Some((sub_transitions, tail_condition, sub_body_terminal)) => {
+                handle_actions(state_machine, state, &mut actions, &mut transitions, script_terminal || body_terminal, context)?;
                 debug_assert_eq!(actions.len(), 0);
 
-                terminal |= sub_terminal;
+                body_terminal |= sub_body_terminal;
                 if let Some(tail_condition) = tail_condition {
                     for transition in transitions.iter_mut() {
                         transition.unordered_condition = Some(transition.unordered_condition.take().map(|x| format_compact!("{tail_condition} & {x}")).unwrap_or_else(|| tail_condition.clone()));
@@ -362,10 +363,10 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
         last = false;
     }
 
-    handle_actions(state_machine, state, &mut actions, &mut transitions, terminal, context)?;
+    handle_actions(state_machine, state, &mut actions, &mut transitions, script_terminal || body_terminal, context)?;
     debug_assert_eq!(actions.len(), 0);
 
-    Ok((transitions, terminal))
+    Ok((transitions, body_terminal))
 }
 
 fn dot_id(name: &str) -> dot::Id {
