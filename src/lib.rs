@@ -321,13 +321,15 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], mut termin
                 let junction = format_compact!("::junction-{}::", context.junctions.len());
                 let mut junction_state = State { parent: Some(state.into()), transitions: core::mem::take(transitions) };
 
-                let return_condition: CompactString = junction_state.transitions.iter().flat_map(|t| t.unordered_condition.as_ref()).map(|c| format_compact!("~({c})")).collect::<Vec<_>>().join(" & ").into();
-                junction_state.transitions.push_back(Transition {
-                    unordered_condition: if return_condition.is_empty() { None } else { Some(return_condition) },
-                    ordered_condition: None,
-                    actions: deque![],
-                    new_state: state.into(),
-                });
+                if junction_state.transitions.back().map(|t| t.ordered_condition.is_some()).unwrap_or(true) {
+                    let return_condition: CompactString = junction_state.transitions.iter().flat_map(|t| t.unordered_condition.as_ref()).map(|c| format_compact!("~({c})")).collect::<Vec<_>>().join(" & ").into();
+                    junction_state.transitions.push_back(Transition {
+                        unordered_condition: if return_condition.is_empty() { None } else { Some(return_condition) },
+                        ordered_condition: None,
+                        actions: deque![],
+                        new_state: state.into(),
+                    });
+                }
 
                 transitions.push_front(Transition { ordered_condition: None, unordered_condition: None, actions: core::mem::take(actions), new_state: junction.clone() });
                 context.junctions.push((junction, junction_state));

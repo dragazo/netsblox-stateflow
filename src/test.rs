@@ -2715,3 +2715,104 @@ fn test_junctions_1() {
         ].into_iter().collect(),
     });
 }
+
+#[test]
+fn test_junctions_2() {
+    let proj = Project::compile(include_str!("projects/junctions-2.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy".into(), StateMachine {
+                variables: [
+                    ("a".into(), "0".into()),
+                    ("b".into(), "0".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("something".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [
+                                    "a = (a + 1)".into(),
+                                    "b = (a + b + 2)".into(),
+                                ].into_iter().collect(),
+                                new_state: "::junction-1::".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("::junction-0::".into(), State {
+                        parent: Some("something".into()),
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("(a + b) > 10".into()),
+                                ordered_condition: Some("(a + b) > 10".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "x2".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~((a + b) > 10)".into()),
+                                ordered_condition: None,
+                                actions: [
+                                    "a = (a ^ b)".into(),
+                                    "b = (a + b)".into(),
+                                ].into_iter().collect(),
+                                new_state: "something".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("::junction-1::".into(), State {
+                        parent: Some("something".into()),
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("(a * b) > 100".into()),
+                                ordered_condition: Some("(a * b) > 100".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "x1".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~((a * b) > 100)".into()),
+                                ordered_condition: None,
+                                actions: [
+                                    "a = (a / b)".into(),
+                                    "b = (1 / b)".into(),
+                                ].into_iter().collect(),
+                                new_state: "::junction-0::".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("x1".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("x2".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("something".into()),
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
+digraph "untitled" {
+  subgraph "thingy" {
+    "thingy"[shape=point,width=0.1]
+    "thingy" -> "thingy something"
+    "thingy ::junction-0::"[label="",shape=circle,width=0.1]
+    "thingy ::junction-1::"[label="",shape=circle,width=0.1]
+    "thingy something"[label="something"]
+    "thingy x1"[label="x1"]
+    "thingy x2"[label="x2"]
+    "thingy ::junction-0::" -> "thingy x2" [label=" 1: (a + b) > 10 "]
+    "thingy ::junction-0::" -> "thingy something" [label=" 2 "]
+    "thingy ::junction-1::" -> "thingy x1" [label=" 1: (a * b) > 100 "]
+    "thingy ::junction-1::" -> "thingy ::junction-0::" [label=" 2 "]
+    "thingy something" -> "thingy ::junction-1::" [label=""]
+  }
+}
+    "#.trim());
+}
