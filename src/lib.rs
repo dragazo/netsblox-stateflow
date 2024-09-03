@@ -553,7 +553,8 @@ impl Project {
         let mut res = CompactString::default();
         writeln!(res, "sfnew {model_name}").unwrap();
         for (state_machine_idx, (state_machine_name, state_machine)) in self.state_machines.iter().enumerate() {
-            let state_number = |name: &str| { state_machine.states.iter().enumerate().find(|x| *x.1.0 == name).unwrap().0 };
+            let state_numbers: BTreeMap<&str, usize> = state_machine.states.iter().enumerate().map(|x| (x.1.0.as_str(), x.0)).collect();
+            let parent_state_numbers: BTreeMap<&str, usize> = state_machine.states.iter().filter(|x| x.1.parent.is_none()).enumerate().map(|x| (x.1.0.as_str(), x.0)).collect();
 
             if state_machine_idx == 0 {
                 writeln!(res, "chart = find(sfroot, \"-isa\", \"Stateflow.Chart\", Path = \"{model_name}/Chart\")").unwrap();
@@ -562,16 +563,26 @@ impl Project {
                 writeln!(res, "chart = add_block(\"sflib/Chart\", {:?})", format!("{model_name}/{state_machine_name}")).unwrap();
             }
 
-            for (state_idx, (state_name, _)) in state_machine.states.iter().enumerate() {
-                writeln!(res, "s{state_idx} = Stateflow.State(chart)").unwrap();
-                writeln!(res, "s{state_idx}.Name = {:?}", rename(state_name)?).unwrap();
-                writeln!(res, "s{state_idx}.Position = [{}, {}, {}, {}]", state_idx * (size.0 + padding.0), 0, size.0, size.1).unwrap();
+            let mut child_counts: BTreeMap<&str, usize> = Default::default();
+            for (state_idx, (state_name, state)) in state_machine.states.iter().enumerate() {
+                match state.parent.as_deref() {
+                    Some(parent) => {
+                        *child_counts.entry(parent).or_default() += 1;
+                        writeln!(res, "s{state_idx} = Stateflow.Junction(chart)").unwrap();
+                        writeln!(res, "s{state_idx}.Position.Center = [{}, {}]", parent_state_numbers[parent] * (size.0 + padding.0) + size.0 / 2, size.1 + padding.1 * child_counts[parent]).unwrap();
+                    }
+                    None => {
+                        writeln!(res, "s{state_idx} = Stateflow.State(chart)").unwrap();
+                        writeln!(res, "s{state_idx}.Name = {:?}", rename(state_name)?).unwrap();
+                        writeln!(res, "s{state_idx}.Position = [{}, {}, {}, {}]", parent_state_numbers[state_name.as_str()] * (size.0 + padding.0), 0, size.0, size.1).unwrap();
+                    }
+                }
             }
             for (state_idx, (_, state)) in state_machine.states.iter().enumerate() {
                 for transition in state.transitions.iter() {
                     writeln!(res, "t = Stateflow.Transition(chart)").unwrap();
                     writeln!(res, "t.Source = s{state_idx}").unwrap();
-                    writeln!(res, "t.Destination = s{}", state_number(&transition.new_state)).unwrap();
+                    writeln!(res, "t.Destination = s{}", state_numbers[transition.new_state.as_str()]).unwrap();
 
                     let mut label = CompactString::default();
                     write!(label, "[{}]{{", transition.unordered_condition.as_deref().unwrap_or_default()).unwrap();
@@ -582,9 +593,9 @@ impl Project {
                     writeln!(res, "t.LabelString = {label:?}").unwrap();
                 }
             }
-            if let Some(initial_state) = &state_machine.initial_state {
+            if let Some(initial_state) = state_machine.initial_state.as_deref() {
                 writeln!(res, "t = Stateflow.Transition(chart)").unwrap();
-                writeln!(res, "t.Destination = s{}", state_number(initial_state)).unwrap();
+                writeln!(res, "t.Destination = s{}", state_numbers[initial_state]).unwrap();
                 writeln!(res, "t.DestinationOClock = 0").unwrap();
                 writeln!(res, "t.SourceEndpoint = t.DestinationEndpoint - [0 30]").unwrap();
                 writeln!(res, "t.Midpoint = t.DestinationEndpoint - [0 15]").unwrap();

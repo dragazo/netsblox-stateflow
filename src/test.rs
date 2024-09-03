@@ -2815,4 +2815,53 @@ digraph "untitled" {
   }
 }
     "#.trim());
+    assert_eq!(proj.to_stateflow().unwrap(), r#"
+sfnew untitled
+chart = find(sfroot, "-isa", "Stateflow.Chart", Path = "untitled/Chart")
+chart.Name = "thingy"
+s0 = Stateflow.Junction(chart)
+s0.Position.Center = [50, 200]
+s1 = Stateflow.Junction(chart)
+s1.Position.Center = [50, 300]
+s2 = Stateflow.State(chart)
+s2.Name = "something"
+s2.Position = [0, 0, 100, 100]
+s3 = Stateflow.State(chart)
+s3.Name = "x1"
+s3.Position = [200, 0, 100, 100]
+s4 = Stateflow.State(chart)
+s4.Name = "x2"
+s4.Position = [400, 0, 100, 100]
+t = Stateflow.Transition(chart)
+t.Source = s0
+t.Destination = s4
+t.LabelString = "[(a + b) > 10]{}"
+t = Stateflow.Transition(chart)
+t.Source = s0
+t.Destination = s2
+t.LabelString = "[~((a + b) > 10)]{a = (a ^ b);b = (a + b);}"
+t = Stateflow.Transition(chart)
+t.Source = s1
+t.Destination = s3
+t.LabelString = "[(a * b) > 100]{}"
+t = Stateflow.Transition(chart)
+t.Source = s1
+t.Destination = s0
+t.LabelString = "[~((a * b) > 100)]{a = (a / b);b = (1 / b);}"
+t = Stateflow.Transition(chart)
+t.Source = s2
+t.Destination = s1
+t.LabelString = "[]{a = (a + 1);b = (a + b + 2);}"
+t = Stateflow.Transition(chart)
+t.Destination = s2
+t.DestinationOClock = 0
+t.SourceEndpoint = t.DestinationEndpoint - [0 30]
+t.Midpoint = t.DestinationEndpoint - [0 15]
+d = Stateflow.Data(chart)
+d.Name = "a"
+d.Props.InitialValue = "0"
+d = Stateflow.Data(chart)
+d.Name = "b"
+d.Props.InitialValue = "0"
+    "#.trim());
 }
