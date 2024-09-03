@@ -1642,6 +1642,41 @@ fn test_if_else_15() {
 }
 
 #[test]
+fn test_if_else_16() {
+    let proj = Project::compile(include_str!("projects/if-else-16.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy".into(), StateMachine {
+                variables: [
+                    ("a".into(), "0".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("first".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("~(a == 6)".into()),
+                                ordered_condition: Some("~(a == 6)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "fourth".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("fourth".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
 fn test_if_fall_through_1() {
     let err = Project::compile(include_str!("projects/if-fall-through-1.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });

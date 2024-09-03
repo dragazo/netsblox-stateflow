@@ -292,7 +292,7 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
             };
 
             transitions_1.extend(transitions_2.into_iter());
-            Some((transitions_1, tail_condition, terminal || (body_terminal_1 && body_terminal_2)))
+            Some((transitions_1, tail_condition, body_terminal_1 && body_terminal_2))
         }
         _ => None,
     })
