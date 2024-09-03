@@ -501,14 +501,28 @@ impl Project {
 
             let mut stmts = vec![];
             if let Some(init) = state_machine.initial_state.as_ref() {
-                stmts.push(dot::Stmt::Node(dot::Node { id: node_id(""), attributes: vec![dot::Attribute(dot::Id::Plain("shape".into()), dot::Id::Plain("point".into()))] }));
+                let attributes = vec![
+                    dot::Attribute(dot::Id::Plain("shape".into()), dot::Id::Plain("point".into())),
+                    dot::Attribute(dot::Id::Plain("width".into()), dot::Id::Plain("0.1".into())),
+                ];
+                stmts.push(dot::Stmt::Node(dot::Node { id: node_id(""), attributes }));
                 stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id("")), dot::Vertex::N(node_id(init))), attributes: vec![] }));
             }
-            for state_name in state_machine.states.keys() {
-                let mut attributes = vec![dot::Attribute(dot::Id::Plain("label".into()), dot_id(state_name))];
+            for (state_name, state) in state_machine.states.iter() {
+                let mut attributes = vec![];
+
+                if state.junction {
+                    attributes.push(dot::Attribute(dot::Id::Plain("label".into()), dot_id("")));
+                    attributes.push(dot::Attribute(dot::Id::Plain("shape".into()), dot::Id::Plain("circle".into())));
+                    attributes.push(dot::Attribute(dot::Id::Plain("width".into()), dot::Id::Plain("0.1".into())));
+                } else {
+                    attributes.push(dot::Attribute(dot::Id::Plain("label".into()), dot_id(state_name)));
+                }
+
                 if state_machine.current_state.as_ref().map(|x| x == state_name).unwrap_or(false) {
                     attributes.push(dot::Attribute(dot::Id::Plain("style".into()), dot::Id::Plain("filled".into())));
                 }
+
                 stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes }));
             }
             for (state_name, state) in state_machine.states.iter() {

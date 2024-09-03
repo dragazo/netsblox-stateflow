@@ -281,7 +281,7 @@ fn test_multiple_machines_1() {
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "machine 1" {
-    "machine 1"[shape=point]
+    "machine 1"[shape=point,width=0.1]
     "machine 1" -> "machine 1 foo"
     "machine 1 bar"[label="bar"]
     "machine 1 buz"[label="buz"]
@@ -291,7 +291,7 @@ digraph "untitled" {
     "machine 1 foo" -> "machine 1 bar" [label=""]
   }
   subgraph "machine 2" {
-    "machine 2"[shape=point]
+    "machine 2"[shape=point,width=0.1]
     "machine 2" -> "machine 2 bar"
     "machine 2 bar"[label="bar"]
     "machine 2 baz"[label="baz"]
@@ -1861,6 +1861,18 @@ fn test_actions_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
+digraph "untitled" {
+  subgraph "state" {
+    "state ::junction-0::"[label="",shape=circle,width=0.1]
+    "state state 1"[label="state 1"]
+    "state state 2"[label="state 2"]
+    "state ::junction-0::" -> "state state 2" [label=" 1: foo < 7 "]
+    "state ::junction-0::" -> "state state 1" [label=" 2 "]
+    "state state 1" -> "state ::junction-0::" [label=""]
+  }
+}
+    "#.trim());
 }
 
 #[test]
@@ -2132,7 +2144,7 @@ fn test_initial_state_1() {
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "something" {
-    "something"[shape=point]
+    "something"[shape=point,width=0.1]
     "something" -> "something foo 4"
     "something barb"[label="barb"]
     "something foo 3"[label="foo 3"]
@@ -2535,7 +2547,7 @@ fn test_current_state_1() {
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "thingy" {
-    "thingy"[shape=point]
+    "thingy"[shape=point,width=0.1]
     "thingy" -> "thingy a"
     "thingy a"[label="a"]
     "thingy b"[label="b"]
@@ -2587,7 +2599,7 @@ fn test_current_state_2() {
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "thingy" {
-    "thingy"[shape=point]
+    "thingy"[shape=point,width=0.1]
     "thingy" -> "thingy a"
     "thingy a"[label="a",style=filled]
     "thingy b"[label="b"]
@@ -2639,7 +2651,7 @@ fn test_current_state_3() {
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "thingy" {
-    "thingy"[shape=point]
+    "thingy"[shape=point,width=0.1]
     "thingy" -> "thingy a"
     "thingy a"[label="a"]
     "thingy b"[label="b",style=filled]
