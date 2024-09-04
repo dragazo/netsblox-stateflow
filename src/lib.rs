@@ -276,15 +276,19 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
 
             let tail_condition = match (body_terminal_1, body_terminal_2) {
                 (true, true) => Some("false".into()),
-                (true, false) => Some(format_compact!("~({condition})")),
+                (true, false) => match transitions_2.back().and_then(|t| t.unordered_condition.as_deref()) {
+                    None => Some(format_compact!("~({condition})")),
+                    Some(last) => Some(format_compact!("~({condition}) & ~({last})")),
+                }
                 (false, true) => match transitions_1.back().and_then(|t| t.unordered_condition.as_deref()) {
                     None => Some(condition.clone()),
                     Some(last) => Some(format_compact!("{condition} & ~({last})")),
                 }
                 (false, false) => match (transitions_1.back().and_then(|t| t.unordered_condition.as_deref()), transitions_2.back().and_then(|t| t.unordered_condition.as_deref())) {
                     (None, None) => None,
-                    (Some(single), None) | (None, Some(single)) => Some(format_compact!("~({single})")),
-                    (Some(left), Some(right)) => Some(format_compact!("~({left}) & ~({right})")),
+                    (None, Some(right)) => Some(format_compact!("~(~({condition}) & {right})")),
+                    (Some(left), None) => Some(format_compact!("~({condition} & {left})")),
+                    (Some(left), Some(right)) => Some(format_compact!("(~({condition} & {left}) | ~(~({condition}) & {right}))")),
                 }
             };
 
