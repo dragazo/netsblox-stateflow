@@ -3005,3 +3005,9 @@ d.Name = "b"
 d.Props.InitialValue = "0"
     "#.trim());
 }
+
+#[test]
+fn test_double_trans() {
+    let err = Project::compile(include_str!("projects/double-trans.xml"), None, Settings::default()).unwrap_err();
+    assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "thingy".into(), state: "first".into() });
+}
