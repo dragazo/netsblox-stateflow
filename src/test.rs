@@ -3628,3 +3628,128 @@ fn test_tail_condition_9() {
         ].into_iter().collect(),
     });
 }
+
+#[test]
+fn test_tail_condition_10() {
+    let proj = Project::compile(include_str!("projects/tail-condition-10.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy".into(), StateMachine {
+                variables: [
+                    ("a".into(), "0".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("first".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("~(a == 1)".into()),
+                                ordered_condition: Some("~(a == 1)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 2".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("a == 1".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("mid 2".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("last".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_tail_condition_11() {
+    let proj = Project::compile(include_str!("projects/tail-condition-11.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy".into(), StateMachine {
+                variables: [
+                    ("a".into(), "0".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("first".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("~(a == 1) & a == 2".into()),
+                                ordered_condition: Some("~(a == 1) & a == 2".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 2".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~(~(a == 1) & a == 2)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("mid 2".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("last".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_tail_condition_12() {
+    let proj = Project::compile(include_str!("projects/tail-condition-12.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy".into(), StateMachine {
+                variables: [
+                    ("a".into(), "0".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("first".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("last".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
