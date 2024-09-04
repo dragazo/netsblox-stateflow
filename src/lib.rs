@@ -35,18 +35,13 @@ impl<T> VecDequeUtil<T> for VecDeque<T> {
     }
 }
 
-fn punctuate(values: &[CompactString], sep: &str) -> Option<CompactString> {
-    match values {
-        [] => None,
-        [h, t @ ..] => {
-            let mut res = h.clone();
-            for x in t {
-                res.push_str(sep);
-                res.push_str(x);
-            }
-            Some(res)
-        }
+fn punctuate<'a, I: Iterator<Item = &'a str>>(mut values: I, sep: &str) -> Option<CompactString> {
+    let mut res = CompactString::new(values.next()?);
+    for x in values {
+        res.push_str(sep);
+        res.push_str(x);
     }
+    Some(res)
 }
 
 struct RenamePool<F: for<'a> FnMut(&'a str) -> Result<CompactString, ()>> {
@@ -175,8 +170,8 @@ fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &
         ast::ExprKind::Mod { left, right } => format_compact!("mod({}, {})", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
         ast::ExprKind::Log { value, base } => format_compact!("(log({}) / log({}))", translate_expr(state_machine, state, &value, context)?, translate_expr(state_machine, state, &base, context)?),
         ast::ExprKind::Atan2 { y, x } => format_compact!("atan2d({}, {})", translate_expr(state_machine, state, &y, context)?, translate_expr(state_machine, state, &x, context)?),
-        ast::ExprKind::Add { values } => punctuate(&extract_fixed_variadic(state_machine,state, values, context)?, " + ").map(|x| format_compact!("({x})")).unwrap_or_else(|| "0".into()),
-        ast::ExprKind::Mul { values } => punctuate(&extract_fixed_variadic(state_machine,state, values, context)?, " * ").map(|x| format_compact!("({x})")).unwrap_or_else(|| "1".into()),
+        ast::ExprKind::Add { values } => punctuate(extract_fixed_variadic(state_machine,state, values, context)?.iter().map(|x| x.as_str()), " + ").map(|x| format_compact!("({x})")).unwrap_or_else(|| "0".into()),
+        ast::ExprKind::Mul { values } => punctuate(extract_fixed_variadic(state_machine,state, values, context)?.iter().map(|x| x.as_str()), " * ").map(|x| format_compact!("({x})")).unwrap_or_else(|| "1".into()),
         ast::ExprKind::Pow { base, power } => format_compact!("({} ^ {})", translate_expr(state_machine, state, &base, context)?, translate_expr(state_machine, state, &power, context)?),
         ast::ExprKind::Eq { left, right } => format_compact!("{} == {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
         ast::ExprKind::Neq { left, right } => format_compact!("{} ~= {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
@@ -253,18 +248,26 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
         }
         ast::StmtKind::If { condition, then } => {
             let condition = translate_expr(state_machine, state, condition, context)?;
-            let (mut transitions, _) = parse_stmts(state_machine, state, &then, terminal, context)?;
+            let (mut transitions, body_terminal) = parse_stmts(state_machine, state, &then, terminal, context)?;
+
+            let tail_condition = match (body_terminal, terminal) {
+                (true, true) => Some("false".into()),
+                (true, false) => Some(format_compact!("~({condition})")),
+                (false, true) => match transitions.back().and_then(|t| t.unordered_condition.as_deref()) {
+                    None => Some(condition.clone()),
+                    Some(last) => Some(format_compact!("{condition} & ~({last})")),
+                }
+                (false, false) => match transitions.back().and_then(|t| t.unordered_condition.as_deref()) {
+                    None => None,
+                    Some(left) => Some(format_compact!("~({condition} & {left})")),
+                }
+            };
 
             for transition in transitions.iter_mut() {
                 for target in [&mut transition.unordered_condition, &mut transition.ordered_condition] {
                     *target = Some(target.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
                 }
             }
-
-            let tail_condition = match transitions.is_empty() {
-                true => None,
-                false => Some(format_compact!("~({condition})")),
-            };
 
             Some((transitions, tail_condition, false))
         }
@@ -299,11 +302,13 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
             }
             for transition in transitions_2.iter_mut() {
                 let targets = match body_terminal_1 {
-                    true => vec![&mut transition.unordered_condition],
-                    false => vec![&mut transition.unordered_condition, &mut transition.ordered_condition],
+                    true => [Some(&mut transition.unordered_condition), None],
+                    false => [Some(&mut transition.unordered_condition), Some(&mut transition.ordered_condition)],
                 };
                 for target in targets {
-                    *target = Some(target.take().map(|x| format_compact!("~({condition}) & {x}")).unwrap_or_else(|| format_compact!("~({condition})")));
+                    if let Some(target) = target {
+                        *target = Some(target.take().map(|x| format_compact!("~({condition}) & {x}")).unwrap_or_else(|| format_compact!("~({condition})")));
+                    }
                 }
             }
 

@@ -732,7 +732,7 @@ fn test_nested_if_2() {
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
+                                unordered_condition: Some("~(t > 10 & t > 9)".into()),
                                 ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
@@ -781,7 +781,7 @@ fn test_nested_if_3() {
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
+                                unordered_condition: Some("~(t > 10 & (t > 9 | t > 8))".into()),
                                 ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
@@ -3261,7 +3261,7 @@ fn test_tail_condition_2() {
                                 new_state: "mid".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(a == 1)".into()),
+                                unordered_condition: Some("~(a == 1 & a == 2)".into()),
                                 ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
