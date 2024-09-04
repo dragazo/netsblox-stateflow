@@ -261,7 +261,12 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
                 }
             }
 
-            Some((transitions, Some(format_compact!("~({condition})")), false))
+            let tail_condition = match transitions.is_empty() {
+                true => None,
+                false => Some(format_compact!("~({condition})")),
+            };
+
+            Some((transitions, tail_condition, false))
         }
         ast::StmtKind::IfElse { condition, then, otherwise } => {
             let condition = translate_expr(state_machine, state, condition, context)?;

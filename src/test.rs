@@ -1737,6 +1737,128 @@ fn test_if_else_17() {
 }
 
 #[test]
+fn test_if_else_18() {
+    let proj = Project::compile(include_str!("projects/if-else-18.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [
+                    ("foo".into(), "0".into()),
+                    ("bar".into(), "0".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [
+                                    "foo = 1".into(),
+                                    "foo = 2".into(),
+                                    "foo = 3".into(),
+                                ].into_iter().collect(),
+                                new_state: "::junction-0::".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("::junction-0::".into(), State {
+                        parent: Some("thing 1".into()),
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("foo == bar".into()),
+                                ordered_condition: Some("foo == bar".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~(foo == bar)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 3".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_if_else_19() {
+    let proj = Project::compile(include_str!("projects/if-else-19.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [
+                    ("foo".into(), "0".into()),
+                    ("bar".into(), "0".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [
+                                    "foo = 1".into(),
+                                    "foo = 2".into(),
+                                    "foo = 3".into(),
+                                ].into_iter().collect(),
+                                new_state: "::junction-0::".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("::junction-0::".into(), State {
+                        parent: Some("thing 1".into()),
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("foo == bar".into()),
+                                ordered_condition: Some("foo == bar".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~(foo == bar)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("thing 2".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("thing 3".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
 fn test_if_fall_through_1() {
     let err = Project::compile(include_str!("projects/if-fall-through-1.xml"), None, Settings::default()).unwrap_err();
     assert_eq!(err, CompileError::NonTerminalTransition { state_machine: "something".into(), state: "thing 1".into() });
