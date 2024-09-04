@@ -3528,3 +3528,58 @@ fn test_tail_condition_7() {
         ].into_iter().collect(),
     });
 }
+
+#[test]
+fn test_tail_condition_8() {
+    let proj = Project::compile(include_str!("projects/tail-condition-8.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy".into(), StateMachine {
+                variables: [
+                    ("a".into(), "0".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("first".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Some("a == 1 & a == 2".into()),
+                                ordered_condition: Some("a == 1 & a == 2".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 1".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~(a == 1) & a == 3".into()),
+                                ordered_condition: Some("~(a == 1) & a == 3".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 2".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~(a == 2) & ~(a == 3)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("mid 1".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("mid 2".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                    ("last".into(), State {
+                        parent: None,
+                        transitions: [].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}

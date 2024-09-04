@@ -281,7 +281,11 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
                     None => Some(condition.clone()),
                     Some(last) => Some(format_compact!("{condition} & ~({last})")),
                 }
-                (false, false) => None,
+                (false, false) => match (transitions_1.back().and_then(|t| t.unordered_condition.as_deref()), transitions_2.back().and_then(|t| t.unordered_condition.as_deref())) {
+                    (None, None) => None,
+                    (Some(single), None) | (None, Some(single)) => Some(format_compact!("~({single})")),
+                    (Some(left), Some(right)) => Some(format_compact!("~({left}) & ~({right})")),
+                }
             };
 
             for transition in transitions_1.iter_mut() {
