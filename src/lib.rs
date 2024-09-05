@@ -237,7 +237,7 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
         ast::StmtKind::UnknownBlock { name, args } => match (name.as_str(), args.as_slice()) {
             ("smTransition", [var, value]) => match &var.kind {
                 ast::ExprKind::Value(ast::Value::String(var)) => match *var == state_machine {
-                    true => Some((parse_transition_target(state_machine, state, value, context)?, None, true)),
+                    true => Some((parse_transition_target(state_machine, state, value, context)?, Some("false".into()), true)),
                     false => return Err(CompileError::TransitionForeignMachine { state_machine: state_machine.into(), state: state.into(), foreign_machine: var.clone() }),
                 }
                 _ => None,
@@ -245,12 +245,12 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
             _ => None,
         }
         ast::StmtKind::Assign { var, value } if var.name == state_machine => match terminal {
-            true => Some((parse_transition_target(state_machine, state, value, context)?, None, true)),
+            true => Some((parse_transition_target(state_machine, state, value, context)?, Some("false".into()), true)),
             false => return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() }),
         }
         ast::StmtKind::If { condition, then } => {
             let condition = translate_expr(state_machine, state, condition, context)?;
-            let (mut transitions, body_terminal) = parse_stmts(state_machine, state, &then, terminal, context)?;
+            let (mut transitions, body_terminal) = parse_stmts(state_machine, state, &then, terminal, context, false)?;
 
             let tail_condition = match body_terminal {
                 true => Some(format_compact!("~({condition})")),
@@ -272,8 +272,8 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
         ast::StmtKind::IfElse { condition, then, otherwise } => {
             let condition = translate_expr(state_machine, state, condition, context)?;
 
-            let (mut transitions_1, body_terminal_1) = parse_stmts(state_machine, state, &then, terminal, context)?;
-            let (mut transitions_2, body_terminal_2) = parse_stmts(state_machine, state, &otherwise, terminal, context)?;
+            let (mut transitions_1, body_terminal_1) = parse_stmts(state_machine, state, &then, terminal, context, false)?;
+            let (mut transitions_2, body_terminal_2) = parse_stmts(state_machine, state, &otherwise, terminal, context, false)?;
 
             let tail_condition = match (body_terminal_1, body_terminal_2) {
                 (true, true) => Some("false".into()),
@@ -316,10 +316,14 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
         _ => None,
     })
 }
-fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_terminal: bool, context: &mut Context) -> Result<(VecDeque<Transition>, bool), CompileError> {
+fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_terminal: bool, context: &mut Context, top_level: bool) -> Result<(VecDeque<Transition>, bool), CompileError> {
     let mut actions: VecDeque<CompactString> = <_>::default();
     let mut transitions: VecDeque<Transition> = <_>::default();
     let mut body_terminal = false;
+
+    if top_level {
+        transitions.push_back(Transition { unordered_condition: None, ordered_condition: None, actions: <_>::default(), new_state: state.into() });
+    }
 
     let mut stmts = stmts.iter().rev().peekable();
     while let Some(stmt) = stmts.peek() {
@@ -368,6 +372,9 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
                 debug_assert_eq!(actions.len(), 0);
 
                 body_terminal |= sub_body_terminal;
+                if tail_condition.as_deref() == Some("false") {
+                    transitions.clear();
+                }
                 if let Some(tail_condition) = tail_condition {
                     for transition in transitions.iter_mut() {
                         transition.unordered_condition = Some(transition.unordered_condition.take().map(|x| format_compact!("{tail_condition} & {x}")).unwrap_or_else(|| tail_condition.clone()));
@@ -410,8 +417,7 @@ impl Project {
             }
         };
 
-        let mut state_machines: BTreeMap<CompactString, StateMachine> = <_>::default();
-
+        let mut state_machines: BTreeMap<CompactString, (StateMachine, Context)> = <_>::default();
         for entity in role.entities.iter() {
             for script in entity.scripts.iter() {
                 let (state_machine_name, state_name) = match script.hat.as_ref().map(|x| &x.kind) {
@@ -433,27 +439,35 @@ impl Project {
                     _ => continue,
                 };
 
-                let state_machine = state_machines.entry(state_machine_name.clone()).or_insert_with(|| StateMachine { variables: <_>::default(), states: <_>::default(), initial_state: None, current_state: None });
+                let (state_machine, context) = state_machines.entry(state_machine_name.clone()).or_insert_with(|| {
+                    (StateMachine { variables: <_>::default(), states: <_>::default(), initial_state: None, current_state: None }, Context { variables: vec![], junctions: vec![], settings })
+                });
                 if state_machine.states.contains_key(state_name.as_str()) {
                     return Err(CompileError::MultipleHandlers { state_machine: state_machine_name.clone(), state: state_name.clone() });
                 }
 
-                let mut context = Context { variables: vec![], junctions: vec![], settings };
-                let (transitions, _) = parse_stmts(&state_machine_name, &state_name, &script.stmts, true, &mut context)?;
+                let (transitions, _) = parse_stmts(&state_machine_name, &state_name, &script.stmts, true, context, true)?;
                 assert!(state_machine.states.insert(state_name.clone(), State { parent: None, transitions }).is_none());
-                for (name, junction) in context.junctions {
-                    assert!(state_machine.states.insert(name, junction).is_none());
-                }
-                for variable in context.variables {
-                    state_machine.variables.insert(variable.trans_name, "0".into());
-                }
             }
         }
+
+        let mut state_machines = state_machines.into_iter().map(|(state_machine_name, (mut state_machine, context))| {
+            for (name, junction) in context.junctions {
+                assert!(state_machine.states.insert(name, junction).is_none());
+            }
+            for variable in context.variables {
+                state_machine.variables.insert(variable.trans_name, "0".into());
+            }
+            (state_machine_name, state_machine)
+        }).collect::<BTreeMap<_,_>>();
 
         for state_machine in state_machines.values_mut() {
             let target_states: Vec<_> = state_machine.states.values().flat_map(|s| s.transitions.iter().map(|t| t.new_state.clone())).collect();
             for target_state in target_states {
-                state_machine.states.entry(target_state).or_insert_with(|| State { parent: None, transitions: <_>::default() });
+                state_machine.states.entry(target_state.clone()).or_insert_with(|| State {
+                    parent: None,
+                    transitions: deque![Transition { unordered_condition: None, ordered_condition: None, actions: <_>::default(), new_state: target_state }]
+                });
             }
         }
 
@@ -548,11 +562,13 @@ impl Project {
                 stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes }));
             }
             for (state_name, state) in state_machine.states.iter() {
-                let labeler: fn (usize, Option<&str>) -> dot::Id = match state.transitions.len() {
+                let included_transitions = state.transitions.iter().filter(|t| t.new_state != state_name || !t.actions.is_empty() || t.ordered_condition.is_some()).collect::<Vec<_>>();
+
+                let labeler: fn (usize, Option<&str>) -> dot::Id = match included_transitions.len() {
                     1 => |_, t| t.map(|t| dot_id(&format!(" {t} "))).unwrap_or_else(|| dot_id("")),
                     _ => |i, t| t.map(|t| dot_id(&format!(" {}: {t} ", i + 1))).unwrap_or_else(|| dot_id(&format!(" {} ", i + 1))),
                 };
-                for (i, transition) in state.transitions.iter().enumerate() {
+                for (i, transition) in included_transitions.iter().enumerate() {
                     stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id(state_name)), dot::Vertex::N(node_id(&transition.new_state))), attributes: vec![
                         dot::Attribute(dot::Id::Plain("label".into()), labeler(i, transition.ordered_condition.as_deref())),
                     ] }));
@@ -598,8 +614,10 @@ impl Project {
                     }
                 }
             }
-            for (state_idx, (_, state)) in state_machine.states.iter().enumerate() {
-                for transition in state.transitions.iter() {
+            for (state_idx, (state_name, state)) in state_machine.states.iter().enumerate() {
+                let included_transitions = state.transitions.iter().filter(|t| t.new_state != state_name || !t.actions.is_empty() || t.ordered_condition.is_some());
+
+                for transition in included_transitions {
                     writeln!(res, "t = Stateflow.Transition(chart)").unwrap();
                     writeln!(res, "t.Source = s{state_idx}").unwrap();
                     writeln!(res, "t.Destination = s{}", state_numbers[transition.new_state.as_str()]).unwrap();

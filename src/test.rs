@@ -118,7 +118,14 @@ fn test_simple_no_handler() {
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -153,11 +160,17 @@ fn test_single_transition() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: Some("t > 10".into()),
                                 unordered_condition: Some("t > 10".into()),
+                                ordered_condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
+                            Transition {
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            }
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
@@ -323,6 +336,12 @@ fn test_simple_if_timer() {
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
+                            Transition {
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            },
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
@@ -364,6 +383,12 @@ fn test_if_timer_reset_1() {
                                     "t = 0".into(),
                                 ].into_iter().collect(),
                                 new_state: "thing 2".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
                             },
                         ].into_iter().collect(),
                     }),
@@ -407,6 +432,12 @@ fn test_if_timer_reset_2() {
                                 ].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
+                            Transition {
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            },
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
@@ -446,6 +477,12 @@ fn test_if_timer_reset_3() {
                                 ordered_condition: Some("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
+                            },
+                            Transition {
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
                             },
                         ].into_iter().collect(),
                     }),
@@ -489,6 +526,12 @@ fn test_no_transitions_1() {
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
+                            Transition {
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            },
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
@@ -531,11 +574,24 @@ fn test_no_transitions_2() {
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
+                            Transition {
+                                unordered_condition: Some("~(t > 10)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            },
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -570,6 +626,12 @@ fn test_if_chain_1() {
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
+                            Transition {
+                                unordered_condition: Some("~(t > 9) & ~(t > 10)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            },
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
@@ -585,7 +647,14 @@ fn test_if_chain_1() {
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -626,6 +695,12 @@ fn test_if_chain_2() {
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
+                            Transition {
+                                unordered_condition: Some("~(t > 8) & ~(t > 9) & ~(t > 10)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            }
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
@@ -641,11 +716,25 @@ fn test_if_chain_2() {
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -698,11 +787,25 @@ fn test_nested_if_1() {
                     }),
                     ("thing 0".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 0".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -741,11 +844,25 @@ fn test_nested_if_2() {
                     }),
                     ("thing 0".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 0".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -790,15 +907,36 @@ fn test_nested_if_3() {
                     }),
                     ("thing 0".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 0".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -849,19 +987,45 @@ fn test_nested_if_4() {
                     }),
                     ("thing 0".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [Transition {
+                            ordered_condition: None,
+                            unordered_condition: None,
+                            actions: [].into_iter().collect(),
+                            new_state: "thing 0".into(),
+                        },].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -918,23 +1082,58 @@ fn test_nested_if_5() {
                     }),
                     ("thing 0".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 0".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 5".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 5".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1008,23 +1207,58 @@ fn test_nested_if_6() {
                     }),
                     ("thing 0".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 0".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 5".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 5".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1296,11 +1530,25 @@ fn test_if_else_1() {
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1356,25 +1604,29 @@ fn test_if_else_5() {
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
-                            Transition {
-                                unordered_condition: Some("false".into()),
-                                ordered_condition: None,
-                                actions: [].into_iter().collect(),
-                                new_state: "thing 4".into(),
-                            },
                         ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
-                    }),
-                    ("thing 4".into(), State {
-                        parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1416,11 +1668,25 @@ fn test_if_else_6() {
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1462,11 +1728,25 @@ fn test_if_else_7() {
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1502,7 +1782,14 @@ fn test_if_else_8() {
                     }),
                     ("thing 4".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1557,11 +1844,24 @@ fn test_if_else_13() {
                                 actions: [].into_iter().collect(),
                                 new_state: "second".into(),
                             },
+                            Transition {
+                                unordered_condition: Some("~(a == 6)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "first".into(),
+                            },
                         ].into_iter().collect(),
                     }),
                     ("second".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "second".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1592,11 +1892,24 @@ fn test_if_else_14() {
                                 actions: [].into_iter().collect(),
                                 new_state: "second".into(),
                             },
+                            Transition {
+                                unordered_condition: Some("a == 6".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "first".into(),
+                            },
                         ].into_iter().collect(),
                     }),
                     ("second".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "second".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1627,11 +1940,24 @@ fn test_if_else_15() {
                                 actions: [].into_iter().collect(),
                                 new_state: "fourth".into(),
                             },
+                            Transition {
+                                unordered_condition: Some("a == 6".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "first".into(),
+                            },
                         ].into_iter().collect(),
                     }),
                     ("fourth".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "fourth".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1662,11 +1988,24 @@ fn test_if_else_16() {
                                 actions: [].into_iter().collect(),
                                 new_state: "fourth".into(),
                             },
+                            Transition {
+                                unordered_condition: Some("a == 6".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "first".into(),
+                            },
                         ].into_iter().collect(),
                     }),
                     ("fourth".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "fourth".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1722,11 +2061,25 @@ fn test_if_else_17() {
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1783,11 +2136,25 @@ fn test_if_else_18() {
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1844,11 +2211,25 @@ fn test_if_else_19() {
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -1935,7 +2316,14 @@ fn test_tail_actions_1() {
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -2055,39 +2443,102 @@ fn test_operators() {
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 5".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 5".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 6".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 6".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 7".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 7".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 8".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 8".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 9".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 9".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 10".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 10".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -2158,7 +2609,14 @@ fn test_actions_2() {
                     }),
                     ("state 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "state 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("::junction-0::".into(), State {
                         parent: Some("state 1".into()),
@@ -2244,23 +2702,58 @@ fn test_ext_blocks_1() {
                     }),
                     ("thing 0".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 0".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 3".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 3".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 4".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 4".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("thing 5".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 5".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -2299,11 +2792,25 @@ fn test_ite_1() {
                     }),
                     ("bar".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "bar".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("baz".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "baz".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -2354,19 +2861,47 @@ fn test_ite_2() {
                     }),
                     ("bar1".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "bar1".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("bar2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "bar2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("baz1".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "baz1".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("baz2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "baz2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -2404,7 +2939,14 @@ fn test_var_names_1() {
                     }),
                     ("second state".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "second state".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -2805,6 +3347,12 @@ fn test_unknown_blocks_4() {
                                 actions: [].into_iter().collect(),
                                 new_state: "me go".into(),
                             },
+                            Transition {
+                                unordered_condition: Some("~(?)".into()),
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "me stop".into(),
+                            },
                         ].into_iter().collect(),
                     }),
                     ("me go".into(), State {
@@ -3028,7 +3576,14 @@ fn test_junctions_1() {
                     }),
                     ("xyz".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "xyz".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: Some("abc".into()),
@@ -3107,11 +3662,25 @@ fn test_junctions_2() {
                     }),
                     ("x1".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "x1".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("x2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "x2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: Some("something".into()),
@@ -3225,11 +3794,25 @@ fn test_tail_condition_1() {
                     }),
                     ("mid".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("last".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -3270,11 +3853,25 @@ fn test_tail_condition_2() {
                     }),
                     ("mid".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("last".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -3309,7 +3906,14 @@ fn test_tail_condition_3() {
                     }),
                     ("last".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -3346,25 +3950,29 @@ fn test_tail_condition_4() {
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 2".into(),
                             },
-                            Transition {
-                                unordered_condition: Some("false".into()),
-                                ordered_condition: None,
-                                actions: [].into_iter().collect(),
-                                new_state: "last".into(),
-                            },
                         ].into_iter().collect(),
                     }),
                     ("mid 1".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 1".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("mid 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
-                    }),
-                    ("last".into(), State {
-                        parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -3411,15 +4019,36 @@ fn test_tail_condition_5() {
                     }),
                     ("mid 1".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 1".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("mid 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("last".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -3460,11 +4089,25 @@ fn test_tail_condition_6() {
                     }),
                     ("mid 1".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 1".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("last".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -3511,15 +4154,36 @@ fn test_tail_condition_7() {
                     }),
                     ("mid 1".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 1".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("mid 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("last".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -3566,15 +4230,36 @@ fn test_tail_condition_8() {
                     }),
                     ("mid 1".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 1".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("mid 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("last".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -3615,11 +4300,25 @@ fn test_tail_condition_9() {
                     }),
                     ("mid 1".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 1".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("last".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -3660,11 +4359,25 @@ fn test_tail_condition_10() {
                     }),
                     ("mid 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("last".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -3705,11 +4418,25 @@ fn test_tail_condition_11() {
                     }),
                     ("mid 2".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 2".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                     ("last".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
@@ -3744,7 +4471,43 @@ fn test_tail_condition_12() {
                     }),
                     ("last".into(), State {
                         parent: None,
-                        transitions: [].into_iter().collect(),
+                        transitions: [
+                            Transition {
+                                ordered_condition: None,
+                                unordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+}
+
+#[test]
+fn test_completeness_1() {
+    let proj = Project::compile(include_str!("projects/completeness-1.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("something".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("thing 1".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: None,
+                                ordered_condition: None,
+                                actions: [].into_iter().collect(),
+                                new_state: "thing 1".into(),
+                            },
+                        ].into_iter().collect(),
                     }),
                 ].into_iter().collect(),
                 initial_state: None,
