@@ -1,10 +1,18 @@
+#![forbid(unsafe_code)]
+#![no_std]
+
+#[macro_use]
+extern crate alloc;
+
 use netsblox_ast as ast;
 use netsblox_ast::compact_str::{CompactString, ToCompactString, format_compact};
 
 use graphviz_rust::dot_structures as dot;
 
-use std::collections::{VecDeque, BTreeMap};
-use std::fmt::Write as _;
+use alloc::collections::{VecDeque, BTreeMap};
+use alloc::fmt::Write as _;
+use alloc::boxed::Box;
+use alloc::vec::Vec;
 
 pub use graphviz_rust as graphviz;
 
@@ -20,6 +28,9 @@ macro_rules! deque {
         res
     }}
 }
+
+mod condition;
+use condition::*;
 
 trait VecDequeUtil<T> {
     fn extend_front<I: Iterator<Item = T> + DoubleEndedIterator>(&mut self, iter: I);

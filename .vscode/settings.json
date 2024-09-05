@@ -3,6 +3,7 @@
         "acosd",
         "asind",
         "atand",
+        "bitand",
         "consts",
         "cosd",
         "Deque",
