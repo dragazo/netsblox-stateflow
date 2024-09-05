@@ -1,4 +1,4 @@
-use crate::*;
+use netsblox_stateflow::*;
 
 #[test]
 fn test_empty_project() {

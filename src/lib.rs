@@ -6,9 +6,6 @@ use graphviz_rust::dot_structures as dot;
 use std::collections::{VecDeque, BTreeMap};
 use std::fmt::Write as _;
 
-#[cfg(test)]
-mod test;
-
 pub use graphviz_rust as graphviz;
 
 macro_rules! count_exprs {
