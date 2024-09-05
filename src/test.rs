@@ -840,7 +840,7 @@ fn test_nested_if_4() {
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
+                                unordered_condition: Some("~(t > 10 & (t > 9 & t > 7 | t > 9 | t > 8))".into()),
                                 ordered_condition: None,
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
