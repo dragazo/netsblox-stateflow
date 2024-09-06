@@ -9,7 +9,7 @@ use alloc::collections::BTreeSet;
 use netsblox_ast::CompactString;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-enum RawCondition {
+pub enum RawCondition {
     Const(bool),
     Atom(CompactString),
     Not(Box<RawCondition>),
@@ -315,6 +315,9 @@ fn test_simpl() {
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Condition(RawCondition);
 impl Condition {
+    pub fn raw(&self) -> &RawCondition {
+        &self.0
+    }
     pub fn atom(v: CompactString) -> Self {
         assert!(v != "true" && v != "false");
         Condition(RawCondition::Atom(v))

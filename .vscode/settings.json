@@ -8,6 +8,7 @@
         "cosd",
         "Deque",
         "graphviz",
+        "itertools",
         "netsblox",
         "nonterminal",
         "peekable",

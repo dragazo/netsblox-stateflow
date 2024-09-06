@@ -303,7 +303,7 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
                     (None, None) => Condition::constant(true),
                     (None, Some(right)) => !(!condition.clone() & right.unordered_condition.clone()),
                     (Some(left), None) => !(condition.clone() & left.unordered_condition.clone()),
-                    (Some(left), Some(right)) => !(condition.clone() & left.unordered_condition.clone()) | !(!condition.clone() & right.unordered_condition.clone()),
+                    (Some(left), Some(right)) => !(condition.clone() & left.unordered_condition.clone()) & !(!condition.clone() & right.unordered_condition.clone()),
                 }
             };
 

@@ -1,4 +1,66 @@
+use std::collections::{BTreeSet, BTreeMap};
+
+use itertools::Itertools;
+
 use netsblox_stateflow::*;
+
+fn aggregate_atoms<'a>(src: &'a RawCondition, dest: &mut BTreeSet<&'a str>) {
+    match src {
+        RawCondition::Const(_) => (),
+        RawCondition::Atom(x) => { dest.insert(x.as_str()); }
+        RawCondition::And(a, b) | RawCondition::Or(a, b) => {
+            aggregate_atoms(a, dest);
+            aggregate_atoms(b, dest);
+        }
+        RawCondition::Not(a) => aggregate_atoms(a, dest),
+    }
+}
+
+fn eval(cond: &RawCondition, assignments: &BTreeMap<&str, bool>) -> bool {
+    match cond {
+        RawCondition::Const(x) => *x,
+        RawCondition::Atom(x) => assignments[x.as_str()],
+        RawCondition::And(a, b) => eval(a, assignments) && eval(b, assignments),
+        RawCondition::Or(a, b) => eval(a, assignments) || eval(b, assignments),
+        RawCondition::Not(a) => !eval(a, assignments),
+    }
+}
+
+fn assert_complete(proj: &Project) {
+    for (state_machine_name, state_machine) in proj.state_machines.iter() {
+        for (state_name, state) in state_machine.states.iter() {
+            let mut variables = BTreeSet::new();
+            for transition in state.transitions.iter() {
+                aggregate_atoms(transition.ordered_condition.raw(), &mut variables);
+                aggregate_atoms(transition.unordered_condition.raw(), &mut variables);
+            }
+
+            let mut chosen_transitions = BTreeMap::new();
+            for values in vec![[false, true]; variables.len()].into_iter().multi_cartesian_product() {
+                assert_eq!(variables.len(), values.len());
+                let assignments = variables.iter().copied().zip(values.iter().copied()).collect::<BTreeMap<_,_>>();
+
+                match state.transitions.iter().enumerate().find(|x| eval(x.1.ordered_condition.raw(), &assignments)).map(|x| x.0) {
+                    Some(i) => { chosen_transitions.insert(assignments, i); }
+                    None => panic!("{state_machine_name:?} :: {state_name:?} > no ordered transition for {assignments:?}"),
+                }
+            }
+            assert_eq!(chosen_transitions.len(), 1 << variables.len());
+
+            for (assignments, chosen_transition) in chosen_transitions.iter() {
+                let activations = state.transitions.iter().map(|t| eval(t.unordered_condition.raw(), assignments)).collect::<Vec<_>>();
+                match activations.iter().filter(|x| **x).count() {
+                    0 => panic!("{state_machine_name:?} :: {state_name:?} > no unordered transition for {assignments:?}"),
+                    1 => match activations.iter().enumerate().find(|x| *x.1).unwrap().0 {
+                        x if x == *chosen_transition => (),
+                        x => panic!("{state_machine_name:?} :: {state_name:?} > wrong unordered transition (got {x} expected {chosen_transition}) for {assignments:?}"),
+                    }
+                    _ => panic!("{state_machine_name:?} :: {state_name:?} > multiple unordered transitions (got {x:?} expected {chosen_transition}) for {assignments:?}", x = activations.iter().enumerate().filter_map(|t| t.1.then(|| t.0)).collect::<Vec<_>>()),
+                }
+            }
+        }
+    }
+}
 
 #[test]
 fn test_empty_project() {
@@ -13,6 +75,7 @@ digraph "untitled" {
 
 }
     "#.trim());
+    assert_complete(&proj);
 }
 
 #[test]
@@ -53,6 +116,7 @@ fn test_simple() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "something" {
@@ -133,6 +197,7 @@ fn test_simple_no_handler() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "something" {
@@ -190,6 +255,7 @@ fn test_single_transition() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "something" {
@@ -291,6 +357,7 @@ fn test_multiple_machines_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "machine 1" {
@@ -361,6 +428,7 @@ fn test_simple_if_timer() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -409,6 +477,7 @@ fn test_if_timer_reset_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -457,6 +526,7 @@ fn test_if_timer_reset_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -505,6 +575,7 @@ fn test_if_timer_reset_3() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -553,6 +624,7 @@ fn test_no_transitions_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -599,6 +671,7 @@ fn test_no_transitions_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -662,6 +735,7 @@ fn test_if_chain_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -742,6 +816,7 @@ fn test_if_chain_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "something" {
@@ -813,6 +888,7 @@ fn test_nested_if_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -870,6 +946,7 @@ fn test_nested_if_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -944,6 +1021,7 @@ fn test_nested_if_3() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -1033,6 +1111,7 @@ fn test_nested_if_4() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -1141,6 +1220,7 @@ fn test_nested_if_5() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -1266,6 +1346,7 @@ fn test_nested_if_6() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -1314,6 +1395,7 @@ fn test_variables_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -1399,6 +1481,7 @@ fn test_variables_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -1463,6 +1546,7 @@ fn test_var_inits() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
     assert_eq!(proj.to_stateflow().unwrap(), r#"
 sfnew something_cool
 chart = find(sfroot, "-isa", "Stateflow.Chart", Path = "something_cool/Chart")
@@ -1556,6 +1640,7 @@ fn test_if_else_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -1634,6 +1719,7 @@ fn test_if_else_5() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -1694,6 +1780,7 @@ fn test_if_else_6() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -1754,6 +1841,7 @@ fn test_if_else_7() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -1797,6 +1885,7 @@ fn test_if_else_8() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -1869,6 +1958,7 @@ fn test_if_else_13() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -1917,6 +2007,7 @@ fn test_if_else_14() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -1965,6 +2056,7 @@ fn test_if_else_15() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -2013,6 +2105,7 @@ fn test_if_else_16() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -2087,6 +2180,7 @@ fn test_if_else_17() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -2162,6 +2256,7 @@ fn test_if_else_18() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -2237,6 +2332,7 @@ fn test_if_else_19() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -2331,6 +2427,7 @@ fn test_tail_actions_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -2546,6 +2643,7 @@ fn test_operators() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -2579,6 +2677,7 @@ fn test_actions_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -2641,6 +2740,7 @@ fn test_actions_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "state" {
@@ -2761,6 +2861,7 @@ fn test_ext_blocks_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -2818,6 +2919,7 @@ fn test_ite_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -2909,6 +3011,7 @@ fn test_ite_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -2954,6 +3057,7 @@ fn test_var_names_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -3005,6 +3109,7 @@ fn test_initial_state_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "something" {
@@ -3101,6 +3206,7 @@ fn test_initial_state_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -3152,6 +3258,7 @@ fn test_initial_state_3() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -3203,6 +3310,7 @@ fn test_initial_state_4() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -3244,6 +3352,7 @@ fn test_unknown_blocks_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -3284,6 +3393,7 @@ fn test_unknown_blocks_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -3323,6 +3433,7 @@ fn test_unknown_blocks_3() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -3374,6 +3485,7 @@ fn test_unknown_blocks_4() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -3414,6 +3526,7 @@ fn test_current_state_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "thingy" {
@@ -3466,6 +3579,7 @@ fn test_current_state_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "thingy" {
@@ -3518,6 +3632,7 @@ fn test_current_state_3() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "thingy" {
@@ -3591,6 +3706,7 @@ fn test_junctions_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -3688,6 +3804,7 @@ fn test_junctions_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
     assert_eq!(graphviz_rust::print(proj.to_graphviz(), &mut Default::default()), r#"
 digraph "untitled" {
   subgraph "thingy" {
@@ -3820,6 +3937,7 @@ fn test_tail_condition_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -3879,6 +3997,7 @@ fn test_tail_condition_2() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -3921,6 +4040,7 @@ fn test_tail_condition_3() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -3980,6 +4100,7 @@ fn test_tail_condition_4() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -4056,6 +4177,7 @@ fn test_tail_condition_5() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -4115,6 +4237,7 @@ fn test_tail_condition_6() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -4191,6 +4314,7 @@ fn test_tail_condition_7() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -4221,7 +4345,7 @@ fn test_tail_condition_8() {
                                 new_state: "mid 2".into(),
                             },
                             Transition {
-                                unordered_condition: !(Condition::atom("a == 1".into()) & Condition::atom("a == 2".into())) | !(!Condition::atom("a == 1".into()) & Condition::atom("a == 3".into())),
+                                unordered_condition: !(Condition::atom("a == 1".into()) & Condition::atom("a == 2".into())) & !(!Condition::atom("a == 1".into()) & Condition::atom("a == 3".into())),
                                 ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
@@ -4267,6 +4391,7 @@ fn test_tail_condition_8() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -4326,6 +4451,7 @@ fn test_tail_condition_9() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -4385,6 +4511,7 @@ fn test_tail_condition_10() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -4444,6 +4571,7 @@ fn test_tail_condition_11() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -4486,6 +4614,7 @@ fn test_tail_condition_12() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
 
 #[test]
@@ -4515,4 +4644,5 @@ fn test_completeness_1() {
             }),
         ].into_iter().collect(),
     });
+    assert_complete(&proj);
 }
