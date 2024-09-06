@@ -29,8 +29,8 @@ fn test_simple() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -40,8 +40,8 @@ fn test_simple() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -98,8 +98,8 @@ fn test_simple_no_handler() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -109,8 +109,8 @@ fn test_simple_no_handler() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -120,8 +120,8 @@ fn test_simple_no_handler() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -160,14 +160,14 @@ fn test_single_transition() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10".into()),
-                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::atom("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             }
@@ -177,8 +177,8 @@ fn test_single_transition() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -216,8 +216,8 @@ fn test_multiple_machines_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "bar".into(),
                             },
@@ -227,8 +227,8 @@ fn test_multiple_machines_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "buz".into(),
                             },
@@ -238,8 +238,8 @@ fn test_multiple_machines_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "foo".into(),
                             },
@@ -256,8 +256,8 @@ fn test_multiple_machines_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "baz".into(),
                             },
@@ -267,8 +267,8 @@ fn test_multiple_machines_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "buzz".into(),
                             },
@@ -278,8 +278,8 @@ fn test_multiple_machines_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "bar".into(),
                             },
@@ -331,14 +331,14 @@ fn test_simple_if_timer() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10".into()),
-                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::atom("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -348,8 +348,8 @@ fn test_simple_if_timer() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -377,16 +377,16 @@ fn test_if_timer_reset_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10".into()),
-                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::atom("t > 10".into()),
                                 actions: [
                                     "t = 0".into(),
                                 ].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -396,8 +396,8 @@ fn test_if_timer_reset_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -425,16 +425,16 @@ fn test_if_timer_reset_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10".into()),
-                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::atom("t > 10".into()),
                                 actions: [
                                     "t = 0".into(),
                                 ].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -444,8 +444,8 @@ fn test_if_timer_reset_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -473,14 +473,14 @@ fn test_if_timer_reset_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10".into()),
-                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::atom("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -490,8 +490,8 @@ fn test_if_timer_reset_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [
                                     "t = 0".into(),
                                 ].into_iter().collect(),
@@ -521,14 +521,14 @@ fn test_no_transitions_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10".into()),
-                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::atom("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -538,8 +538,8 @@ fn test_no_transitions_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [
                                     "t = 0".into(),
                                 ].into_iter().collect(),
@@ -569,14 +569,14 @@ fn test_no_transitions_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10".into()),
-                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::atom("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -586,8 +586,8 @@ fn test_no_transitions_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -615,20 +615,20 @@ fn test_if_chain_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 9".into()),
-                                ordered_condition: Some("t > 9".into()),
+                                unordered_condition: Condition::atom("t > 9".into()),
+                                ordered_condition: Condition::atom("t > 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 9) & t > 10".into()),
-                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: !Condition::atom("t > 9".into()) & Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::atom("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 9) & ~(t > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t > 9".into()) & !Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -638,8 +638,8 @@ fn test_if_chain_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -649,8 +649,8 @@ fn test_if_chain_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -678,26 +678,26 @@ fn test_if_chain_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 8".into()),
-                                ordered_condition: Some("t > 8".into()),
+                                unordered_condition: Condition::atom("t > 8".into()),
+                                ordered_condition: Condition::atom("t > 8".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 8) & t > 9".into()),
-                                ordered_condition: Some("t > 9".into()),
+                                unordered_condition: !Condition::atom("t > 8".into()) & Condition::atom("t > 9".into()),
+                                ordered_condition: Condition::atom("t > 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 8) & ~(t > 9) & t > 10".into()),
-                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: !Condition::atom("t > 8".into()) & !Condition::atom("t > 9".into()) & Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::atom("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 8) & ~(t > 9) & ~(t > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t > 8".into()) & !Condition::atom("t > 9".into()) & !Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             }
@@ -707,8 +707,8 @@ fn test_if_chain_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },
@@ -718,8 +718,8 @@ fn test_if_chain_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -729,8 +729,8 @@ fn test_if_chain_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -772,14 +772,14 @@ fn test_nested_if_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10".into()),
-                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::atom("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -789,8 +789,8 @@ fn test_nested_if_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -800,8 +800,8 @@ fn test_nested_if_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -829,14 +829,14 @@ fn test_nested_if_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10 & t > 9".into()),
-                                ordered_condition: Some("t > 10 & t > 9".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10 & t > 9)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !(Condition::atom("t > 10".into()) & Condition::atom("t > 9".into())),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -846,8 +846,8 @@ fn test_nested_if_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -857,8 +857,8 @@ fn test_nested_if_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -886,20 +886,20 @@ fn test_nested_if_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10 & t > 9".into()),
-                                ordered_condition: Some("t > 10 & t > 9".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
-                                ordered_condition: Some("t > 10 & t > 8".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & !Condition::atom("t > 9".into()) & Condition::atom("t > 8".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 8".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10 & (t > 9 | t > 8))".into()),
-                                ordered_condition: None,
+                                unordered_condition: !(Condition::atom("t > 10".into()) & (Condition::atom("t > 9".into()) | Condition::atom("t > 8".into()))),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -909,8 +909,8 @@ fn test_nested_if_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -920,8 +920,8 @@ fn test_nested_if_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -931,8 +931,8 @@ fn test_nested_if_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -960,26 +960,26 @@ fn test_nested_if_4() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
-                                ordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()) & Condition::atom("t > 7".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()) & Condition::atom("t > 7".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
                             Transition {
-                                unordered_condition: Some("t > 10 & t > 9 & ~(t > 7)".into()),
-                                ordered_condition: Some("t > 10 & t > 9".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()) & !Condition::atom("t > 7".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                unordered_condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
-                                ordered_condition: Some("t > 10 & t > 8".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & !Condition::atom("t > 9".into()) & Condition::atom("t > 8".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 8".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10 & (t > 9 & t > 7 | t > 9 | t > 8))".into()),
-                                ordered_condition: None,
+                                unordered_condition: !(Condition::atom("t > 10".into()) & ((Condition::atom("t > 9".into()) & Condition::atom("t > 7".into())) | Condition::atom("t > 9".into()) | Condition::atom("t > 8".into()))),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -988,8 +988,8 @@ fn test_nested_if_4() {
                     ("thing 0".into(), State {
                         parent: None,
                         transitions: [Transition {
-                            ordered_condition: None,
-                            unordered_condition: None,
+                            ordered_condition: Condition::constant(true),
+                            unordered_condition: Condition::constant(true),
                             actions: [].into_iter().collect(),
                             new_state: "thing 0".into(),
                         },].into_iter().collect(),
@@ -998,8 +998,8 @@ fn test_nested_if_4() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -1009,8 +1009,8 @@ fn test_nested_if_4() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -1020,8 +1020,8 @@ fn test_nested_if_4() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -1049,32 +1049,32 @@ fn test_nested_if_5() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
-                                ordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()) & Condition::atom("t > 7".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()) & Condition::atom("t > 7".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
                             Transition {
-                                unordered_condition: Some("t > 10 & t > 9 & ~(t > 7)".into()),
-                                ordered_condition: Some("t > 10 & t > 9".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()) & !Condition::atom("t > 7".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                unordered_condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
-                                ordered_condition: Some("t > 10 & t > 8".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & !Condition::atom("t > 9".into()) & Condition::atom("t > 8".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 8".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("t > 10 & ~(t > 9) & ~(t > 8)".into()),
-                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & !Condition::atom("t > 9".into()) & !Condition::atom("t > 8".into()),
+                                ordered_condition: Condition::atom("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 5".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -1084,8 +1084,8 @@ fn test_nested_if_5() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -1095,8 +1095,8 @@ fn test_nested_if_5() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -1106,8 +1106,8 @@ fn test_nested_if_5() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -1117,8 +1117,8 @@ fn test_nested_if_5() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -1128,8 +1128,8 @@ fn test_nested_if_5() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 5".into(),
                             },
@@ -1159,8 +1159,8 @@ fn test_nested_if_6() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
-                                ordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()) & Condition::atom("t > 7".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()) & Condition::atom("t > 7".into()),
                                 actions: [
                                     "foo = 234".into(),
                                     "foo = 652".into(),
@@ -1168,8 +1168,8 @@ fn test_nested_if_6() {
                                 new_state: "thing 4".into(),
                             },
                             Transition {
-                                unordered_condition: Some("t > 10 & t > 9 & ~(t > 7)".into()),
-                                ordered_condition: Some("t > 10 & t > 9".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()) & !Condition::atom("t > 7".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()),
                                 actions: [
                                     "foo = 123".into(),
                                     "foo = 453".into(),
@@ -1177,8 +1177,8 @@ fn test_nested_if_6() {
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                unordered_condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
-                                ordered_condition: Some("t > 10 & t > 8".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & !Condition::atom("t > 9".into()) & Condition::atom("t > 8".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 8".into()),
                                 actions: [
                                     "foo = 546".into(),
                                     "foo = 876".into(),
@@ -1186,8 +1186,8 @@ fn test_nested_if_6() {
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("t > 10 & ~(t > 9) & ~(t > 8)".into()),
-                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & !Condition::atom("t > 9".into()) & !Condition::atom("t > 8".into()),
+                                ordered_condition: Condition::atom("t > 10".into()),
                                 actions: [
                                     "foo = 431".into(),
                                     "foo = 197".into(),
@@ -1195,8 +1195,8 @@ fn test_nested_if_6() {
                                 new_state: "thing 5".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo = 856".into(),
                                     "foo = 465".into(),
@@ -1209,8 +1209,8 @@ fn test_nested_if_6() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -1220,8 +1220,8 @@ fn test_nested_if_6() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -1231,8 +1231,8 @@ fn test_nested_if_6() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -1242,8 +1242,8 @@ fn test_nested_if_6() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -1253,8 +1253,8 @@ fn test_nested_if_6() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 5".into(),
                             },
@@ -1284,8 +1284,8 @@ fn test_variables_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo = 14".into(),
                                     "foo = 21".into(),
@@ -1298,8 +1298,8 @@ fn test_variables_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo = 76".into(),
                                     "foo = 43".into(),
@@ -1332,8 +1332,8 @@ fn test_variables_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo = 14".into(),
                                     "foo = 21".into(),
@@ -1346,8 +1346,8 @@ fn test_variables_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo = 76".into(),
                                     "foo = 43".into(),
@@ -1369,8 +1369,8 @@ fn test_variables_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "bar = 231".into(),
                                     "bar = 453".into(),
@@ -1383,8 +1383,8 @@ fn test_variables_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "bar = 432".into(),
                                     "bar = 646".into(),
@@ -1431,8 +1431,8 @@ fn test_var_inits() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo_3 = (foo_3 * 2)".into(),
                                     "bar_5 = bar_5 + (1 + 1)".into(),
@@ -1446,8 +1446,8 @@ fn test_var_inits() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo_3 = (foo_3 * 0.1)".into(),
                                     "bar_5 = bar_5 + (1 + -4)".into(),
@@ -1515,14 +1515,14 @@ fn test_if_else_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("foo == bar".into()),
-                                ordered_condition: Some("foo == bar".into()),
+                                unordered_condition: Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::atom("foo == bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo == bar)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -1532,8 +1532,8 @@ fn test_if_else_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -1543,8 +1543,8 @@ fn test_if_else_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -1593,14 +1593,14 @@ fn test_if_else_5() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("foo == bar".into()),
-                                ordered_condition: Some("foo == bar".into()),
+                                unordered_condition: Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::atom("foo == bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo == bar)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -1610,8 +1610,8 @@ fn test_if_else_5() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -1621,8 +1621,8 @@ fn test_if_else_5() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -1653,14 +1653,14 @@ fn test_if_else_6() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("foo == bar".into()),
-                                ordered_condition: Some("foo == bar".into()),
+                                unordered_condition: Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::atom("foo == bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo == bar)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -1670,8 +1670,8 @@ fn test_if_else_6() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -1681,8 +1681,8 @@ fn test_if_else_6() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -1713,14 +1713,14 @@ fn test_if_else_7() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("~(foo == bar)".into()),
-                                ordered_condition: Some("~(foo == bar)".into()),
+                                unordered_condition: !Condition::atom("foo == bar".into()),
+                                ordered_condition: !Condition::atom("foo == bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("foo == bar".into()),
-                                ordered_condition: None,
+                                unordered_condition: Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -1730,8 +1730,8 @@ fn test_if_else_7() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -1741,8 +1741,8 @@ fn test_if_else_7() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -1773,8 +1773,8 @@ fn test_if_else_8() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -1784,8 +1784,8 @@ fn test_if_else_8() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -1839,14 +1839,14 @@ fn test_if_else_13() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("a == 6".into()),
-                                ordered_condition: Some("a == 6".into()),
+                                unordered_condition: Condition::atom("a == 6".into()),
+                                ordered_condition: Condition::atom("a == 6".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "second".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(a == 6)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("a == 6".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "first".into(),
                             },
@@ -1856,8 +1856,8 @@ fn test_if_else_13() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "second".into(),
                             },
@@ -1887,14 +1887,14 @@ fn test_if_else_14() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("~(a == 6)".into()),
-                                ordered_condition: Some("~(a == 6)".into()),
+                                unordered_condition: !Condition::atom("a == 6".into()),
+                                ordered_condition: !Condition::atom("a == 6".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "second".into(),
                             },
                             Transition {
-                                unordered_condition: Some("a == 6".into()),
-                                ordered_condition: None,
+                                unordered_condition: Condition::atom("a == 6".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "first".into(),
                             },
@@ -1904,8 +1904,8 @@ fn test_if_else_14() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "second".into(),
                             },
@@ -1935,14 +1935,14 @@ fn test_if_else_15() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("~(a == 6)".into()),
-                                ordered_condition: Some("~(a == 6)".into()),
+                                unordered_condition: !Condition::atom("a == 6".into()),
+                                ordered_condition: !Condition::atom("a == 6".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "fourth".into(),
                             },
                             Transition {
-                                unordered_condition: Some("a == 6".into()),
-                                ordered_condition: None,
+                                unordered_condition: Condition::atom("a == 6".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "first".into(),
                             },
@@ -1952,8 +1952,8 @@ fn test_if_else_15() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "fourth".into(),
                             },
@@ -1983,14 +1983,14 @@ fn test_if_else_16() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("~(a == 6)".into()),
-                                ordered_condition: Some("~(a == 6)".into()),
+                                unordered_condition: !Condition::atom("a == 6".into()),
+                                ordered_condition: !Condition::atom("a == 6".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "fourth".into(),
                             },
                             Transition {
-                                unordered_condition: Some("a == 6".into()),
-                                ordered_condition: None,
+                                unordered_condition: Condition::atom("a == 6".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "first".into(),
                             },
@@ -2000,8 +2000,8 @@ fn test_if_else_16() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "fourth".into(),
                             },
@@ -2032,8 +2032,8 @@ fn test_if_else_17() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "t = 0".into(),
                                     "t = 0".into(),
@@ -2046,14 +2046,14 @@ fn test_if_else_17() {
                         parent: Some("thing 1".into()),
                         transitions: [
                             Transition {
-                                unordered_condition: Some("foo == bar".into()),
-                                ordered_condition: Some("foo == bar".into()),
+                                unordered_condition: Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::atom("foo == bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo == bar)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -2063,8 +2063,8 @@ fn test_if_else_17() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -2074,8 +2074,8 @@ fn test_if_else_17() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -2106,8 +2106,8 @@ fn test_if_else_18() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo = 1".into(),
                                     "foo = 2".into(),
@@ -2121,14 +2121,14 @@ fn test_if_else_18() {
                         parent: Some("thing 1".into()),
                         transitions: [
                             Transition {
-                                unordered_condition: Some("foo == bar".into()),
-                                ordered_condition: Some("foo == bar".into()),
+                                unordered_condition: Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::atom("foo == bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo == bar)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -2138,8 +2138,8 @@ fn test_if_else_18() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -2149,8 +2149,8 @@ fn test_if_else_18() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -2181,8 +2181,8 @@ fn test_if_else_19() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo = 1".into(),
                                     "foo = 2".into(),
@@ -2196,14 +2196,14 @@ fn test_if_else_19() {
                         parent: Some("thing 1".into()),
                         transitions: [
                             Transition {
-                                unordered_condition: Some("foo == bar".into()),
-                                ordered_condition: Some("foo == bar".into()),
+                                unordered_condition: Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::atom("foo == bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo == bar)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -2213,8 +2213,8 @@ fn test_if_else_19() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -2224,8 +2224,8 @@ fn test_if_else_19() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -2298,14 +2298,14 @@ fn test_tail_actions_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("foo > bar".into()),
-                                ordered_condition: Some("foo > bar".into()),
+                                unordered_condition: Condition::atom("foo > bar".into()),
+                                ordered_condition: Condition::atom("foo > bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo > bar)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("foo > bar".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo = (2 * foo * 2)".into(),
                                     "bar = (3 * bar)".into(),
@@ -2318,8 +2318,8 @@ fn test_tail_actions_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -2350,62 +2350,62 @@ fn test_operators() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("foo < bar".into()),
-                                ordered_condition: Some("foo < bar".into()),
+                                unordered_condition: Condition::atom("foo < bar".into()),
+                                ordered_condition: Condition::atom("foo < bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo < bar) & foo <= bar".into()),
-                                ordered_condition: Some("foo <= bar".into()),
+                                unordered_condition: !Condition::atom("foo < bar".into()) & Condition::atom("foo <= bar".into()),
+                                ordered_condition: Condition::atom("foo <= bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & foo > bar".into()),
-                                ordered_condition: Some("foo > bar".into()),
+                                unordered_condition: !Condition::atom("foo < bar".into()) & !Condition::atom("foo <= bar".into()) & Condition::atom("foo > bar".into()),
+                                ordered_condition: Condition::atom("foo > bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & foo >= bar".into()),
-                                ordered_condition: Some("foo >= bar".into()),
+                                unordered_condition: !Condition::atom("foo < bar".into()) & !Condition::atom("foo <= bar".into()) & !Condition::atom("foo > bar".into()) & Condition::atom("foo >= bar".into()),
+                                ordered_condition: Condition::atom("foo >= bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 5".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & foo == bar".into()),
-                                ordered_condition: Some("foo == bar".into()),
+                                unordered_condition: !Condition::atom("foo < bar".into()) & !Condition::atom("foo <= bar".into()) & !Condition::atom("foo > bar".into()) & !Condition::atom("foo >= bar".into()) & Condition::atom("foo == bar".into()),
+                                ordered_condition: Condition::atom("foo == bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 6".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & foo ~= bar".into()),
-                                ordered_condition: Some("foo ~= bar".into()),
+                                unordered_condition: !Condition::atom("foo < bar".into()) & !Condition::atom("foo <= bar".into()) & !Condition::atom("foo > bar".into()) & !Condition::atom("foo >= bar".into()) & !Condition::atom("foo == bar".into()) & Condition::atom("foo ~= bar".into()),
+                                ordered_condition: Condition::atom("foo ~= bar".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 7".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & foo < bar & false".into()),
-                                ordered_condition: Some("foo < bar & false".into()),
+                                unordered_condition: !Condition::atom("foo < bar".into()) & !Condition::atom("foo <= bar".into()) & !Condition::atom("foo > bar".into()) & !Condition::atom("foo >= bar".into()) & !Condition::atom("foo == bar".into()) & !Condition::atom("foo ~= bar".into()) & (Condition::atom("foo < 4".into()) & Condition::constant(true)),
+                                ordered_condition: Condition::atom("foo < 4".into()) & Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 8".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & ~(foo < bar & false) & (true | foo > bar)".into()),
-                                ordered_condition: Some("(true | foo > bar)".into()),
+                                unordered_condition: !Condition::atom("foo < bar".into()) & !Condition::atom("foo <= bar".into()) & !Condition::atom("foo > bar".into()) & !Condition::atom("foo >= bar".into()) & !Condition::atom("foo == bar".into()) & !Condition::atom("foo ~= bar".into()) & !(Condition::atom("foo < 4".into()) & Condition::constant(true)) & (Condition::constant(false) | Condition::atom("foo > 4".into())),
+                                ordered_condition: Condition::constant(false) | Condition::atom("foo > 4".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 9".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & ~(foo < bar & false) & ~((true | foo > bar)) & ~(foo == bar)".into()),
-                                ordered_condition: Some("~(foo == bar)".into()),
+                                unordered_condition: !Condition::atom("foo < bar".into()) & !Condition::atom("foo <= bar".into()) & !Condition::atom("foo > bar".into()) & !Condition::atom("foo >= bar".into()) & !Condition::atom("foo == bar".into()) & !Condition::atom("foo ~= bar".into()) & !(Condition::atom("foo < 4".into()) & Condition::constant(true)) & !(Condition::constant(false) | Condition::atom("foo > 4".into())) & !Condition::atom("foo == 4".into()),
+                                ordered_condition: !Condition::atom("foo == 4".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 10".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo < bar) & ~(foo <= bar) & ~(foo > bar) & ~(foo >= bar) & ~(foo == bar) & ~(foo ~= bar) & ~(foo < bar & false) & ~((true | foo > bar)) & ~(~(foo == bar))".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("foo < bar".into()) & !Condition::atom("foo <= bar".into()) & !Condition::atom("foo > bar".into()) & !Condition::atom("foo >= bar".into()) & !Condition::atom("foo == bar".into()) & !Condition::atom("foo ~= bar".into()) & !(Condition::atom("foo < 4".into()) & Condition::constant(true)) & !(Condition::constant(false) | Condition::atom("foo > 4".into())) & !!Condition::atom("foo == 4".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo = (foo + bar)".into(),
                                     "foo = (foo + 7 + bar)".into(),
@@ -2445,8 +2445,8 @@ fn test_operators() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -2456,8 +2456,8 @@ fn test_operators() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -2467,8 +2467,8 @@ fn test_operators() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -2478,8 +2478,8 @@ fn test_operators() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 5".into(),
                             },
@@ -2489,8 +2489,8 @@ fn test_operators() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 6".into(),
                             },
@@ -2500,8 +2500,8 @@ fn test_operators() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 7".into(),
                             },
@@ -2511,8 +2511,8 @@ fn test_operators() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 8".into(),
                             },
@@ -2522,8 +2522,8 @@ fn test_operators() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 9".into(),
                             },
@@ -2533,8 +2533,8 @@ fn test_operators() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 10".into(),
                             },
@@ -2564,8 +2564,8 @@ fn test_actions_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo = 456".into()
                                 ].into_iter().collect(),
@@ -2598,8 +2598,8 @@ fn test_actions_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo = (foo + bar)".into()
                                 ].into_iter().collect(),
@@ -2611,8 +2611,8 @@ fn test_actions_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "state 2".into(),
                             },
@@ -2622,14 +2622,14 @@ fn test_actions_2() {
                         parent: Some("state 1".into()),
                         transitions: [
                             Transition {
-                                unordered_condition: Some("foo < 7".into()),
-                                ordered_condition: Some("foo < 7".into()),
+                                unordered_condition: Condition::atom("foo < 7".into()),
+                                ordered_condition: Condition::atom("foo < 7".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "state 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo < 7)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("foo < 7".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "state 1".into(),
                             },
@@ -2669,32 +2669,32 @@ fn test_ext_blocks_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
-                                ordered_condition: Some("t > 10 & t > 9 & t > 7".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()) & Condition::atom("t > 7".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()) & Condition::atom("t > 7".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
                             Transition {
-                                unordered_condition: Some("t > 10 & t > 9 & ~(t > 7)".into()),
-                                ordered_condition: Some("t > 10 & t > 9".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()) & !Condition::atom("t > 7".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
                             Transition {
-                                unordered_condition: Some("t > 10 & ~(t > 9) & t > 8".into()),
-                                ordered_condition: Some("t > 10 & t > 8".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & !Condition::atom("t > 9".into()) & Condition::atom("t > 8".into()),
+                                ordered_condition: Condition::atom("t > 10".into()) & Condition::atom("t > 8".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("t > 10 & ~(t > 9) & ~(t > 8)".into()),
-                                ordered_condition: Some("t > 10".into()),
+                                unordered_condition: Condition::atom("t > 10".into()) & !Condition::atom("t > 9".into()) & !Condition::atom("t > 8".into()),
+                                ordered_condition: Condition::atom("t > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 5".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -2704,8 +2704,8 @@ fn test_ext_blocks_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 0".into(),
                             },
@@ -2715,8 +2715,8 @@ fn test_ext_blocks_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 2".into(),
                             },
@@ -2726,8 +2726,8 @@ fn test_ext_blocks_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 3".into(),
                             },
@@ -2737,8 +2737,8 @@ fn test_ext_blocks_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 4".into(),
                             },
@@ -2748,8 +2748,8 @@ fn test_ext_blocks_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 5".into(),
                             },
@@ -2777,14 +2777,14 @@ fn test_ite_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t < 10".into()),
-                                ordered_condition: Some("t < 10".into()),
+                                unordered_condition: Condition::atom("t < 10".into()),
+                                ordered_condition: Condition::atom("t < 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "bar".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t < 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t < 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "baz".into(),
                             },
@@ -2794,8 +2794,8 @@ fn test_ite_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "bar".into(),
                             },
@@ -2805,8 +2805,8 @@ fn test_ite_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "baz".into(),
                             },
@@ -2834,26 +2834,26 @@ fn test_ite_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("t < 10 & t < 9".into()),
-                                ordered_condition: Some("t < 10 & t < 9".into()),
+                                unordered_condition: Condition::atom("t < 10".into()) & Condition::atom("t < 9".into()),
+                                ordered_condition: Condition::atom("t < 10".into()) & Condition::atom("t < 9".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "bar1".into(),
                             },
                             Transition {
-                                unordered_condition: Some("t < 10 & ~(t < 9)".into()),
-                                ordered_condition: Some("t < 10".into()),
+                                unordered_condition: Condition::atom("t < 10".into()) & !Condition::atom("t < 9".into()),
+                                ordered_condition: Condition::atom("t < 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "bar2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t < 10) & t < 8".into()),
-                                ordered_condition: Some("t < 8".into()),
+                                unordered_condition: !Condition::atom("t < 10".into()) & Condition::atom("t < 8".into()),
+                                ordered_condition: Condition::atom("t < 8".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "baz1".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(t < 10) & ~(t < 8)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("t < 10".into()) & !Condition::atom("t < 8".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "baz2".into(),
                             },
@@ -2863,8 +2863,8 @@ fn test_ite_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "bar1".into(),
                             },
@@ -2874,8 +2874,8 @@ fn test_ite_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "bar2".into(),
                             },
@@ -2885,8 +2885,8 @@ fn test_ite_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "baz1".into(),
                             },
@@ -2896,8 +2896,8 @@ fn test_ite_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "baz2".into(),
                             },
@@ -2928,8 +2928,8 @@ fn test_var_names_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "some_var = (some_var * another_var)".into(),
                                 ].into_iter().collect(),
@@ -2941,8 +2941,8 @@ fn test_var_names_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "second state".into(),
                             },
@@ -2970,8 +2970,8 @@ fn test_initial_state_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "foo 4".into(),
                             },
@@ -2981,8 +2981,8 @@ fn test_initial_state_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "barb".into(),
                             },
@@ -2992,8 +2992,8 @@ fn test_initial_state_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "foo 3".into(),
                             },
@@ -3066,8 +3066,8 @@ fn test_initial_state_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "foo 4".into(),
                             },
@@ -3077,8 +3077,8 @@ fn test_initial_state_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "barb".into(),
                             },
@@ -3088,8 +3088,8 @@ fn test_initial_state_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "foo 3".into(),
                             },
@@ -3117,8 +3117,8 @@ fn test_initial_state_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "foo 4".into(),
                             },
@@ -3128,8 +3128,8 @@ fn test_initial_state_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "barb".into(),
                             },
@@ -3139,8 +3139,8 @@ fn test_initial_state_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "foo 3".into(),
                             },
@@ -3168,8 +3168,8 @@ fn test_initial_state_4() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "foo 4".into(),
                             },
@@ -3179,8 +3179,8 @@ fn test_initial_state_4() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "barb".into(),
                             },
@@ -3190,8 +3190,8 @@ fn test_initial_state_4() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "foo 3".into(),
                             },
@@ -3225,8 +3225,8 @@ fn test_unknown_blocks_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "merp = 10".into(),
                                     "?".into(),
@@ -3266,8 +3266,8 @@ fn test_unknown_blocks_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "merp = 10".into(),
                                     "merp = 20".into(),
@@ -3305,8 +3305,8 @@ fn test_unknown_blocks_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "merp = 10".into(),
                                     "?".into(),
@@ -3342,14 +3342,14 @@ fn test_unknown_blocks_4() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("?".into()),
-                                ordered_condition: Some("?".into()),
+                                unordered_condition: Condition::atom("?".into()),
+                                ordered_condition: Condition::atom("?".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "me go".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(?)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("?".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "me stop".into(),
                             },
@@ -3359,8 +3359,8 @@ fn test_unknown_blocks_4() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "?".into(),
                                 ].into_iter().collect(),
@@ -3390,8 +3390,8 @@ fn test_current_state_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "b".into(),
                             },
@@ -3401,8 +3401,8 @@ fn test_current_state_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "a".into(),
                             },
@@ -3442,8 +3442,8 @@ fn test_current_state_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "b".into(),
                             },
@@ -3453,8 +3453,8 @@ fn test_current_state_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "a".into(),
                             },
@@ -3494,8 +3494,8 @@ fn test_current_state_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "b".into(),
                             },
@@ -3505,8 +3505,8 @@ fn test_current_state_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "a".into(),
                             },
@@ -3548,8 +3548,8 @@ fn test_junctions_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "foo = (2 * foo)".into(),
                                 ].into_iter().collect(),
@@ -3561,14 +3561,14 @@ fn test_junctions_1() {
                         parent: Some("abc".into()),
                         transitions: [
                             Transition {
-                                unordered_condition: Some("foo > 1024".into()),
-                                ordered_condition: Some("foo > 1024".into()),
+                                unordered_condition: Condition::atom("foo > 1024".into()),
+                                ordered_condition: Condition::atom("foo > 1024".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "xyz".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(foo > 1024)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("foo > 1024".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "abc".into(),
                             },
@@ -3578,8 +3578,8 @@ fn test_junctions_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "xyz".into(),
                             },
@@ -3610,8 +3610,8 @@ fn test_junctions_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "a = (a + 1)".into(),
                                     "b = (a + b + 2)".into(),
@@ -3624,14 +3624,14 @@ fn test_junctions_2() {
                         parent: Some("something".into()),
                         transitions: [
                             Transition {
-                                unordered_condition: Some("(a + b) > 10".into()),
-                                ordered_condition: Some("(a + b) > 10".into()),
+                                unordered_condition: Condition::atom("(a + b) > 10".into()),
+                                ordered_condition: Condition::atom("(a + b) > 10".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "x2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~((a + b) > 10)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("(a + b) > 10".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "a = (a ^ b)".into(),
                                     "b = (a + b)".into(),
@@ -3644,14 +3644,14 @@ fn test_junctions_2() {
                         parent: Some("something".into()),
                         transitions: [
                             Transition {
-                                unordered_condition: Some("(a * b) > 100".into()),
-                                ordered_condition: Some("(a * b) > 100".into()),
+                                unordered_condition: Condition::atom("(a * b) > 100".into()),
+                                ordered_condition: Condition::atom("(a * b) > 100".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "x1".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~((a * b) > 100)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("(a * b) > 100".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [
                                     "a = (a / b)".into(),
                                     "b = (1 / b)".into(),
@@ -3664,8 +3664,8 @@ fn test_junctions_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "x1".into(),
                             },
@@ -3675,8 +3675,8 @@ fn test_junctions_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "x2".into(),
                             },
@@ -3779,14 +3779,14 @@ fn test_tail_condition_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("a == 1".into()),
-                                ordered_condition: Some("a == 1".into()),
+                                unordered_condition: Condition::atom("a == 1".into()),
+                                ordered_condition: Condition::atom("a == 1".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(a == 1)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("a == 1".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -3796,8 +3796,8 @@ fn test_tail_condition_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid".into(),
                             },
@@ -3807,8 +3807,8 @@ fn test_tail_condition_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -3838,14 +3838,14 @@ fn test_tail_condition_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("a == 1 & a == 2".into()),
-                                ordered_condition: Some("a == 1 & a == 2".into()),
+                                unordered_condition: Condition::atom("a == 1".into()) & Condition::atom("a == 2".into()),
+                                ordered_condition: Condition::atom("a == 1".into()) & Condition::atom("a == 2".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(a == 1 & a == 2)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !(Condition::atom("a == 1".into()) & Condition::atom("a == 2".into())),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -3855,8 +3855,8 @@ fn test_tail_condition_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid".into(),
                             },
@@ -3866,8 +3866,8 @@ fn test_tail_condition_2() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -3897,8 +3897,8 @@ fn test_tail_condition_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -3908,8 +3908,8 @@ fn test_tail_condition_3() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -3939,14 +3939,14 @@ fn test_tail_condition_4() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("a == 1".into()),
-                                ordered_condition: Some("a == 1".into()),
+                                unordered_condition: Condition::atom("a == 1".into()),
+                                ordered_condition: Condition::atom("a == 1".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 1".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(a == 1)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("a == 1".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 2".into(),
                             },
@@ -3956,8 +3956,8 @@ fn test_tail_condition_4() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 1".into(),
                             },
@@ -3967,8 +3967,8 @@ fn test_tail_condition_4() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 2".into(),
                             },
@@ -3998,20 +3998,20 @@ fn test_tail_condition_5() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("a == 1".into()),
-                                ordered_condition: Some("a == 1".into()),
+                                unordered_condition: Condition::atom("a == 1".into()),
+                                ordered_condition: Condition::atom("a == 1".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 1".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(a == 1) & a == 2".into()),
-                                ordered_condition: Some("a == 2".into()),
+                                unordered_condition: !Condition::atom("a == 1".into()) & Condition::atom("a == 2".into()),
+                                ordered_condition: Condition::atom("a == 2".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(a == 1) & ~(a == 2)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("a == 1".into()) & !Condition::atom("a == 2".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4021,8 +4021,8 @@ fn test_tail_condition_5() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 1".into(),
                             },
@@ -4032,8 +4032,8 @@ fn test_tail_condition_5() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 2".into(),
                             },
@@ -4043,8 +4043,8 @@ fn test_tail_condition_5() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4074,14 +4074,14 @@ fn test_tail_condition_6() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("a == 1".into()),
-                                ordered_condition: Some("a == 1".into()),
+                                unordered_condition: Condition::atom("a == 1".into()),
+                                ordered_condition: Condition::atom("a == 1".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 1".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(a == 1)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !Condition::atom("a == 1".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4091,8 +4091,8 @@ fn test_tail_condition_6() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 1".into(),
                             },
@@ -4102,8 +4102,8 @@ fn test_tail_condition_6() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4133,20 +4133,20 @@ fn test_tail_condition_7() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("a == 1 & a == 2".into()),
-                                ordered_condition: Some("a == 1 & a == 2".into()),
+                                unordered_condition: Condition::atom("a == 1".into()) & Condition::atom("a == 2".into()),
+                                ordered_condition: Condition::atom("a == 1".into()) & Condition::atom("a == 2".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 1".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(a == 1)".into()),
-                                ordered_condition: Some("~(a == 1)".into()),
+                                unordered_condition: !Condition::atom("a == 1".into()),
+                                ordered_condition: !Condition::atom("a == 1".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("a == 1 & ~(a == 2)".into()),
-                                ordered_condition: None,
+                                unordered_condition: Condition::atom("a == 1".into()) & !Condition::atom("a == 2".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4156,8 +4156,8 @@ fn test_tail_condition_7() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 1".into(),
                             },
@@ -4167,8 +4167,8 @@ fn test_tail_condition_7() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 2".into(),
                             },
@@ -4178,8 +4178,8 @@ fn test_tail_condition_7() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4209,20 +4209,20 @@ fn test_tail_condition_8() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("a == 1 & a == 2".into()),
-                                ordered_condition: Some("a == 1 & a == 2".into()),
+                                unordered_condition: Condition::atom("a == 1".into()) & Condition::atom("a == 2".into()),
+                                ordered_condition: Condition::atom("a == 1".into()) & Condition::atom("a == 2".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 1".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(a == 1) & a == 3".into()),
-                                ordered_condition: Some("~(a == 1) & a == 3".into()),
+                                unordered_condition: !Condition::atom("a == 1".into()) & Condition::atom("a == 3".into()),
+                                ordered_condition: !Condition::atom("a == 1".into()) & Condition::atom("a == 3".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("(~(a == 1 & a == 2) | ~(~(a == 1) & a == 3))".into()),
-                                ordered_condition: None,
+                                unordered_condition: !(Condition::atom("a == 1".into()) & Condition::atom("a == 2".into())) | !(!Condition::atom("a == 1".into()) & Condition::atom("a == 3".into())),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4232,8 +4232,8 @@ fn test_tail_condition_8() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 1".into(),
                             },
@@ -4243,8 +4243,8 @@ fn test_tail_condition_8() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 2".into(),
                             },
@@ -4254,8 +4254,8 @@ fn test_tail_condition_8() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4285,14 +4285,14 @@ fn test_tail_condition_9() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("a == 1 & a == 2".into()),
-                                ordered_condition: Some("a == 1 & a == 2".into()),
+                                unordered_condition: Condition::atom("a == 1".into()) & Condition::atom("a == 2".into()),
+                                ordered_condition: Condition::atom("a == 1".into()) & Condition::atom("a == 2".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 1".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(a == 1 & a == 2)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !(Condition::atom("a == 1".into()) & Condition::atom("a == 2".into())),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4302,8 +4302,8 @@ fn test_tail_condition_9() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 1".into(),
                             },
@@ -4313,8 +4313,8 @@ fn test_tail_condition_9() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4344,14 +4344,14 @@ fn test_tail_condition_10() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("~(a == 1)".into()),
-                                ordered_condition: Some("~(a == 1)".into()),
+                                unordered_condition: !Condition::atom("a == 1".into()),
+                                ordered_condition: !Condition::atom("a == 1".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("a == 1".into()),
-                                ordered_condition: None,
+                                unordered_condition: Condition::atom("a == 1".into()),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4361,8 +4361,8 @@ fn test_tail_condition_10() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 2".into(),
                             },
@@ -4372,8 +4372,8 @@ fn test_tail_condition_10() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4403,14 +4403,14 @@ fn test_tail_condition_11() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: Some("~(a == 1) & a == 2".into()),
-                                ordered_condition: Some("~(a == 1) & a == 2".into()),
+                                unordered_condition: !Condition::atom("a == 1".into()) & Condition::atom("a == 2".into()),
+                                ordered_condition: !Condition::atom("a == 1".into()) & Condition::atom("a == 2".into()),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 2".into(),
                             },
                             Transition {
-                                unordered_condition: Some("~(~(a == 1) & a == 2)".into()),
-                                ordered_condition: None,
+                                unordered_condition: !(!Condition::atom("a == 1".into()) & Condition::atom("a == 2".into())),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4420,8 +4420,8 @@ fn test_tail_condition_11() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "mid 2".into(),
                             },
@@ -4431,8 +4431,8 @@ fn test_tail_condition_11() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4462,8 +4462,8 @@ fn test_tail_condition_12() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4473,8 +4473,8 @@ fn test_tail_condition_12() {
                         parent: None,
                         transitions: [
                             Transition {
-                                ordered_condition: None,
-                                unordered_condition: None,
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "last".into(),
                             },
@@ -4502,8 +4502,8 @@ fn test_completeness_1() {
                         parent: None,
                         transitions: [
                             Transition {
-                                unordered_condition: None,
-                                ordered_condition: None,
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
                                 actions: [].into_iter().collect(),
                                 new_state: "thing 1".into(),
                             },

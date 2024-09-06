@@ -9,42 +9,23 @@ use alloc::collections::BTreeSet;
 use netsblox_ast::CompactString;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Condition {
+enum RawCondition {
     Const(bool),
     Atom(CompactString),
-    Not(Box<Condition>),
-    And(Box<Condition>, Box<Condition>),
-    Or(Box<Condition>, Box<Condition>),
+    Not(Box<RawCondition>),
+    And(Box<RawCondition>, Box<RawCondition>),
+    Or(Box<RawCondition>, Box<RawCondition>),
 }
 
-impl BitAnd for Condition {
-    type Output = Self;
-    fn bitand(self, rhs: Self) -> Self::Output {
-        Condition::And(Box::new(self), Box::new(rhs))
-    }
-}
-impl BitOr for Condition {
-    type Output = Self;
-    fn bitor(self, rhs: Self) -> Self::Output {
-        Condition::Or(Box::new(self), Box::new(rhs))
-    }
-}
-impl Not for Condition {
-    type Output = Self;
-    fn not(self) -> Self::Output {
-        Condition::Not(Box::new(self))
-    }
-}
-
-impl fmt::Display for Condition {
+impl fmt::Display for RawCondition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Condition::Const(x) => write!(f, "{x}"),
-            Condition::Atom(x) => write!(f, "{x}"),
-            Condition::And(a, b) => {
-                fn single(f: &mut fmt::Formatter<'_>, v: &Condition) -> fmt::Result {
+            RawCondition::Const(x) => write!(f, "{x}"),
+            RawCondition::Atom(x) => write!(f, "{x}"),
+            RawCondition::And(a, b) => {
+                fn single(f: &mut fmt::Formatter<'_>, v: &RawCondition) -> fmt::Result {
                     match v {
-                        Condition::Or(_, _) => write!(f, "({v})"),
+                        RawCondition::Or(_, _) => write!(f, "({v})"),
                         _ => write!(f, "{v}"),
                     }
                 }
@@ -52,10 +33,10 @@ impl fmt::Display for Condition {
                 write!(f, " & ")?;
                 single(f, b)
             }
-            Condition::Or(a, b) => {
-                fn single(f: &mut fmt::Formatter<'_>, v: &Condition) -> fmt::Result {
+            RawCondition::Or(a, b) => {
+                fn single(f: &mut fmt::Formatter<'_>, v: &RawCondition) -> fmt::Result {
                     match v {
-                        Condition::And(_, _) => write!(f, "({v})"),
+                        RawCondition::And(_, _) => write!(f, "({v})"),
                         _ => write!(f, "{v}"),
                     }
                 }
@@ -63,7 +44,7 @@ impl fmt::Display for Condition {
                 write!(f, " | ")?;
                 single(f, b)
             }
-            Condition::Not(x) => {
+            RawCondition::Not(x) => {
                 let inside = x.to_string();
                 if inside.chars().all(char::is_alphanumeric) {
                     write!(f, "~{inside}")
@@ -75,17 +56,36 @@ impl fmt::Display for Condition {
     }
 }
 
+impl BitAnd for RawCondition {
+    type Output = Self;
+    fn bitand(self, rhs: Self) -> Self::Output {
+        RawCondition::And(Box::new(self), Box::new(rhs))
+    }
+}
+impl BitOr for RawCondition {
+    type Output = Self;
+    fn bitor(self, rhs: Self) -> Self::Output {
+        RawCondition::Or(Box::new(self), Box::new(rhs))
+    }
+}
+impl Not for RawCondition {
+    type Output = Self;
+    fn not(self) -> Self::Output {
+        RawCondition::Not(Box::new(self))
+    }
+}
+
 #[test]
 fn test_condition() {
-    let a = Condition::Atom("a".into());
-    let b = Condition::Atom("b".into());
-    let c = Condition::Atom("c".into());
-    let d = Condition::Atom("d".into());
-    let e = Condition::Atom("x < 10".into());
-    let f = Condition::Atom("y == x + 10".into());
+    let a = RawCondition::Atom("a".into());
+    let b = RawCondition::Atom("b".into());
+    let c = RawCondition::Atom("c".into());
+    let d = RawCondition::Atom("d".into());
+    let e = RawCondition::Atom("x < 10".into());
+    let f = RawCondition::Atom("y == x + 10".into());
 
-    let bt = Condition::Const(true);
-    let bf = Condition::Const(false);
+    let bt = RawCondition::Const(true);
+    let bf = RawCondition::Const(false);
 
     assert_eq!(a.to_string(), "a");
     assert_eq!(b.to_string(), "b");
@@ -142,32 +142,42 @@ fn test_condition() {
     assert_eq!((a.clone() | bt.clone()).to_string(), "a | true");
 
     assert_eq!((a.clone() | !a.clone()).to_string(), "a | ~a");
+
+    assert_eq!((!bt.clone()).to_string(), "~true");
+    assert_eq!((!!bt.clone()).to_string(), "~(~true)");
+    assert_eq!((!!!bt.clone()).to_string(), "~(~(~true))");
+    assert_eq!((!!!!bt.clone()).to_string(), "~(~(~(~true)))");
+
+    assert_eq!((!bf.clone()).to_string(), "~false");
+    assert_eq!((!!bf.clone()).to_string(), "~(~false)");
+    assert_eq!((!!!bf.clone()).to_string(), "~(~(~false))");
+    assert_eq!((!!!!bf.clone()).to_string(), "~(~(~(~false)))");
 }
 
-impl Condition {
-    fn visit_and<F: FnMut(&Condition)>(&self, f: &mut F) {
+impl RawCondition {
+    fn visit_and<F: FnMut(&RawCondition)>(&self, f: &mut F) {
         match self {
-            Condition::And(x, y) => {
+            RawCondition::And(x, y) => {
                 x.visit_and(f);
                 y.visit_and(f);
             }
             x => f(x),
         }
     }
-    fn visit_or<F: FnMut(&Condition)>(&self, f: &mut F) {
+    fn visit_or<F: FnMut(&RawCondition)>(&self, f: &mut F) {
         match self {
-            Condition::Or(x, y) => {
+            RawCondition::Or(x, y) => {
                 x.visit_or(f);
                 y.visit_or(f);
             }
             x => f(x),
         }
     }
-    pub fn simpl(&self) -> Self {
+    fn simpl(&self) -> Self {
         macro_rules! subset_simpl {
             ($terms:ident : $kind:ident : $visitor:ident) => {{
-                let groups = $terms.iter().filter(|t| if let Condition::$kind(_, _) = t { true } else { false }).map(|t| {
-                    let mut sub_terms: BTreeSet<Condition> = Default::default();
+                let groups = $terms.iter().filter(|t| if let RawCondition::$kind(_, _) = t { true } else { false }).map(|t| {
+                    let mut sub_terms: BTreeSet<RawCondition> = Default::default();
                     t.$visitor(&mut |x| { sub_terms.insert(x.clone()); });
                     (t.clone(), sub_terms)
                 }).collect::<Vec<_>>();
@@ -180,33 +190,34 @@ impl Condition {
         }
 
         match self {
-            Condition::And(_, _) => {
-                let mut terms: BTreeSet<Condition> = Default::default();
+            RawCondition::And(_, _) => {
+                let mut terms: BTreeSet<RawCondition> = Default::default();
                 self.visit_and(&mut |x| { terms.insert(x.simpl()); });
 
                 subset_simpl!(terms : Or : visit_or);
-                terms.remove(&Condition::Const(true));
-                if terms.contains(&Condition::Const(false)) || terms.iter().any(|t| if let Condition::Not(t) = t { terms.contains(t) } else { false }) {
-                    return Condition::Const(false);
+                terms.remove(&RawCondition::Const(true));
+                if terms.contains(&RawCondition::Const(false)) || terms.iter().any(|t| if let RawCondition::Not(t) = t { terms.contains(t) } else { false }) {
+                    return RawCondition::Const(false);
                 }
 
-                terms.into_iter().reduce(|a, b| a & b).unwrap_or(Condition::Const(true))
+                terms.into_iter().reduce(|a, b| a & b).unwrap_or(RawCondition::Const(true))
             }
-            Condition::Or(_, _) => {
-                let mut terms: BTreeSet<Condition> = Default::default();
+            RawCondition::Or(_, _) => {
+                let mut terms: BTreeSet<RawCondition> = Default::default();
                 self.visit_or(&mut |x| { terms.insert(x.simpl()); });
 
                 subset_simpl!(terms : And : visit_and);
-                terms.remove(&Condition::Const(false));
-                if terms.contains(&Condition::Const(true)) || terms.iter().any(|t| if let Condition::Not(t) = t { terms.contains(t) } else { false }) {
-                    return Condition::Const(true);
+                terms.remove(&RawCondition::Const(false));
+                if terms.contains(&RawCondition::Const(true)) || terms.iter().any(|t| if let RawCondition::Not(t) = t { terms.contains(t) } else { false }) {
+                    return RawCondition::Const(true);
                 }
 
-                terms.into_iter().reduce(|a, b| a | b).unwrap_or(Condition::Const(false))
+                terms.into_iter().reduce(|a, b| a | b).unwrap_or(RawCondition::Const(false))
             }
-            Condition::Not(x) => match &**x {
-                Condition::Not(x) => x.simpl(),
-                x => Condition::Not(Box::new(x.simpl())),
+            RawCondition::Not(x) => match &**x {
+                RawCondition::Const(x) => RawCondition::Const(!x),
+                RawCondition::Not(x) => x.simpl(),
+                x => RawCondition::Not(Box::new(x.simpl())),
             }
             x => x.clone(),
         }
@@ -215,15 +226,15 @@ impl Condition {
 
 #[test]
 fn test_simpl() {
-    let a = Condition::Atom("a".into());
-    let b = Condition::Atom("b".into());
-    let c = Condition::Atom("c".into());
-    let d = Condition::Atom("d".into());
-    let e = Condition::Atom("x < 10".into());
-    let f = Condition::Atom("y == x + 10".into());
+    let a = RawCondition::Atom("a".into());
+    let b = RawCondition::Atom("b".into());
+    let c = RawCondition::Atom("c".into());
+    let d = RawCondition::Atom("d".into());
+    let e = RawCondition::Atom("x < 10".into());
+    let f = RawCondition::Atom("y == x + 10".into());
 
-    let bt = Condition::Const(true);
-    let bf = Condition::Const(false);
+    let bt = RawCondition::Const(true);
+    let bf = RawCondition::Const(false);
 
     assert_eq!((a.clone() & a.clone()).simpl().to_string(), "a");
     assert_eq!((a.clone() & c.clone() & a.clone()).simpl().to_string(), "a & c");
@@ -289,4 +300,60 @@ fn test_simpl() {
     assert_eq!((e.clone() & !e.clone()).simpl().to_string(), "false");
     assert_eq!((!!e.clone() & !e.clone()).simpl().to_string(), "false");
     assert_eq!((!!e.clone() & !!!e.clone()).simpl().to_string(), "false");
+
+    assert_eq!((!bt.clone()).simpl().to_string(), "false");
+    assert_eq!((!!bt.clone()).simpl().to_string(), "true");
+    assert_eq!((!!!bt.clone()).simpl().to_string(), "false");
+    assert_eq!((!!!!bt.clone()).simpl().to_string(), "true");
+
+    assert_eq!((!bf.clone()).simpl().to_string(), "true");
+    assert_eq!((!!bf.clone()).simpl().to_string(), "false");
+    assert_eq!((!!!bf.clone()).simpl().to_string(), "true");
+    assert_eq!((!!!!bf.clone()).simpl().to_string(), "false");
+}
+
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Condition(RawCondition);
+impl Condition {
+    pub fn atom(v: CompactString) -> Self {
+        assert!(v != "true" && v != "false");
+        Condition(RawCondition::Atom(v))
+    }
+    pub fn constant(v: bool) -> Self {
+        Condition(RawCondition::Const(v))
+    }
+}
+impl fmt::Display for Condition {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+impl fmt::Debug for Condition {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+impl BitAnd for Condition {
+    type Output = Self;
+    fn bitand(self, rhs: Self) -> Self::Output {
+        let res = (self.0 & rhs.0).simpl();
+        debug_assert_eq!(res, res.simpl());
+        Condition(res)
+    }
+}
+impl BitOr for Condition {
+    type Output = Self;
+    fn bitor(self, rhs: Self) -> Self::Output {
+        let res = (self.0 | rhs.0).simpl();
+        debug_assert_eq!(res, res.simpl());
+        Condition(res)
+    }
+}
+impl Not for Condition {
+    type Output = Self;
+    fn not(self) -> Self::Output {
+        let res = (!self.0).simpl();
+        debug_assert_eq!(res, res.simpl());
+        Condition(res)
+    }
 }

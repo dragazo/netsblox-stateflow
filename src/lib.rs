@@ -13,6 +13,7 @@ use alloc::collections::{VecDeque, BTreeMap};
 use alloc::fmt::Write as _;
 use alloc::boxed::Box;
 use alloc::vec::Vec;
+use alloc::string::{ToString, String};
 
 pub use graphviz_rust as graphviz;
 
@@ -30,7 +31,7 @@ macro_rules! deque {
 }
 
 mod condition;
-use condition::*;
+pub use condition::*;
 
 trait VecDequeUtil<T> {
     fn extend_front<I: Iterator<Item = T> + DoubleEndedIterator>(&mut self, iter: I);
@@ -119,8 +120,8 @@ pub struct State {
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct Transition {
-    pub ordered_condition: Option<CompactString>,
-    pub unordered_condition: Option<CompactString>,
+    pub ordered_condition: Condition,
+    pub unordered_condition: Condition,
     pub actions: VecDeque<CompactString>,
     pub new_state: CompactString,
 }
@@ -199,6 +200,15 @@ fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &
         }
     })
 }
+fn translate_condition(state_machine: &str, state: &str, expr: &ast::Expr, context: &mut Context) -> Result<Condition, CompileError> {
+    Ok(match &expr.kind {
+        ast::ExprKind::And { left, right } => translate_condition(state_machine, state, left, context)? & translate_condition(state_machine, state, right, context)?,
+        ast::ExprKind::Or { left, right } => translate_condition(state_machine, state, left, context)? | translate_condition(state_machine, state, right, context)?,
+        ast::ExprKind::Not { value } => !translate_condition(state_machine, state, value, context)?,
+        ast::ExprKind::Value(ast::Value::Bool(x)) => Condition::constant(*x),
+        _ => Condition::atom(translate_expr(state_machine, state, expr, context)?),
+    })
+}
 fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &mut Context) -> Result<Vec<CompactString>, CompileError> {
     Ok(match &stmt.kind {
         ast::StmtKind::Assign { var, value } => {
@@ -216,22 +226,22 @@ fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &m
         }
     })
 }
-fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool, context: &mut Context) -> Result<Option<(VecDeque<Transition>, Option<CompactString>, bool)>, CompileError> {
+fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool, context: &mut Context) -> Result<Option<(VecDeque<Transition>, Condition, bool)>, CompileError> {
     fn parse_transition_target(state_machine: &str, state: &str, expr: &ast::Expr, context: &mut Context) -> Result<VecDeque<Transition>, CompileError> {
         Ok(match &expr.kind {
-            ast::ExprKind::Value(ast::Value::String(x)) => deque![Transition { ordered_condition: None, unordered_condition: None, actions: <_>::default(), new_state: x.clone() }],
+            ast::ExprKind::Value(ast::Value::String(x)) => deque![Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: <_>::default(), new_state: x.clone() }],
             ast::ExprKind::Conditional { condition, then, otherwise } => {
-                let condition = translate_expr(state_machine, state, condition, context)?;
+                let condition = translate_condition(state_machine, state, condition, context)?;
                 let mut then_transitions = parse_transition_target(state_machine, state, then, context)?;
                 let mut otherwise_transitions = parse_transition_target(state_machine, state, otherwise, context)?;
 
                 for transition in then_transitions.iter_mut() {
                     for target in [&mut transition.unordered_condition, &mut transition.ordered_condition] {
-                        *target = Some(target.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
+                        *target = condition.clone() & target.clone();
                     }
                 }
                 for transition in otherwise_transitions.iter_mut() {
-                    transition.unordered_condition = Some(transition.unordered_condition.take().map(|x| format_compact!("~({condition}) & {x}")).unwrap_or_else(|| format_compact!("~({condition})")));
+                    transition.unordered_condition = !condition.clone() & transition.unordered_condition.clone();
                 }
 
                 then_transitions.extend(otherwise_transitions);
@@ -245,7 +255,7 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
         ast::StmtKind::UnknownBlock { name, args } => match (name.as_str(), args.as_slice()) {
             ("smTransition", [var, value]) => match &var.kind {
                 ast::ExprKind::Value(ast::Value::String(var)) => match *var == state_machine {
-                    true => Some((parse_transition_target(state_machine, state, value, context)?, Some("false".into()), true)),
+                    true => Some((parse_transition_target(state_machine, state, value, context)?, Condition::constant(false), true)),
                     false => return Err(CompileError::TransitionForeignMachine { state_machine: state_machine.into(), state: state.into(), foreign_machine: var.clone() }),
                 }
                 _ => None,
@@ -253,57 +263,53 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
             _ => None,
         }
         ast::StmtKind::Assign { var, value } if var.name == state_machine => match terminal {
-            true => Some((parse_transition_target(state_machine, state, value, context)?, Some("false".into()), true)),
+            true => Some((parse_transition_target(state_machine, state, value, context)?, Condition::constant(false), true)),
             false => return Err(CompileError::NonTerminalTransition { state_machine: state_machine.into(), state: state.into() }),
         }
         ast::StmtKind::If { condition, then } => {
-            let condition = translate_expr(state_machine, state, condition, context)?;
+            let condition = translate_condition(state_machine, state, condition, context)?;
             let (mut transitions, body_terminal) = parse_stmts(state_machine, state, &then, terminal, context, false)?;
 
             let tail_condition = match body_terminal {
-                true => Some(format_compact!("~({condition})")),
-                false => match punctuate(transitions.iter().filter_map(|t| t.ordered_condition.as_deref()), " | ") {
-                    None => None,
-                    Some((c, 0)) => Some(format_compact!("~({condition} & {c})")),
-                    Some((c, _)) => Some(format_compact!("~({condition} & ({c}))")),
-                }
+                true => !condition.clone(),
+                false => transitions.iter().map(|t| t.ordered_condition.clone()).reduce(|a, b| a | b).map(|c| !(condition.clone() & c)).unwrap_or(Condition::constant(true)),
             };
 
             for transition in transitions.iter_mut() {
                 for target in [&mut transition.unordered_condition, &mut transition.ordered_condition] {
-                    *target = Some(target.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
+                    *target = condition.clone() & target.clone();
                 }
             }
 
             Some((transitions, tail_condition, false))
         }
         ast::StmtKind::IfElse { condition, then, otherwise } => {
-            let condition = translate_expr(state_machine, state, condition, context)?;
+            let condition = translate_condition(state_machine, state, condition, context)?;
 
             let (mut transitions_1, body_terminal_1) = parse_stmts(state_machine, state, &then, terminal, context, false)?;
             let (mut transitions_2, body_terminal_2) = parse_stmts(state_machine, state, &otherwise, terminal, context, false)?;
 
             let tail_condition = match (body_terminal_1, body_terminal_2) {
-                (true, true) => Some("false".into()),
-                (true, false) => match transitions_2.back().and_then(|t| t.unordered_condition.as_deref()) {
-                    None => Some(format_compact!("~({condition})")),
-                    Some(last) => Some(format_compact!("~({condition}) & ~({last})")),
+                (true, true) => Condition::constant(false),
+                (true, false) => match transitions_2.back() {
+                    None => !condition.clone(),
+                    Some(last) => !condition.clone() & !last.unordered_condition.clone(),
                 }
-                (false, true) => match transitions_1.back().and_then(|t| t.unordered_condition.as_deref()) {
-                    None => Some(condition.clone()),
-                    Some(last) => Some(format_compact!("{condition} & ~({last})")),
+                (false, true) => match transitions_1.back() {
+                    None => condition.clone(),
+                    Some(last) => condition.clone() & !last.unordered_condition.clone(),
                 }
-                (false, false) => match (transitions_1.back().and_then(|t| t.unordered_condition.as_deref()), transitions_2.back().and_then(|t| t.unordered_condition.as_deref())) {
-                    (None, None) => None,
-                    (None, Some(right)) => Some(format_compact!("~(~({condition}) & {right})")),
-                    (Some(left), None) => Some(format_compact!("~({condition} & {left})")),
-                    (Some(left), Some(right)) => Some(format_compact!("(~({condition} & {left}) | ~(~({condition}) & {right}))")),
+                (false, false) => match (transitions_1.back(), transitions_2.back()) {
+                    (None, None) => Condition::constant(true),
+                    (None, Some(right)) => !(!condition.clone() & right.unordered_condition.clone()),
+                    (Some(left), None) => !(condition.clone() & left.unordered_condition.clone()),
+                    (Some(left), Some(right)) => !(condition.clone() & left.unordered_condition.clone()) | !(!condition.clone() & right.unordered_condition.clone()),
                 }
             };
 
             for transition in transitions_1.iter_mut() {
                 for target in [&mut transition.unordered_condition, &mut transition.ordered_condition] {
-                    *target = Some(target.take().map(|x| format_compact!("{condition} & {x}")).unwrap_or_else(|| condition.clone()));
+                    *target = condition.clone() & target.clone();
                 }
             }
             for transition in transitions_2.iter_mut() {
@@ -313,7 +319,7 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
                 };
                 for target in targets {
                     if let Some(target) = target {
-                        *target = Some(target.take().map(|x| format_compact!("~({condition}) & {x}")).unwrap_or_else(|| format_compact!("~({condition})")));
+                        *target = !condition.clone() & target.clone();
                     }
                 }
             }
@@ -330,7 +336,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
     let mut body_terminal = false;
 
     if top_level {
-        transitions.push_back(Transition { unordered_condition: None, ordered_condition: None, actions: <_>::default(), new_state: state.into() });
+        transitions.push_back(Transition { unordered_condition: Condition::constant(true), ordered_condition: Condition::constant(true), actions: <_>::default(), new_state: state.into() });
     }
 
     let mut stmts = stmts.iter().rev().peekable();
@@ -346,24 +352,24 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
     fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, terminal: bool, context: &mut Context) -> Result<(), CompileError> {
         if !actions.is_empty() {
             if terminal && transitions.is_empty() {
-                transitions.push_front(Transition { ordered_condition: None, unordered_condition: None, actions: core::mem::take(actions), new_state: state.into() });
-            } else if transitions.len() == 1 && transitions[0].unordered_condition.is_none() {
+                transitions.push_front(Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: core::mem::take(actions), new_state: state.into() });
+            } else if transitions.len() == 1 && transitions[0].unordered_condition == Condition::constant(true) {
                 transitions[0].actions.extend_front(core::mem::take(actions).into_iter());
             } else if terminal {
                 let junction = format_compact!("::junction-{}::", context.junctions.len());
                 let mut junction_state = State { parent: Some(state.into()), transitions: core::mem::take(transitions) };
 
-                if junction_state.transitions.back().map(|t| t.ordered_condition.is_some()).unwrap_or(true) {
-                    let return_condition: CompactString = junction_state.transitions.iter().flat_map(|t| t.unordered_condition.as_ref()).map(|c| format_compact!("~({c})")).collect::<Vec<_>>().join(" & ").into();
+                if junction_state.transitions.back().map(|t| t.ordered_condition != Condition::constant(true)).unwrap_or(true) {
+                    let return_condition: Condition = junction_state.transitions.iter().map(|t| t.unordered_condition.clone()).fold(Condition::constant(true), |a, b| a & !b);
                     junction_state.transitions.push_back(Transition {
-                        unordered_condition: if return_condition.is_empty() { None } else { Some(return_condition) },
-                        ordered_condition: None,
+                        unordered_condition: return_condition,
+                        ordered_condition: Condition::constant(true),
                         actions: deque![],
                         new_state: state.into(),
                     });
                 }
 
-                transitions.push_front(Transition { ordered_condition: None, unordered_condition: None, actions: core::mem::take(actions), new_state: junction.clone() });
+                transitions.push_front(Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: core::mem::take(actions), new_state: junction.clone() });
                 context.junctions.push((junction, junction_state));
             } else {
                 return Err(CompileError::ActionsOutsideTransition { state_machine: state_machine.into(), state: state.into() });
@@ -380,13 +386,11 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
                 debug_assert_eq!(actions.len(), 0);
 
                 body_terminal |= sub_body_terminal;
-                if tail_condition.as_deref() == Some("false") {
+                if tail_condition == Condition::constant(false) {
                     transitions.clear();
                 }
-                if let Some(tail_condition) = tail_condition {
-                    for transition in transitions.iter_mut() {
-                        transition.unordered_condition = Some(transition.unordered_condition.take().map(|x| format_compact!("{tail_condition} & {x}")).unwrap_or_else(|| tail_condition.clone()));
-                    }
+                for transition in transitions.iter_mut() {
+                    transition.unordered_condition = tail_condition.clone() & transition.unordered_condition.clone();
                 }
                 transitions.extend_front(sub_transitions.into_iter());
             }
@@ -474,7 +478,7 @@ impl Project {
             for target_state in target_states {
                 state_machine.states.entry(target_state.clone()).or_insert_with(|| State {
                     parent: None,
-                    transitions: deque![Transition { unordered_condition: None, ordered_condition: None, actions: <_>::default(), new_state: target_state }]
+                    transitions: deque![Transition { unordered_condition: Condition::constant(true), ordered_condition: Condition::constant(true), actions: <_>::default(), new_state: target_state }]
                 });
             }
         }
@@ -570,15 +574,15 @@ impl Project {
                 stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes }));
             }
             for (state_name, state) in state_machine.states.iter() {
-                let included_transitions = state.transitions.iter().filter(|t| t.new_state != state_name || !t.actions.is_empty() || t.ordered_condition.is_some()).collect::<Vec<_>>();
+                let included_transitions = state.transitions.iter().filter(|t| t.new_state != state_name || !t.actions.is_empty() || t.ordered_condition != Condition::constant(true)).collect::<Vec<_>>();
 
-                let labeler: fn (usize, Option<&str>) -> dot::Id = match included_transitions.len() {
+                let labeler: fn (usize, Option<String>) -> dot::Id = match included_transitions.len() {
                     1 => |_, t| t.map(|t| dot_id(&format!(" {t} "))).unwrap_or_else(|| dot_id("")),
                     _ => |i, t| t.map(|t| dot_id(&format!(" {}: {t} ", i + 1))).unwrap_or_else(|| dot_id(&format!(" {} ", i + 1))),
                 };
                 for (i, transition) in included_transitions.iter().enumerate() {
                     stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id(state_name)), dot::Vertex::N(node_id(&transition.new_state))), attributes: vec![
-                        dot::Attribute(dot::Id::Plain("label".into()), labeler(i, transition.ordered_condition.as_deref())),
+                        dot::Attribute(dot::Id::Plain("label".into()), labeler(i, if transition.ordered_condition != Condition::constant(true) { Some(transition.ordered_condition.to_string()) } else { None })),
                     ] }));
                 }
             }
@@ -623,7 +627,7 @@ impl Project {
                 }
             }
             for (state_idx, (state_name, state)) in state_machine.states.iter().enumerate() {
-                let included_transitions = state.transitions.iter().filter(|t| t.new_state != state_name || !t.actions.is_empty() || t.ordered_condition.is_some());
+                let included_transitions = state.transitions.iter().filter(|t| t.new_state != state_name || !t.actions.is_empty() || t.ordered_condition != Condition::constant(true));
 
                 for transition in included_transitions {
                     writeln!(res, "t = Stateflow.Transition(chart)").unwrap();
@@ -631,7 +635,7 @@ impl Project {
                     writeln!(res, "t.Destination = s{}", state_numbers[transition.new_state.as_str()]).unwrap();
 
                     let mut label = CompactString::default();
-                    write!(label, "[{}]{{", transition.unordered_condition.as_deref().unwrap_or_default()).unwrap();
+                    write!(label, "[{}]{{", if transition.unordered_condition != Condition::constant(true) { transition.unordered_condition.to_string() } else { String::new() }).unwrap();
                     for action in transition.actions.iter() {
                         write!(label, "{action};").unwrap();
                     }
