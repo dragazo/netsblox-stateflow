@@ -319,7 +319,7 @@ impl Condition {
         &self.0
     }
     pub fn atom(v: CompactString) -> Self {
-        assert!(v != "true" && v != "false");
+        debug_assert!(v != "true" && v != "false" && v != "");
         Condition(RawCondition::Atom(v))
     }
     pub fn constant(v: bool) -> Self {
