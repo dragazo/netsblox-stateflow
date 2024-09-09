@@ -136,6 +136,13 @@ struct Context {
     settings: Settings,
 }
 
+fn prune_and_normalize(transitions: &mut VecDeque<Transition>) {
+    transitions.retain(|t| t.ordered_condition != Condition::constant(false) && t.unordered_condition != Condition::constant(false));
+    if let Some(last) = transitions.back_mut() {
+        last.ordered_condition = Condition::constant(true);
+    }
+}
+
 fn translate_value(state_machine: &str, state: &str, value: &ast::Value) -> Result<CompactString, CompileError> {
     Ok(match value {
         ast::Value::String(x) => x.clone(),
@@ -351,7 +358,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
 
     fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, terminal: bool, context: &mut Context) -> Result<(), CompileError> {
         if !actions.is_empty() {
-            transitions.retain(|t| t.ordered_condition != Condition::constant(false) || t.unordered_condition != Condition::constant(false));
+            prune_and_normalize(transitions);
 
             if terminal && transitions.is_empty() {
                 transitions.push_front(Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: core::mem::take(actions), new_state: state.into() });
@@ -467,7 +474,7 @@ impl Project {
 
         for (state_machine, _) in state_machines.values_mut() {
             for state in state_machine.states.values_mut() {
-                state.transitions.retain(|t| t.ordered_condition != Condition::constant(false) || t.unordered_condition != Condition::constant(false));
+                prune_and_normalize(&mut state.transitions);
             }
         }
 
