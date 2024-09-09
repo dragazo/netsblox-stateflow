@@ -4816,3 +4816,84 @@ fn test_prune_4() {
     });
     assert_complete(&proj);
 }
+
+#[test]
+fn test_prune_5() {
+    let proj = Project::compile(include_str!("projects/prune-5.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy".into(), StateMachine {
+                variables: [
+                    ("a".into(), "0".into()),
+                    ("b".into(), "0".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("first".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [
+                                    "t = 0".into(),
+                                ].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("last".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_complete(&proj);
+}
+
+#[test]
+fn test_prune_6() {
+    let proj = Project::compile(include_str!("projects/prune-6.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy".into(), StateMachine {
+                variables: [
+                    ("a".into(), "0".into()),
+                    ("b".into(), "0".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("first".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [
+                                    "t = 0".into(),
+                                ].into_iter().collect(),
+                                new_state: "first".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_complete(&proj);
+}

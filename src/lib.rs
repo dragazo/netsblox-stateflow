@@ -351,6 +351,8 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
 
     fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, terminal: bool, context: &mut Context) -> Result<(), CompileError> {
         if !actions.is_empty() {
+            transitions.retain(|t| t.ordered_condition != Condition::constant(false) || t.unordered_condition != Condition::constant(false));
+
             if terminal && transitions.is_empty() {
                 transitions.push_front(Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: core::mem::take(actions), new_state: state.into() });
             } else if transitions.len() == 1 && transitions[0].unordered_condition == Condition::constant(true) {
