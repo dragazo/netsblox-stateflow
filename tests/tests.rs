@@ -5024,3 +5024,44 @@ fn test_prune_8() {
     });
     assert_complete(&proj);
 }
+
+#[test]
+fn test_empty_condition() {
+    let proj = Project::compile(include_str!("projects/empty-condition.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy".into(), StateMachine {
+                variables: [].into_iter().collect(),
+                states: [
+                    ("first".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: "second".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("second".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: "second".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_complete(&proj);
+}

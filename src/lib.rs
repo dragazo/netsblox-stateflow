@@ -213,6 +213,7 @@ fn translate_condition(state_machine: &str, state: &str, expr: &ast::Expr, conte
         ast::ExprKind::Or { left, right } => translate_condition(state_machine, state, left, context)? | translate_condition(state_machine, state, right, context)?,
         ast::ExprKind::Not { value } => !translate_condition(state_machine, state, value, context)?,
         ast::ExprKind::Value(ast::Value::Bool(x)) => Condition::constant(*x),
+        ast::ExprKind::Value(ast::Value::String(x)) if x.is_empty() => Condition::constant(true),
         _ => Condition::atom(translate_expr(state_machine, state, expr, context)?),
     })
 }
