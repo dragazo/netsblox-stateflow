@@ -29,6 +29,11 @@ fn eval(cond: &RawCondition, assignments: &BTreeMap<&str, bool>) -> bool {
 fn assert_complete(proj: &Project) {
     for (state_machine_name, state_machine) in proj.state_machines.iter() {
         for (state_name, state) in state_machine.states.iter() {
+            match state.transitions.back() {
+                Some(t) => if t.ordered_condition != Condition::constant(true) { panic!("{state_machine_name:?} :: {state_name:?} > transitions not in normal form") },
+                None => panic!("{state_machine_name:?} :: {state_name:?} > no transitions"),
+            }
+
             let mut variables = BTreeSet::new();
             for transition in state.transitions.iter() {
                 aggregate_atoms(transition.ordered_condition.raw(), &mut variables);
