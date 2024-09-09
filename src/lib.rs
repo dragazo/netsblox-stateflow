@@ -463,6 +463,12 @@ impl Project {
             }
         }
 
+        for (state_machine, _) in state_machines.values_mut() {
+            for state in state_machine.states.values_mut() {
+                state.transitions.retain(|t| t.ordered_condition != Condition::constant(false) || t.unordered_condition != Condition::constant(false));
+            }
+        }
+
         let mut state_machines = state_machines.into_iter().map(|(state_machine_name, (mut state_machine, context))| {
             for (name, junction) in context.junctions {
                 assert!(state_machine.states.insert(name, junction).is_none());
