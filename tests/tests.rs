@@ -5026,6 +5026,84 @@ fn test_prune_8() {
 }
 
 #[test]
+fn test_prune_9() {
+    let proj = Project::compile(include_str!("projects/prune-9.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("thingy".into(), StateMachine {
+                variables: [
+                    ("a".into(), "0".into()),
+                    ("b".into(), "0".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("first".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::atom("a == b".into()) & Condition::atom("b == 4".into()),
+                                ordered_condition: Condition::atom("a == b".into()) & Condition::atom("b == 4".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 1".into(),
+                            },
+                            Transition {
+                                unordered_condition: Condition::atom("a == b".into()) & !Condition::atom("b == 4".into()),
+                                ordered_condition: Condition::atom("a == b".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 2".into(),
+                            },
+                            Transition {
+                                unordered_condition: !Condition::atom("a == b".into()),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("mid 1".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 1".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("mid 2".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: "mid 2".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("last".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: "last".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: None,
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_complete(&proj);
+}
+
+#[test]
 fn test_empty_condition() {
     let proj = Project::compile(include_str!("projects/empty-condition.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
