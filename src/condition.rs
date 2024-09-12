@@ -175,7 +175,7 @@ impl RawCondition {
     }
     fn simpl(&self) -> Self {
         macro_rules! hetero_simpl {
-            ($terms:ident : $kind:ident : $visitor:ident) => {{
+            ($terms:ident : $kind:ident , $visitor:ident) => {{
                 let groups = $terms.iter().filter(|t| if let RawCondition::$kind(_, _) = t { true } else { false }).map(|t| {
                     let mut sub_terms: BTreeSet<RawCondition> = Default::default();
                     t.$visitor(&mut |x| { sub_terms.insert(x.clone()); });
@@ -188,22 +188,36 @@ impl RawCondition {
                 }
             }};
         }
+        macro_rules! homo_simpl {
+            ($terms:ident : $kind:ident, $visitor:ident, $identity:literal) => {{
+                let groups = $terms.iter().filter_map(|t| match t { RawCondition::Not(x) => match &**x { RawCondition::$kind(_, _) => Some((t, x)), _ => None }, _ => None }).map(|(src, x)| {
+                    let mut sub_terms: BTreeSet<RawCondition> = Default::default();
+                    x.$visitor(&mut |x| { sub_terms.insert(x.clone()); });
+                    (src.clone(), sub_terms)
+                }).collect::<Vec<_>>();
+                for (src, group) in groups.iter() {
+                    assert!($terms.remove(src));
+                    if !$terms.iter().any(|t| match t { RawCondition::Not(x) => group.contains(x), _ => false }) && !group.iter().any(|t| match t { RawCondition::Not(x) => $terms.contains(x), _ => false }) {
+                        let new_group = group.iter().filter(|t| !$terms.contains(t)).cloned().collect::<BTreeSet<_>>();
+                        $terms.insert(new_group.into_iter().reduce(|a, b| RawCondition::$kind(Box::new(a), Box::new(b))).map(|t| !t).unwrap_or(RawCondition::Const(!$identity)));
+                    }
+                }
+            }};
+        }
 
         match self {
             RawCondition::And(_, _) => {
                 let mut terms: BTreeSet<RawCondition> = Default::default();
                 self.visit_and(&mut |x| { terms.insert(x.simpl()); });
 
-                hetero_simpl!(terms : Or : visit_or);
+                //  a      & (a | b)     ---> a
+                // (a | b) & (a | b | c) ---> a | b
+                hetero_simpl!(terms: Or, visit_or);
 
-                let elim_groups = terms.iter().filter_map(|t| match t { RawCondition::Not(x) => match &**x { RawCondition::And(_, _) => Some((t, x)), _ => None }, _ => None }).map(|(src, x)| {
-                    let mut sub_terms: BTreeSet<RawCondition> = Default::default();
-                    x.visit_and(&mut |x| { sub_terms.insert(x.clone()); });
-                    (src.clone(), sub_terms)
-                }).collect::<Vec<_>>();
-                for (src, elim_group) in elim_groups.iter() {
-                    
-                }
+                //  a & !( a & b) --->  a & !b
+                //  a & !(!a & b) --->  a
+                // !a & !( a & b) ---> !a
+                homo_simpl!(terms: And, visit_and, true);
 
                 terms.remove(&RawCondition::Const(true));
                 if terms.contains(&RawCondition::Const(false)) || terms.iter().any(|t| if let RawCondition::Not(t) = t { terms.contains(t) } else { false }) {
@@ -216,7 +230,15 @@ impl RawCondition {
                 let mut terms: BTreeSet<RawCondition> = Default::default();
                 self.visit_or(&mut |x| { terms.insert(x.simpl()); });
 
-                hetero_simpl!(terms : And : visit_and);
+                //  a      | (a & b)     ---> a
+                // (a & b) | (a & b & c) ---> a & b
+                hetero_simpl!(terms: And, visit_and);
+
+                //  a | !( a | b) --->  a | !b
+                //  a | !(!a | b) --->  a
+                // !a | !( a | b) ---> !a
+                homo_simpl!(terms: Or, visit_or, false);
+
                 terms.remove(&RawCondition::Const(false));
                 if terms.contains(&RawCondition::Const(true)) || terms.iter().any(|t| if let RawCondition::Not(t) = t { terms.contains(t) } else { false }) {
                     return RawCondition::Const(true);
@@ -321,8 +343,17 @@ fn test_simpl() {
     assert_eq!((!!!bf.clone()).simpl().to_string(), "true");
     assert_eq!((!!!!bf.clone()).simpl().to_string(), "false");
 
-    assert_eq!((a.clone() & !(a.clone() & b.clone())).to_string(), "a & ~b");
-    assert_eq!((a.clone() | !(a.clone() | b.clone())).to_string(), "a | ~b");
+    assert_eq!((a.clone() & !(a.clone() & b.clone())).simpl().to_string(), "a & ~b");
+    assert_eq!((a.clone() | !(a.clone() | b.clone())).simpl().to_string(), "a | ~b");
+
+    assert_eq!((a.clone() & b.clone() & !(a.clone() & b.clone())).simpl().to_string(), "false");
+    assert_eq!((a.clone() | b.clone() | !(a.clone() | b.clone())).simpl().to_string(), "true");
+
+    assert_eq!((!a.clone() & !(a.clone() & b.clone())).simpl().to_string(), "~a");
+    assert_eq!((!a.clone() | !(a.clone() | b.clone())).simpl().to_string(), "~a");
+
+    assert_eq!((a.clone() & !(!a.clone() & b.clone())).simpl().to_string(), "a");
+    assert_eq!((a.clone() | !(!a.clone() | b.clone())).simpl().to_string(), "a");
 }
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
