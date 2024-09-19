@@ -297,22 +297,14 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
             let (mut transitions_1, body_terminal_1) = parse_stmts(state_machine, state, &then, terminal, context, false)?;
             let (mut transitions_2, body_terminal_2) = parse_stmts(state_machine, state, &otherwise, terminal, context, false)?;
 
+            let cond_1 = transitions_1.back().map(|t| t.unordered_condition.clone()).unwrap_or(Condition::constant(false));
+            let cond_2 = transitions_2.back().map(|t| t.unordered_condition.clone()).unwrap_or(Condition::constant(false));
+
             let tail_condition = match (body_terminal_1, body_terminal_2) {
                 (true, true) => Condition::constant(false),
-                (true, false) => match transitions_2.back() {
-                    None => !condition.clone(),
-                    Some(last) => !condition.clone() & !last.unordered_condition.clone(),
-                }
-                (false, true) => match transitions_1.back() {
-                    None => condition.clone(),
-                    Some(last) => condition.clone() & !last.unordered_condition.clone(),
-                }
-                (false, false) => match (transitions_1.back(), transitions_2.back()) {
-                    (None, None) => Condition::constant(true),
-                    (None, Some(right)) => !(!condition.clone() & right.unordered_condition.clone()),
-                    (Some(left), None) => !(condition.clone() & left.unordered_condition.clone()),
-                    (Some(left), Some(right)) => !(condition.clone() & left.unordered_condition.clone()) & !(!condition.clone() & right.unordered_condition.clone()),
-                }
+                (true, false) => !condition.clone() & !cond_2,
+                (false, true) => condition.clone() & !cond_1,
+                (false, false) => !(condition.clone() & cond_1) & !(!condition.clone() & cond_2),
             };
 
             for transition in transitions_1.iter_mut() {
