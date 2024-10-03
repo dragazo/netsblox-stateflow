@@ -156,7 +156,7 @@ fn translate_value(state_machine: &str, state: &str, value: &ast::Value) -> Resu
     })
 }
 fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &mut Context) -> Result<CompactString, CompileError> {
-    fn extract_fixed_variadic<'a>(state_machine: &str, state: &str, values: &'a ast::Expr, context: &mut Context) -> Result<Vec<CompactString>, CompileError> {
+    fn extract_fixed_variadic(state_machine: &str, state: &str, values: &ast::Expr, context: &mut Context) -> Result<Vec<CompactString>, CompileError> {
         match &values.kind {
             ast::ExprKind::MakeList { values } => Ok(values.iter().map(|x| translate_expr(state_machine, state, x, context)).collect::<Result<_,_>>()?),
             ast::ExprKind::Value(ast::Value::List(values, _)) => Ok(values.iter().map(|x| translate_value(state_machine, state, x)).collect::<Result<_,_>>()?),
@@ -170,37 +170,37 @@ fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &
             context.variables.push(var.clone());
             var.trans_name.clone()
         }
-        ast::ExprKind::Sin { value } => format_compact!("sind({})", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Cos { value } => format_compact!("cosd({})", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Tan { value } => format_compact!("tand({})", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Asin { value } => format_compact!("asind({})", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Acos { value } => format_compact!("acosd({})", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Atan { value } => format_compact!("atand({})", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Sqrt { value } => format_compact!("sqrt({})", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Floor { value } => format_compact!("floor({})", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Ceil { value } => format_compact!("ceil({})", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Round { value } => format_compact!("round({})", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Sign { value } => format_compact!("sign({})", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Neg { value } => format_compact!("-{}", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Abs { value } => format_compact!("abs({})", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Sub { left, right } => format_compact!("({} - {})", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
-        ast::ExprKind::Div { left, right } => format_compact!("({} / {})", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
-        ast::ExprKind::Mod { left, right } => format_compact!("mod({}, {})", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
-        ast::ExprKind::Log { value, base } => format_compact!("(log({}) / log({}))", translate_expr(state_machine, state, &value, context)?, translate_expr(state_machine, state, &base, context)?),
-        ast::ExprKind::Atan2 { y, x } => format_compact!("atan2d({}, {})", translate_expr(state_machine, state, &y, context)?, translate_expr(state_machine, state, &x, context)?),
+        ast::ExprKind::Sin { value } => format_compact!("sind({})", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Cos { value } => format_compact!("cosd({})", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Tan { value } => format_compact!("tand({})", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Asin { value } => format_compact!("asind({})", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Acos { value } => format_compact!("acosd({})", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Atan { value } => format_compact!("atand({})", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Sqrt { value } => format_compact!("sqrt({})", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Floor { value } => format_compact!("floor({})", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Ceil { value } => format_compact!("ceil({})", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Round { value } => format_compact!("round({})", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Sign { value } => format_compact!("sign({})", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Neg { value } => format_compact!("-{}", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Abs { value } => format_compact!("abs({})", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Sub { left, right } => format_compact!("({} - {})", translate_expr(state_machine, state, left, context)?, translate_expr(state_machine, state, right, context)?),
+        ast::ExprKind::Div { left, right } => format_compact!("({} / {})", translate_expr(state_machine, state, left, context)?, translate_expr(state_machine, state, right, context)?),
+        ast::ExprKind::Mod { left, right } => format_compact!("mod({}, {})", translate_expr(state_machine, state, left, context)?, translate_expr(state_machine, state, right, context)?),
+        ast::ExprKind::Log { value, base } => format_compact!("(log({}) / log({}))", translate_expr(state_machine, state, value, context)?, translate_expr(state_machine, state, base, context)?),
+        ast::ExprKind::Atan2 { y, x } => format_compact!("atan2d({}, {})", translate_expr(state_machine, state, y, context)?, translate_expr(state_machine, state, x, context)?),
         ast::ExprKind::Add { values } => punctuate(extract_fixed_variadic(state_machine,state, values, context)?.iter().map(|x| x.as_str()), " + ").map(|x| format_compact!("({})", x.0)).unwrap_or_else(|| "0".into()),
         ast::ExprKind::Mul { values } => punctuate(extract_fixed_variadic(state_machine,state, values, context)?.iter().map(|x| x.as_str()), " * ").map(|x| format_compact!("({})", x.0)).unwrap_or_else(|| "1".into()),
-        ast::ExprKind::Pow { base, power } => format_compact!("({} ^ {})", translate_expr(state_machine, state, &base, context)?, translate_expr(state_machine, state, &power, context)?),
-        ast::ExprKind::Eq { left, right } => format_compact!("{} == {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
-        ast::ExprKind::Neq { left, right } => format_compact!("{} ~= {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
-        ast::ExprKind::Greater { left, right } => format_compact!("{} > {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
-        ast::ExprKind::GreaterEq { left, right } => format_compact!("{} >= {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
-        ast::ExprKind::Less { left, right } => format_compact!("{} < {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
-        ast::ExprKind::LessEq { left, right } => format_compact!("{} <= {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
-        ast::ExprKind::And { left, right } => format_compact!("{} & {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
-        ast::ExprKind::Or { left, right } => format_compact!("({} | {})", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
-        ast::ExprKind::Not { value } => format_compact!("~({})", translate_expr(state_machine, state, &value, context)?),
-        ast::ExprKind::Random { a, b } => format_compact!("randi([{}, {}])", translate_expr(state_machine, state, &a, context)?, translate_expr(state_machine, state, &b, context)?),
+        ast::ExprKind::Pow { base, power } => format_compact!("({} ^ {})", translate_expr(state_machine, state, base, context)?, translate_expr(state_machine, state, power, context)?),
+        ast::ExprKind::Eq { left, right } => format_compact!("{} == {}", translate_expr(state_machine, state, left, context)?, translate_expr(state_machine, state, right, context)?),
+        ast::ExprKind::Neq { left, right } => format_compact!("{} ~= {}", translate_expr(state_machine, state, left, context)?, translate_expr(state_machine, state, right, context)?),
+        ast::ExprKind::Greater { left, right } => format_compact!("{} > {}", translate_expr(state_machine, state, left, context)?, translate_expr(state_machine, state, right, context)?),
+        ast::ExprKind::GreaterEq { left, right } => format_compact!("{} >= {}", translate_expr(state_machine, state, left, context)?, translate_expr(state_machine, state, right, context)?),
+        ast::ExprKind::Less { left, right } => format_compact!("{} < {}", translate_expr(state_machine, state, left, context)?, translate_expr(state_machine, state, right, context)?),
+        ast::ExprKind::LessEq { left, right } => format_compact!("{} <= {}", translate_expr(state_machine, state, left, context)?, translate_expr(state_machine, state, right, context)?),
+        ast::ExprKind::And { left, right } => format_compact!("{} & {}", translate_expr(state_machine, state, left, context)?, translate_expr(state_machine, state, right, context)?),
+        ast::ExprKind::Or { left, right } => format_compact!("({} | {})", translate_expr(state_machine, state, left, context)?, translate_expr(state_machine, state, right, context)?),
+        ast::ExprKind::Not { value } => format_compact!("~({})", translate_expr(state_machine, state, value, context)?),
+        ast::ExprKind::Random { a, b } => format_compact!("randi([{}, {}])", translate_expr(state_machine, state, a, context)?, translate_expr(state_machine, state, b, context)?),
         ast::ExprKind::Timer => "t".into(),
         x => match context.settings.omit_unknown_blocks {
             true => "?".into(),
@@ -277,7 +277,7 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
         }
         ast::StmtKind::If { condition, then } => {
             let condition = translate_condition(state_machine, state, condition, context)?;
-            let (mut transitions, body_terminal) = parse_stmts(state_machine, state, &then, terminal, context, false)?;
+            let (mut transitions, body_terminal) = parse_stmts(state_machine, state, then, terminal, context, false)?;
 
             let tail_condition = match body_terminal {
                 true => !condition.clone(),
@@ -295,8 +295,8 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
         ast::StmtKind::IfElse { condition, then, otherwise } => {
             let condition = translate_condition(state_machine, state, condition, context)?;
 
-            let (mut transitions_1, body_terminal_1) = parse_stmts(state_machine, state, &then, terminal, context, false)?;
-            let (mut transitions_2, body_terminal_2) = parse_stmts(state_machine, state, &otherwise, terminal, context, false)?;
+            let (mut transitions_1, body_terminal_1) = parse_stmts(state_machine, state, then, terminal, context, false)?;
+            let (mut transitions_2, body_terminal_2) = parse_stmts(state_machine, state, otherwise, terminal, context, false)?;
 
             let cond_1 = transitions_1.back().map(|t| t.unordered_condition.clone()).unwrap_or(Condition::constant(false));
             let cond_2 = transitions_2.back().map(|t| t.unordered_condition.clone()).unwrap_or(Condition::constant(false));
@@ -318,14 +318,12 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
                     true => [Some(&mut transition.unordered_condition), None],
                     false => [Some(&mut transition.unordered_condition), Some(&mut transition.ordered_condition)],
                 };
-                for target in targets {
-                    if let Some(target) = target {
-                        *target = !condition.clone() & target.clone();
-                    }
+                for target in targets.into_iter().flatten() {
+                    *target = !condition.clone() & target.clone();
                 }
             }
 
-            transitions_1.extend(transitions_2.into_iter());
+            transitions_1.extend(transitions_2);
             Some((transitions_1, tail_condition, body_terminal_1 && body_terminal_2))
         }
         _ => None,
@@ -420,7 +418,7 @@ impl Project {
             name_transformer: Box::new(ast::util::c_ident),
             ..Default::default()
         };
-        let proj = parser.parse(xml).map_err(|e| CompileError::ParseError(e))?;
+        let proj = parser.parse(xml).map_err(CompileError::ParseError)?;
         let role = match role {
             Some(name) => match proj.roles.iter().find(|r| r.name == name) {
                 Some(x) => x,
@@ -461,7 +459,7 @@ impl Project {
                     return Err(CompileError::MultipleHandlers { state_machine: state_machine_name.clone(), state: state_name.clone() });
                 }
 
-                let (transitions, _) = parse_stmts(&state_machine_name, &state_name, &script.stmts, true, context, true)?;
+                let (transitions, _) = parse_stmts(state_machine_name, state_name, &script.stmts, true, context, true)?;
                 assert!(state_machine.states.insert(state_name.clone(), State { parent: None, transitions }).is_none());
             }
         }
@@ -542,7 +540,7 @@ impl Project {
 
         let mut machines = state_machines.iter();
         while let Some(machine_1) = machines.next() {
-            if let Some((machine_2, var)) = machines.clone().find_map(|machine_2| machine_1.1.variables.keys().filter(|&k| machine_2.1.variables.contains_key(k)).next().map(|x| (machine_2, x))) {
+            if let Some((machine_2, var)) = machines.clone().find_map(|machine_2| machine_1.1.variables.keys().find(|&k| machine_2.1.variables.contains_key(k)).map(|x| (machine_2, x))) {
                 return Err(CompileError::VariableOverlap { state_machines: (machine_1.0.clone(), machine_2.0.clone()), variable: var.clone() });
             }
             if let Some(var) = machine_1.1.variables.keys().find(|&x| state_machines.contains_key(x)) {
@@ -595,7 +593,7 @@ impl Project {
                     ] }));
                 }
             }
-            dot::Stmt::Subgraph(dot::Subgraph { id: dot_id(&name), stmts })
+            dot::Stmt::Subgraph(dot::Subgraph { id: dot_id(name), stmts })
         }).collect();
         dot::Graph::DiGraph { id: dot_id(&self.name), strict: false, stmts }
     }
