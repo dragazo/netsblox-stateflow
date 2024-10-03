@@ -200,8 +200,11 @@ fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &
         ast::ExprKind::And { left, right } => format_compact!("{} & {}", translate_expr(state_machine, state, left, context)?, translate_expr(state_machine, state, right, context)?),
         ast::ExprKind::Or { left, right } => format_compact!("({} | {})", translate_expr(state_machine, state, left, context)?, translate_expr(state_machine, state, right, context)?),
         ast::ExprKind::Not { value } => format_compact!("~({})", translate_expr(state_machine, state, value, context)?),
-        ast::ExprKind::Random { a, b } => format_compact!("randi([{}, {}])", translate_expr(state_machine, state, a, context)?, translate_expr(state_machine, state, b, context)?),
         ast::ExprKind::Timer => "t".into(),
+        ast::ExprKind::Random { a, b } => match (translate_expr(state_machine, state, a, context)?.as_str(), translate_expr(state_machine, state, b, context)?.as_str()) {
+            ("1", b) => format_compact!("randi({b})"),
+            (a, b) => format_compact!("randi([{a}, {b}])"),
+        }
         x => match context.settings.omit_unknown_blocks {
             true => "?".into(),
             false => return Err(CompileError::UnsupportedBlock { state_machine: state_machine.into(), state: state.into(), info: format_compact!("{x:?}") }),

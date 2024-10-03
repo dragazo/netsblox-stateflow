@@ -3513,7 +3513,9 @@ fn test_rand_1() {
                                 unordered_condition: Condition::constant(true),
                                 ordered_condition: Condition::constant(true),
                                 actions: [
-                                    "a = randi([1, 6])".into(),
+                                    "a = randi(6)".into(),
+                                    "a = randi(9)".into(),
+                                    "a = randi([2, 4])".into(),
                                     "b = randi([(a - b), (a + b)])".into(),
                                 ].into_iter().collect(),
                                 new_state: "rolling".into(),
