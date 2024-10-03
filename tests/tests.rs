@@ -3494,6 +3494,42 @@ fn test_unknown_blocks_4() {
 }
 
 #[test]
+fn test_rand_1() {
+    let proj = Project::compile(include_str!("projects/rand-1.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "state-machine-dice".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("my state".into(), StateMachine {
+                variables: [
+                    ("a".into(), "0".into()),
+                    ("b".into(), "0".into()),
+                ].into_iter().collect(),
+                states: [
+                    ("rolling".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [
+                                    "a = randi([1, 6])".into(),
+                                    "b = randi([(a - b), (a + b)])".into(),
+                                ].into_iter().collect(),
+                                new_state: "rolling".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("rolling".into()),
+                current_state: Some("rolling".into()),
+            }),
+        ].into_iter().collect(),
+    });
+    assert_complete(&proj);
+}
+
+#[test]
 fn test_current_state_1() {
     let proj = Project::compile(include_str!("projects/current-state-1.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {

@@ -200,6 +200,7 @@ fn translate_expr(state_machine: &str, state: &str, expr: &ast::Expr, context: &
         ast::ExprKind::And { left, right } => format_compact!("{} & {}", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
         ast::ExprKind::Or { left, right } => format_compact!("({} | {})", translate_expr(state_machine, state, &left, context)?, translate_expr(state_machine, state, &right, context)?),
         ast::ExprKind::Not { value } => format_compact!("~({})", translate_expr(state_machine, state, &value, context)?),
+        ast::ExprKind::Random { a, b } => format_compact!("randi([{}, {}])", translate_expr(state_machine, state, &a, context)?, translate_expr(state_machine, state, &b, context)?),
         ast::ExprKind::Timer => "t".into(),
         x => match context.settings.omit_unknown_blocks {
             true => "?".into(),
