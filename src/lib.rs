@@ -351,6 +351,25 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
         body_terminal = true;
     }
 
+    fn make_junction(state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, context: &mut Context) {
+        prune_and_normalize(transitions);
+
+        let junction = format_compact!("::junction-{}::", context.junctions.len());
+        let mut junction_state = State { parent: Some(state.into()), transitions: core::mem::take(transitions) };
+
+        if junction_state.transitions.back().map(|t| t.ordered_condition != Condition::constant(true)).unwrap_or(true) {
+            let return_condition: Condition = junction_state.transitions.iter().map(|t| t.unordered_condition.clone()).fold(Condition::constant(true), |a, b| a & !b);
+            junction_state.transitions.push_back(Transition {
+                unordered_condition: return_condition,
+                ordered_condition: Condition::constant(true),
+                actions: deque![],
+                new_state: state.into(),
+            });
+        }
+
+        transitions.push_front(Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: core::mem::take(actions), new_state: junction.clone() });
+        context.junctions.push((junction, junction_state));
+    }
     fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, terminal: bool, context: &mut Context) -> Result<(), CompileError> {
         if !actions.is_empty() {
             prune_and_normalize(transitions);
@@ -360,25 +379,14 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
             } else if transitions.len() == 1 && transitions[0].unordered_condition == Condition::constant(true) {
                 transitions[0].actions.extend_front(core::mem::take(actions).into_iter());
             } else if terminal {
-                let junction = format_compact!("::junction-{}::", context.junctions.len());
-                let mut junction_state = State { parent: Some(state.into()), transitions: core::mem::take(transitions) };
-
-                if junction_state.transitions.back().map(|t| t.ordered_condition != Condition::constant(true)).unwrap_or(true) {
-                    let return_condition: Condition = junction_state.transitions.iter().map(|t| t.unordered_condition.clone()).fold(Condition::constant(true), |a, b| a & !b);
-                    junction_state.transitions.push_back(Transition {
-                        unordered_condition: return_condition,
-                        ordered_condition: Condition::constant(true),
-                        actions: deque![],
-                        new_state: state.into(),
-                    });
-                }
-
-                transitions.push_front(Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: core::mem::take(actions), new_state: junction.clone() });
-                context.junctions.push((junction, junction_state));
+                make_junction(state, actions, transitions, context);
+                debug_assert_eq!(transitions.len(), 1);
             } else {
                 return Err(CompileError::ActionsOutsideTransition { state_machine: state_machine.into(), state: state.into() });
             }
         }
+
+        debug_assert_eq!(actions.len(), 0);
         Ok(())
     }
 
@@ -390,16 +398,34 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
                 debug_assert_eq!(actions.len(), 0);
 
                 body_terminal |= sub_body_terminal;
-                if tail_condition == Condition::constant(false) {
-                    transitions.clear();
-                }
                 for transition in transitions.iter_mut() {
                     transition.unordered_condition = tail_condition.clone() & transition.unordered_condition.clone();
                 }
                 transitions.extend_front(sub_transitions.into_iter());
             }
-            None => {
-                actions.extend_front(parse_actions(state_machine, state, stmt, context)?.into_iter());
+            None => match &stmt.kind {
+                ast::StmtKind::Sleep { seconds } => {
+                    handle_actions(state_machine, state, &mut actions, &mut transitions, script_terminal || body_terminal, context)?;
+                    debug_assert_eq!(actions.len(), 0);
+
+                    make_junction(state, &mut actions, &mut transitions, context);
+                    debug_assert_eq!(actions.len(), 0);
+                    debug_assert_eq!(transitions.len(), 1);
+                    debug_assert_eq!(transitions[0].unordered_condition, Condition::constant(true));
+                    debug_assert_eq!(transitions[0].ordered_condition, Condition::constant(true));
+                    debug_assert_eq!(transitions[0].actions.len(), 0);
+
+                    let condition = Condition::atom(format_compact!("after({}, sec)", translate_expr(state_machine, state, seconds, context)?));
+                    transitions[0].unordered_condition = condition.clone();
+                    transitions[0].ordered_condition = condition.clone();
+                    transitions.push_back(Transition {
+                        unordered_condition: !condition,
+                        ordered_condition: Condition::constant(true),
+                        actions: <_>::default(),
+                        new_state: state.into(),
+                    });
+                }
+                _ => actions.extend_front(parse_actions(state_machine, state, stmt, context)?.into_iter()),
             }
         }
         last = false;
