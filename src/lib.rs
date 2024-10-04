@@ -136,11 +136,8 @@ struct Context {
     settings: Settings,
 }
 
-fn prune_and_normalize(transitions: &mut VecDeque<Transition>) {
+fn prune_unreachable(transitions: &mut VecDeque<Transition>) {
     transitions.retain(|t| t.ordered_condition != Condition::constant(false) && t.unordered_condition != Condition::constant(false));
-    if let Some(last) = transitions.back_mut() {
-        last.ordered_condition = Condition::constant(true);
-    }
 }
 
 fn translate_value(state_machine: &str, state: &str, value: &ast::Value) -> Result<CompactString, CompileError> {
@@ -352,7 +349,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
     }
 
     fn make_junction(state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, context: &mut Context) {
-        prune_and_normalize(transitions);
+        prune_unreachable(transitions);
 
         let junction = format_compact!("::junction-{}::", context.junctions.len());
         let mut junction_state = State { parent: Some(state.into()), transitions: core::mem::take(transitions) };
@@ -371,9 +368,9 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
         context.junctions.push((junction, junction_state));
     }
     fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, terminal: bool, context: &mut Context) -> Result<(), CompileError> {
-        if !actions.is_empty() {
-            prune_and_normalize(transitions);
+        prune_unreachable(transitions);
 
+        if !actions.is_empty() {
             if terminal && transitions.is_empty() {
                 transitions.push_front(Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: core::mem::take(actions), new_state: state.into() });
             } else if transitions.len() == 1 && transitions[0].unordered_condition == Condition::constant(true) {
@@ -408,16 +405,24 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
                     handle_actions(state_machine, state, &mut actions, &mut transitions, script_terminal || body_terminal, context)?;
                     debug_assert_eq!(actions.len(), 0);
 
-                    make_junction(state, &mut actions, &mut transitions, context);
-                    debug_assert_eq!(actions.len(), 0);
-                    debug_assert_eq!(transitions.len(), 1);
-                    debug_assert_eq!(transitions[0].unordered_condition, Condition::constant(true));
-                    debug_assert_eq!(transitions[0].ordered_condition, Condition::constant(true));
-                    debug_assert_eq!(transitions[0].actions.len(), 0);
+                    match transitions.as_slices() {
+                        ([t], []) if t.unordered_condition == Condition::constant(true) => (),
+                        _ => {
+                            make_junction(state, &mut actions, &mut transitions, context);
+                            debug_assert_eq!(actions.len(), 0);
+                            debug_assert_eq!(transitions.len(), 1);
+                            debug_assert_eq!(transitions[0].unordered_condition, Condition::constant(true));
+                            debug_assert_eq!(transitions[0].ordered_condition, Condition::constant(true));
+                            debug_assert_eq!(transitions[0].actions.len(), 0);
+                        }
+                    }
 
                     let condition = Condition::atom(format_compact!("after({}, sec)", translate_expr(state_machine, state, seconds, context)?));
-                    transitions[0].unordered_condition = condition.clone();
-                    transitions[0].ordered_condition = condition.clone();
+                    for transition in transitions.iter_mut() {
+                        for target in [&mut transition.unordered_condition, &mut transition.ordered_condition] {
+                            *target = target.clone() & condition.clone();
+                        }
+                    }
                     transitions.push_back(Transition {
                         unordered_condition: !condition,
                         ordered_condition: Condition::constant(true),
@@ -495,7 +500,10 @@ impl Project {
 
         for (state_machine, _) in state_machines.values_mut() {
             for state in state_machine.states.values_mut() {
-                prune_and_normalize(&mut state.transitions);
+                prune_unreachable(&mut state.transitions);
+                if let Some(last) = state.transitions.back_mut() {
+                    last.ordered_condition = Condition::constant(true);
+                }
             }
         }
 

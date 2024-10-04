@@ -5199,7 +5199,7 @@ fn test_wait_1() {
                                 unordered_condition: Condition::atom("after(3, sec)".into()),
                                 ordered_condition: Condition::atom("after(3, sec)".into()),
                                 actions: [].into_iter().collect(),
-                                new_state: "::junction-0::".into(),
+                                new_state: "stop".into(),
                             },
                             Transition {
                                 unordered_condition: !Condition::atom("after(3, sec)".into()),
@@ -5211,17 +5211,6 @@ fn test_wait_1() {
                     }),
                     ("stop".into(), State {
                         parent: None,
-                        transitions: [
-                            Transition {
-                                unordered_condition: Condition::constant(true),
-                                ordered_condition: Condition::constant(true),
-                                actions: [].into_iter().collect(),
-                                new_state: "stop".into(),
-                            },
-                        ].into_iter().collect(),
-                    }),
-                    ("::junction-0::".into(), State {
-                        parent: Some("start".into()),
                         transitions: [
                             Transition {
                                 unordered_condition: Condition::constant(true),
