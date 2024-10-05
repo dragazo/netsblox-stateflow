@@ -100,6 +100,11 @@ pub enum CompileError {
     TransitionForeignMachine { state_machine: CompactString, state: CompactString, foreign_machine: CompactString },
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum VariableKind {
+    Local, Input, Output,
+}
+
 #[derive(Debug, PartialEq, Eq)]
 pub struct Project {
     pub name: CompactString,
@@ -108,10 +113,15 @@ pub struct Project {
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct StateMachine {
-    pub variables: BTreeMap<CompactString, CompactString>,
+    pub variables: BTreeMap<CompactString, Variable>,
     pub states: BTreeMap<CompactString, State>,
     pub initial_state: Option<CompactString>,
     pub current_state: Option<CompactString>,
+}
+#[derive(Debug, PartialEq, Eq)]
+pub struct Variable {
+    pub init: CompactString,
+    pub kind: VariableKind,
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct State {
@@ -512,7 +522,7 @@ impl Project {
                 assert!(state_machine.states.insert(name, junction).is_none());
             }
             for variable in context.variables {
-                state_machine.variables.insert(variable.trans_name, "0".into());
+                state_machine.variables.insert(variable.trans_name, Variable { init: "0".into(), kind: VariableKind::Local });
             }
             (state_machine_name, state_machine)
         }).collect::<BTreeMap<_,_>>();
@@ -527,26 +537,33 @@ impl Project {
             }
         }
 
-        let mut var_inits = BTreeMap::new();
+        let mut var_inits: BTreeMap<&CompactString, &ast::Expr> = BTreeMap::new();
+        let mut var_kinds: BTreeMap<&CompactString, VariableKind> = BTreeMap::new();
         for entity in role.entities.iter() {
             for script in entity.scripts.iter() {
                 if let Some(ast::HatKind::OnFlag) = script.hat.as_ref().map(|x| &x.kind) {
                     for stmt in script.stmts.iter() {
                         match &stmt.kind {
                             ast::StmtKind::Assign { var, value } => match state_machines.get_mut(&var.name) {
-                                Some(state_machine) => match &value.kind {
-                                    ast::ExprKind::Value(ast::Value::String(value)) if state_machine.states.contains_key(value) => state_machine.initial_state = Some(value.clone()),
-                                    _ => (),
+                                Some(state_machine) => if let ast::ExprKind::Value(ast::Value::String(value)) = &value.kind {
+                                    if state_machine.states.contains_key(value) { state_machine.initial_state = Some(value.clone()); }
                                 }
                                 None => { var_inits.insert(&var.trans_name, value); }
                             }
                             ast::StmtKind::UnknownBlock { name, args } => match (name.as_str(), args.as_slice()) {
-                                ("smTransition", [var, value]) => match (&var.kind, &value.kind) {
-                                    (ast::ExprKind::Value(ast::Value::String(var)), ast::ExprKind::Value(ast::Value::String(value))) => match state_machines.get_mut(var) {
-                                        Some(state_machine) if state_machine.states.contains_key(value) => state_machine.initial_state = Some(value.clone()),
-                                        _ => (),
+                                ("smTransition", [var, value]) => if let (ast::ExprKind::Value(ast::Value::String(var)), ast::ExprKind::Value(ast::Value::String(value))) = (&var.kind, &value.kind) {
+                                    if let  Some(state_machine) = state_machines.get_mut(var) {
+                                        if state_machine.states.contains_key(value) { state_machine.initial_state = Some(value.clone()); }
                                     }
-                                    _ => (),
+                                }
+                                ("smMarkVar", [var, kind]) => if let (ast::ExprKind::Value(ast::Value::String(var)), ast::ExprKind::Value(ast::Value::String(kind))) = (&var.kind, &kind.kind) {
+                                    let kind = match kind.as_str() {
+                                        "local" => VariableKind::Local,
+                                        "input" => VariableKind::Input,
+                                        "output" => VariableKind::Output,
+                                        _ => continue,
+                                    };
+                                    var_kinds.insert(var, kind);
                                 }
                                 _ => (),
                             }
@@ -565,9 +582,12 @@ impl Project {
                 }
             }
 
-            for (var, value) in state_machine.variables.iter_mut() {
-                if let Some(init) = var_inits.get(var) {
-                    *value = translate_expr(state_machine_name, "<init>", init, &mut var_inits_context)?;
+            for (var, info) in state_machine.variables.iter_mut() {
+                if let Some(&init) = var_inits.get(var) {
+                    info.init = translate_expr(state_machine_name, "<init>", init, &mut var_inits_context)?;
+                }
+                if let Some(&kind) = var_kinds.get(var) {
+                    info.kind = kind;
                 }
             }
         }
@@ -694,10 +714,11 @@ impl Project {
                 writeln!(res, "t.SourceEndpoint = t.DestinationEndpoint - [0 30]").unwrap();
                 writeln!(res, "t.Midpoint = t.DestinationEndpoint - [0 15]").unwrap();
             }
-            for (var, init) in state_machine.variables.iter() {
+            for (var, info) in state_machine.variables.iter() {
                 writeln!(res, "d = Stateflow.Data(chart)").unwrap();
                 writeln!(res, "d.Name = {var:?}").unwrap();
-                writeln!(res, "d.Props.InitialValue = {init:?}").unwrap();
+                writeln!(res, "d.Props.InitialValue = {:?}", info.init).unwrap();
+                writeln!(res, "d.Scope = \"{:?}\"", info.kind).unwrap();
             }
         }
         debug_assert_eq!(res.chars().next_back(), Some('\n'));

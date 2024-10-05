@@ -1237,7 +1237,7 @@ fn test_nested_if_6() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1363,7 +1363,7 @@ fn test_variables_1() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1412,7 +1412,7 @@ fn test_variables_2() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1449,7 +1449,7 @@ fn test_variables_2() {
             }),
             ("another".into(), StateMachine {
                 variables: [
-                    ("bar".into(), "0".into()),
+                    ("bar".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("test 1".into(), State {
@@ -1510,9 +1510,9 @@ fn test_var_inits() {
         state_machines: [
             ("thingy g".into(), StateMachine {
                 variables: [
-                    ("foo_3".into(), "(7 + 2)".into()),
-                    ("bar_5".into(), "(4 * 4)".into()),
-                    ("baz_b".into(), "(3 ^ 2)".into()),
+                    ("foo_3".into(), Variable { init: "(7 + 2)".into(), kind: VariableKind::Local }),
+                    ("bar_5".into(), Variable { init: "(4 * 4)".into(), kind: VariableKind::Local }),
+                    ("baz_b".into(), Variable { init: "(3 ^ 2)".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("merp derp".into(), State {
@@ -1578,12 +1578,81 @@ t.Midpoint = t.DestinationEndpoint - [0 15]
 d = Stateflow.Data(chart)
 d.Name = "bar_5"
 d.Props.InitialValue = "(4 * 4)"
+d.Scope = "Local"
 d = Stateflow.Data(chart)
 d.Name = "baz_b"
 d.Props.InitialValue = "(3 ^ 2)"
+d.Scope = "Local"
 d = Stateflow.Data(chart)
 d.Name = "foo_3"
 d.Props.InitialValue = "(7 + 2)"
+d.Scope = "Local"
+    "#.trim());
+}
+
+#[test]
+fn test_var_kinds_1() {
+    let proj = Project::compile(include_str!("projects/var-kinds-1.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "untitled".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("my state".into(), StateMachine {
+                variables: [
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Input }),
+                    ("bar".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("baz".into(), Variable { init: "0".into(), kind: VariableKind::Output }),
+                ].into_iter().collect(),
+                states: [
+                    ("start".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [
+                                    "baz = bar".into(),
+                                    "bar = foo".into(),
+                                ].into_iter().collect(),
+                                new_state: "start".into(),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("start".into()),
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_complete(&proj);
+    assert_eq!(proj.to_stateflow().unwrap(), r#"
+sfnew untitled
+chart = find(sfroot, "-isa", "Stateflow.Chart", Path = "untitled/Chart")
+chart.Name = "my state"
+s0 = Stateflow.State(chart)
+s0.Name = "start"
+s0.Position = [0, 0, 100, 100]
+t = Stateflow.Transition(chart)
+t.Source = s0
+t.Destination = s0
+t.LabelString = "[]{baz = bar;bar = foo;}"
+t = Stateflow.Transition(chart)
+t.Destination = s0
+t.DestinationOClock = 0
+t.SourceEndpoint = t.DestinationEndpoint - [0 30]
+t.Midpoint = t.DestinationEndpoint - [0 15]
+d = Stateflow.Data(chart)
+d.Name = "bar"
+d.Props.InitialValue = "0"
+d.Scope = "Local"
+d = Stateflow.Data(chart)
+d.Name = "baz"
+d.Props.InitialValue = "0"
+d.Scope = "Output"
+d = Stateflow.Data(chart)
+d.Name = "foo"
+d.Props.InitialValue = "0"
+d.Scope = "Input"
     "#.trim());
 }
 
@@ -1596,8 +1665,8 @@ fn test_if_else_1() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
-                    ("bar".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("bar".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1675,8 +1744,8 @@ fn test_if_else_5() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
-                    ("bar".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("bar".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1736,8 +1805,8 @@ fn test_if_else_6() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
-                    ("bar".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("bar".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1797,8 +1866,8 @@ fn test_if_else_7() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
-                    ("bar".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("bar".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1858,8 +1927,8 @@ fn test_if_else_8() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
-                    ("bar".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("bar".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -1926,7 +1995,7 @@ fn test_if_else_13() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -1975,7 +2044,7 @@ fn test_if_else_14() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -2024,7 +2093,7 @@ fn test_if_else_15() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -2073,7 +2142,7 @@ fn test_if_else_16() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -2122,8 +2191,8 @@ fn test_if_else_17() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
-                    ("bar".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("bar".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -2197,8 +2266,8 @@ fn test_if_else_18() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
-                    ("bar".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("bar".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -2273,8 +2342,8 @@ fn test_if_else_19() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
-                    ("bar".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("bar".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -2391,8 +2460,8 @@ fn test_tail_actions_1() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
-                    ("bar".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("bar".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -2444,8 +2513,8 @@ fn test_operators() {
         state_machines: [
             ("something".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
-                    ("bar".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("bar".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("thing 1".into(), State {
@@ -2660,7 +2729,7 @@ fn test_actions_1() {
         state_machines: [
             ("state".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("state 1".into(), State {
@@ -2694,8 +2763,8 @@ fn test_actions_2() {
         state_machines: [
             ("state".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "0".into()),
-                    ("bar".into(), "0".into()),
+                    ("foo".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("bar".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("state 1".into(), State {
@@ -3028,8 +3097,8 @@ fn test_var_names_1() {
         state_machines: [
             ("my state".into(), StateMachine {
                 variables: [
-                    ("another_var".into(), "0".into()),
-                    ("some_var".into(), "0".into()),
+                    ("another_var".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("some_var".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first state".into(), State {
@@ -3330,8 +3399,8 @@ fn test_unknown_blocks_1() {
         state_machines: [
             ("thing".into(), StateMachine {
                 variables: [
-                    ("derp".into(), "0".into()),
-                    ("merp".into(), "0".into()),
+                    ("derp".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("merp".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("foo".into(), State {
@@ -3372,8 +3441,8 @@ fn test_unknown_blocks_2() {
         state_machines: [
             ("thing".into(), StateMachine {
                 variables: [
-                    ("derp".into(), "0".into()),
-                    ("merp".into(), "0".into()),
+                    ("derp".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("merp".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("foo".into(), State {
@@ -3413,7 +3482,7 @@ fn test_unknown_blocks_3() {
         state_machines: [
             ("thing".into(), StateMachine {
                 variables: [
-                    ("merp".into(), "0".into()),
+                    ("merp".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("foo".into(), State {
@@ -3502,8 +3571,8 @@ fn test_rand_1() {
         state_machines: [
             ("my state".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
-                    ("b".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("b".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("rolling".into(), State {
@@ -3699,7 +3768,7 @@ fn test_junctions_1() {
         state_machines: [
             ("my state".into(), StateMachine {
                 variables: [
-                    ("foo".into(), "43".into()),
+                    ("foo".into(), Variable { init: "43".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("abc".into(), State {
@@ -3761,8 +3830,8 @@ fn test_junctions_2() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
-                    ("b".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("b".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("something".into(), State {
@@ -3911,9 +3980,11 @@ t.Midpoint = t.DestinationEndpoint - [0 15]
 d = Stateflow.Data(chart)
 d.Name = "a"
 d.Props.InitialValue = "0"
+d.Scope = "Local"
 d = Stateflow.Data(chart)
 d.Name = "b"
 d.Props.InitialValue = "0"
+d.Scope = "Local"
     "#.trim());
 }
 
@@ -3932,7 +4003,7 @@ fn test_tail_condition_1() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -3992,7 +4063,7 @@ fn test_tail_condition_2() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4052,7 +4123,7 @@ fn test_tail_condition_3() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4095,7 +4166,7 @@ fn test_tail_condition_4() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4155,7 +4226,7 @@ fn test_tail_condition_5() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4232,7 +4303,7 @@ fn test_tail_condition_6() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4292,7 +4363,7 @@ fn test_tail_condition_7() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4369,7 +4440,7 @@ fn test_tail_condition_8() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4446,7 +4517,7 @@ fn test_tail_condition_9() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4506,7 +4577,7 @@ fn test_tail_condition_10() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4566,7 +4637,7 @@ fn test_tail_condition_11() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4626,7 +4697,7 @@ fn test_tail_condition_12() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4740,8 +4811,8 @@ fn test_prune_2() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
-                    ("b".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("b".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4825,8 +4896,8 @@ fn test_prune_4() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
-                    ("b".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("b".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4869,8 +4940,8 @@ fn test_prune_5() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
-                    ("b".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("b".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4915,8 +4986,8 @@ fn test_prune_6() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
-                    ("b".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("b".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -4950,8 +5021,8 @@ fn test_prune_7() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
-                    ("b".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("b".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -5011,8 +5082,8 @@ fn test_prune_8() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
-                    ("b".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("b".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -5072,8 +5143,8 @@ fn test_prune_9() {
         state_machines: [
             ("thingy".into(), StateMachine {
                 variables: [
-                    ("a".into(), "0".into()),
-                    ("b".into(), "0".into()),
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                    ("b".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("first".into(), State {
@@ -5238,7 +5309,7 @@ fn test_wait_2() {
         state_machines: [
             ("my state".into(), StateMachine {
                 variables: [
-                    ("x".into(), "0".into()),
+                    ("x".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
                 ].into_iter().collect(),
                 states: [
                     ("start".into(), State {
