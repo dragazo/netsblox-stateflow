@@ -134,22 +134,77 @@ digraph "untitled" {
     "#.trim());
     assert_eq!(proj.to_stateflow().unwrap(), r#"
 sfnew untitled
-chart = find(sfroot, "-isa", "Stateflow.Chart", Path = "untitled/Chart")
+chart = find(sfroot, "-isa", "Stateflow.Chart")
 chart.Name = "something"
 s0 = Stateflow.State(chart)
-s0.Name = "thing_1"
+s0.LabelString = "thing_1"
 s0.Position = [0, 0, 100, 100]
 s1 = Stateflow.State(chart)
-s1.Name = "thing_2"
+s1.LabelString = "thing_2"
 s1.Position = [200, 0, 100, 100]
 t = Stateflow.Transition(chart)
 t.Source = s0
 t.Destination = s1
-t.LabelString = "[]{}"
+t.LabelString = ""
 t = Stateflow.Transition(chart)
 t.Source = s1
 t.Destination = s0
-t.LabelString = "[]{}"
+t.LabelString = ""
+    "#.trim());
+}
+
+#[test]
+fn test_factoring_1() {
+    let proj = Project::compile(include_str!("projects/factoring-1.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "factoring".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("my state".into(), StateMachine {
+                variables: [
+                    ("x".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                ].into_iter().collect(),
+                states: [
+                    ("left".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: Condition::constant(true),
+                                actions: [
+                                    "x = (x + 1)".into(),
+                                ].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("left".into()),
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_complete(&proj);
+    assert_eq!(proj.to_stateflow().unwrap(), r#"
+sfnew factoring
+chart = find(sfroot, "-isa", "Stateflow.Chart")
+chart.Name = "my state"
+s0 = Stateflow.State(chart)
+s0.LabelString = "left" + newline + "exit: x = (x + 1);"
+s0.Position = [0, 0, 100, 100]
+t = Stateflow.Transition(chart)
+t.Source = s0
+t.Destination = s0
+t.LabelString = ""
+t = Stateflow.Transition(chart)
+t.Destination = s0
+t.DestinationOClock = 0
+t.SourceEndpoint = t.DestinationEndpoint - [0 30]
+t.Midpoint = t.DestinationEndpoint - [0 15]
+d = Stateflow.Data(chart)
+d.Name = "x"
+d.Props.InitialValue = "0"
+d.Scope = "Local"
     "#.trim());
 }
 
@@ -1554,22 +1609,22 @@ fn test_var_inits() {
     assert_complete(&proj);
     assert_eq!(proj.to_stateflow().unwrap(), r#"
 sfnew something_cool
-chart = find(sfroot, "-isa", "Stateflow.Chart", Path = "something_cool/Chart")
+chart = find(sfroot, "-isa", "Stateflow.Chart")
 chart.Name = "thingy g"
 s0 = Stateflow.State(chart)
-s0.Name = "derp_merp"
+s0.LabelString = "derp_merp" + newline + "entry: foo_3 = (foo_3 * 2); bar_5 = bar_5 + (1 + 1); baz_b = (bar_5 + foo_3);" + newline + "exit: foo_3 = (foo_3 * 0.1); bar_5 = bar_5 + (1 + -4); baz_b = (bar_5 - foo_3);"
 s0.Position = [0, 0, 100, 100]
 s1 = Stateflow.State(chart)
-s1.Name = "merp_derp"
+s1.LabelString = "merp_derp"
 s1.Position = [200, 0, 100, 100]
 t = Stateflow.Transition(chart)
 t.Source = s0
 t.Destination = s1
-t.LabelString = "[]{foo_3 = (foo_3 * 0.1);bar_5 = bar_5 + (1 + -4);baz_b = (bar_5 - foo_3);}"
+t.LabelString = ""
 t = Stateflow.Transition(chart)
 t.Source = s1
 t.Destination = s0
-t.LabelString = "[]{foo_3 = (foo_3 * 2);bar_5 = bar_5 + (1 + 1);baz_b = (bar_5 + foo_3);}"
+t.LabelString = ""
 t = Stateflow.Transition(chart)
 t.Destination = s1
 t.DestinationOClock = 0
@@ -1627,15 +1682,15 @@ fn test_var_kinds_1() {
     assert_complete(&proj);
     assert_eq!(proj.to_stateflow().unwrap(), r#"
 sfnew untitled
-chart = find(sfroot, "-isa", "Stateflow.Chart", Path = "untitled/Chart")
+chart = find(sfroot, "-isa", "Stateflow.Chart")
 chart.Name = "my state"
 s0 = Stateflow.State(chart)
-s0.Name = "start"
+s0.LabelString = "start" + newline + "exit: baz = bar; bar = foo;"
 s0.Position = [0, 0, 100, 100]
 t = Stateflow.Transition(chart)
 t.Source = s0
 t.Destination = s0
-t.LabelString = "[]{baz = bar;bar = foo;}"
+t.LabelString = ""
 t = Stateflow.Transition(chart)
 t.Destination = s0
 t.DestinationOClock = 0
@@ -3200,29 +3255,29 @@ digraph "untitled" {
     "#.trim());
     assert_eq!(proj.to_stateflow().unwrap(), r#"
 sfnew untitled
-chart = find(sfroot, "-isa", "Stateflow.Chart", Path = "untitled/Chart")
+chart = find(sfroot, "-isa", "Stateflow.Chart")
 chart.Name = "something"
 s0 = Stateflow.State(chart)
-s0.Name = "barb"
+s0.LabelString = "barb"
 s0.Position = [0, 0, 100, 100]
 s1 = Stateflow.State(chart)
-s1.Name = "foo_3"
+s1.LabelString = "foo_3"
 s1.Position = [200, 0, 100, 100]
 s2 = Stateflow.State(chart)
-s2.Name = "foo_4"
+s2.LabelString = "foo_4"
 s2.Position = [400, 0, 100, 100]
 t = Stateflow.Transition(chart)
 t.Source = s0
 t.Destination = s1
-t.LabelString = "[]{}"
+t.LabelString = ""
 t = Stateflow.Transition(chart)
 t.Source = s1
 t.Destination = s2
-t.LabelString = "[]{}"
+t.LabelString = ""
 t = Stateflow.Transition(chart)
 t.Source = s2
 t.Destination = s0
-t.LabelString = "[]{}"
+t.LabelString = ""
 t = Stateflow.Transition(chart)
 t.Destination = s2
 t.DestinationOClock = 0
@@ -3937,25 +3992,27 @@ digraph "untitled" {
     "#.trim());
     assert_eq!(proj.to_stateflow().unwrap(), r#"
 sfnew untitled
-chart = find(sfroot, "-isa", "Stateflow.Chart", Path = "untitled/Chart")
+chart = find(sfroot, "-isa", "Stateflow.Chart")
 chart.Name = "thingy"
-s0 = Stateflow.Junction(chart)
-s0.Position.Center = [50, 200]
-s1 = Stateflow.Junction(chart)
-s1.Position.Center = [50, 300]
+s0 = Stateflow.State(chart)
+s0.LabelString = "something_1"
+s0.Position = [0, 200, 100, 20]
+s1 = Stateflow.State(chart)
+s1.LabelString = "something_2"
+s1.Position = [0, 300, 100, 20]
 s2 = Stateflow.State(chart)
-s2.Name = "something"
+s2.LabelString = "something" + newline + "exit: a = (a + 1); b = (a + b + 2);"
 s2.Position = [0, 0, 100, 100]
 s3 = Stateflow.State(chart)
-s3.Name = "x1"
+s3.LabelString = "x1"
 s3.Position = [200, 0, 100, 100]
 s4 = Stateflow.State(chart)
-s4.Name = "x2"
+s4.LabelString = "x2"
 s4.Position = [400, 0, 100, 100]
 t = Stateflow.Transition(chart)
 t.Source = s0
 t.Destination = s4
-t.LabelString = "[(a + b) > 10]{}"
+t.LabelString = "[(a + b) > 10]"
 t = Stateflow.Transition(chart)
 t.Source = s0
 t.Destination = s2
@@ -3963,7 +4020,7 @@ t.LabelString = "[~((a + b) > 10)]{a = (a ^ b);b = (a + b);}"
 t = Stateflow.Transition(chart)
 t.Source = s1
 t.Destination = s3
-t.LabelString = "[(a * b) > 100]{}"
+t.LabelString = "[(a * b) > 100]"
 t = Stateflow.Transition(chart)
 t.Source = s1
 t.Destination = s0
@@ -3971,7 +4028,7 @@ t.LabelString = "[~((a * b) > 100)]{a = (a / b);b = (1 / b);}"
 t = Stateflow.Transition(chart)
 t.Source = s2
 t.Destination = s1
-t.LabelString = "[]{a = (a + 1);b = (a + b + 2);}"
+t.LabelString = ""
 t = Stateflow.Transition(chart)
 t.Destination = s2
 t.DestinationOClock = 0

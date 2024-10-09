@@ -55,6 +55,32 @@ fn punctuate<'a, I: Iterator<Item = &'a str>>(mut values: I, sep: &str) -> Optio
     Some((res, separators))
 }
 
+fn common_suffix<T: PartialEq, I: Iterator<Item = J>, J: Iterator<Item = T> + DoubleEndedIterator>(mut sequences: I) -> Vec<T> {
+    let mut suffix: Vec<T> = match sequences.next() {
+        None => return <_>::default(),
+        Some(x) => x.collect(),
+    };
+    for sequence in sequences {
+        let common = suffix.iter().rev().zip(sequence.rev()).take_while(|(a, b)| *a == b).count();
+        suffix.drain(..suffix.len() - common);
+    }
+    suffix
+}
+#[test]
+fn test_common_suffix() {
+    assert_eq!(common_suffix(Vec::<alloc::vec::IntoIter<i32>>::new().into_iter()), &[]);
+    assert_eq!(common_suffix([vec![1, 2, 3].into_iter()].into_iter()), &[1, 2, 3]);
+    assert_eq!(common_suffix([vec![1, 2, 3].into_iter(), vec![2, 1, 3].into_iter()].into_iter()), &[3]);
+    assert_eq!(common_suffix([vec![1, 2, 3].into_iter(), vec![2, 2, 3].into_iter()].into_iter()), &[2, 3]);
+    assert_eq!(common_suffix([vec![1, 2, 3].into_iter(), vec![2, 3].into_iter(), vec![2, 2, 3].into_iter()].into_iter()), &[2, 3]);
+    assert_eq!(common_suffix([vec![1, 2, 3].into_iter(), vec![3, 3].into_iter(), vec![2, 2, 3].into_iter()].into_iter()), &[3]);
+    assert_eq!(common_suffix([vec![1, 2, 3].into_iter(), vec![3, 4].into_iter(), vec![2, 2, 3].into_iter()].into_iter()), &[]);
+    assert_eq!(common_suffix([vec![2, 2, 3].into_iter(), vec![2, 2, 3].into_iter(), vec![2, 2, 3].into_iter()].into_iter()), &[2, 2, 3]);
+    assert_eq!(common_suffix([vec![2, 2, 3].into_iter(), vec![2, 2, 4].into_iter(), vec![2, 2, 3].into_iter()].into_iter()), &[]);
+    assert_eq!(common_suffix([vec![2, 2, 3].into_iter(), vec![2, 1, 3].into_iter(), vec![2, 2, 3].into_iter()].into_iter()), &[3]);
+    assert_eq!(common_suffix([vec![2, 2, 3].into_iter(), vec![1, 2, 3].into_iter(), vec![2, 2, 3].into_iter()].into_iter()), &[2, 3]);
+}
+
 struct RenamePool<F: for<'a> FnMut(&'a str) -> Result<CompactString, ()>> {
     forward: BTreeMap<CompactString, CompactString>,
     backward: BTreeMap<CompactString, CompactString>,
@@ -695,8 +721,20 @@ impl Project {
         let mut rename = move |x| rename_pool.rename(x);
         let model_name = rename(&self.name)?;
 
-        let size = (100, 100);
+        let state_size = (100, 100);
+        let junction_size = (100, 20);
         let padding = (100, 100);
+
+        fn stateflow_escape(full: &str) -> String {
+            let mut res = String::new();
+            for line in full.lines() {
+                if !res.is_empty() {
+                    res.push_str(" + newline + ");
+                }
+                write!(res, "{line:?}").unwrap();
+            }
+            res
+        }
 
         let mut res = CompactString::default();
         writeln!(res, "sfnew {model_name}").unwrap();
@@ -705,24 +743,57 @@ impl Project {
             let parent_state_numbers: BTreeMap<&str, usize> = state_machine.states.iter().filter(|x| x.1.parent.is_none()).enumerate().map(|x| (x.1.0.as_str(), x.0)).collect();
 
             if state_machine_idx == 0 {
-                writeln!(res, "chart = find(sfroot, \"-isa\", \"Stateflow.Chart\", Path = \"{model_name}/Chart\")").unwrap();
+                writeln!(res, "chart = find(sfroot, \"-isa\", \"Stateflow.Chart\")").unwrap();
                 writeln!(res, "chart.Name = {state_machine_name:?}").unwrap();
             } else {
                 writeln!(res, "chart = add_block(\"sflib/Chart\", {:?})", format!("{model_name}/{state_machine_name}")).unwrap();
             }
+
+            let entry_actions = state_machine.states.iter().filter(|s| s.1.parent.is_none()).map(|(state_name, _)| {
+                let actions = match state_machine.initial_state.as_ref().map(|i| i != state_name).unwrap_or(true) {
+                    true => common_suffix(state_machine.states.iter().flat_map(|(n, s)| s.transitions.iter().filter(|t| t.new_state.as_ref().unwrap_or(n) == state_name)).map(|t| t.actions.iter())),
+                    false => <_>::default(),
+                };
+                (state_name, actions)
+            }).collect::<BTreeMap<_,_>>();
+            let exit_actions = state_machine.states.iter().filter(|s| s.1.parent.is_none()).map(|(state_name, state)| {
+                let actions = common_suffix(state.transitions.iter().map(|t| t.actions.iter().take(t.actions.len() - entry_actions.get(t.new_state.as_ref().unwrap_or(state_name)).map(|x| x.len()).unwrap_or(0))));
+                (state_name, actions)
+            }).collect::<BTreeMap<_,_>>();
 
             let mut child_counts: BTreeMap<&str, usize> = Default::default();
             for (state_idx, (state_name, state)) in state_machine.states.iter().enumerate() {
                 match state.parent.as_deref() {
                     Some(parent) => {
                         *child_counts.entry(parent).or_default() += 1;
-                        writeln!(res, "s{state_idx} = Stateflow.Junction(chart)").unwrap();
-                        writeln!(res, "s{state_idx}.Position.Center = [{}, {}]", parent_state_numbers[parent] * (size.0 + padding.0) + size.0 / 2, size.1 + padding.1 * child_counts[parent]).unwrap();
+                        writeln!(res, "s{state_idx} = Stateflow.State(chart)").unwrap();
+                        writeln!(res, "s{state_idx}.LabelString = \"{}_{}\"", rename(parent)?, child_counts[parent]).unwrap();
+                        writeln!(res, "s{state_idx}.Position = [{}, {}, {}, {}]", parent_state_numbers[parent] * (state_size.0 + padding.0) + (state_size.0 - junction_size.0) / 2, state_size.1 + padding.1 * child_counts[parent], junction_size.0, junction_size.1).unwrap();
                     }
                     None => {
+                        let mut label = rename(state_name)?;
+                        match entry_actions.get(state_name) {
+                            Some(actions) if !actions.is_empty() => {
+                                label.push_str("\nentry:");
+                                for action in actions {
+                                    write!(label, " {action};").unwrap();
+                                }
+                            }
+                            _ => (),
+                        }
+                        match exit_actions.get(state_name) {
+                            Some(actions) if !actions.is_empty() => {
+                                label.push_str("\nexit:");
+                                for action in actions {
+                                    write!(label, " {action};").unwrap();
+                                }
+                            }
+                            _ => (),
+                        }
+
                         writeln!(res, "s{state_idx} = Stateflow.State(chart)").unwrap();
-                        writeln!(res, "s{state_idx}.Name = {:?}", rename(state_name)?).unwrap();
-                        writeln!(res, "s{state_idx}.Position = [{}, {}, {}, {}]", parent_state_numbers[state_name.as_str()] * (size.0 + padding.0), 0, size.0, size.1).unwrap();
+                        writeln!(res, "s{state_idx}.LabelString = {}", stateflow_escape(&label)).unwrap();
+                        writeln!(res, "s{state_idx}.Position = [{}, {}, {}, {}]", parent_state_numbers[state_name.as_str()] * (state_size.0 + padding.0), 0, state_size.0, state_size.1).unwrap();
                     }
                 }
             }
@@ -735,11 +806,20 @@ impl Project {
                     writeln!(res, "t.Destination = s{}", state_numbers[transition.new_state.as_deref().unwrap_or(state_name)]).unwrap();
 
                     let mut label = CompactString::default();
-                    write!(label, "[{}]{{", if transition.unordered_condition != Condition::constant(true) { transition.unordered_condition.to_string() } else { String::new() }).unwrap();
-                    for action in transition.actions.iter() {
-                        write!(label, "{action};").unwrap();
+                    if transition.unordered_condition != Condition::constant(true) {
+                        write!(label, "[{}]", transition.unordered_condition).unwrap();
                     }
-                    label.push('}');
+
+                    let entry_action_count = entry_actions.get(transition.new_state.as_ref().unwrap_or(state_name)).map(|x| x.len()).unwrap_or(0);
+                    let exit_action_count = exit_actions.get(state_name).map(|x| x.len()).unwrap_or(0);
+                    if transition.actions.len() > entry_action_count + exit_action_count {
+                        label.push('{');
+                        for action in transition.actions.iter().take(transition.actions.len() - (entry_action_count + exit_action_count)) {
+                            write!(label, "{action};").unwrap();
+                        }
+                        label.push('}');
+                    }
+
                     writeln!(res, "t.LabelString = {label:?}").unwrap();
                 }
             }
