@@ -133,7 +133,7 @@ pub struct Transition {
     pub ordered_condition: Condition,
     pub unordered_condition: Condition,
     pub actions: VecDeque<CompactString>,
-    pub new_state: CompactString,
+    pub new_state: Option<CompactString>,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -248,7 +248,7 @@ fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &m
 fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool, context: &mut Context) -> Result<Option<(VecDeque<Transition>, Condition, bool)>, CompileError> {
     fn parse_transition_target(state_machine: &str, state: &str, expr: &ast::Expr, context: &mut Context) -> Result<VecDeque<Transition>, CompileError> {
         Ok(match &expr.kind {
-            ast::ExprKind::Value(ast::Value::String(x)) => deque![Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: <_>::default(), new_state: x.clone() }],
+            ast::ExprKind::Value(ast::Value::String(x)) => deque![Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: <_>::default(), new_state: Some(x.clone()) }],
             ast::ExprKind::Conditional { condition, then, otherwise } => {
                 let condition = translate_condition(state_machine, state, condition, context)?;
                 let mut then_transitions = parse_transition_target(state_machine, state, then, context)?;
@@ -345,7 +345,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
     let mut body_terminal = false;
 
     if top_level {
-        transitions.push_back(Transition { unordered_condition: Condition::constant(true), ordered_condition: Condition::constant(true), actions: <_>::default(), new_state: state.into() });
+        transitions.push_back(Transition { unordered_condition: Condition::constant(true), ordered_condition: Condition::constant(true), actions: <_>::default(), new_state: Some(state.into()) });
     }
 
     let mut stmts = stmts.iter().rev().peekable();
@@ -358,7 +358,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
         body_terminal = true;
     }
 
-    fn make_junction(state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, context: &mut Context) {
+    fn make_junction<'a>(state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, context: &'a mut Context) {
         prune_unreachable(transitions);
 
         let junction = format_compact!("::junction-{}::", context.junctions.len());
@@ -370,11 +370,11 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
                 unordered_condition: return_condition,
                 ordered_condition: Condition::constant(true),
                 actions: deque![],
-                new_state: state.into(),
+                new_state: Some(state.into()),
             });
         }
 
-        transitions.push_front(Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: core::mem::take(actions), new_state: junction.clone() });
+        transitions.push_front(Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: core::mem::take(actions), new_state: Some(junction.clone()) });
         context.junctions.push((junction, junction_state));
     }
     fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, terminal: bool, context: &mut Context) -> Result<(), CompileError> {
@@ -382,7 +382,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
 
         if !actions.is_empty() {
             if terminal && transitions.is_empty() {
-                transitions.push_front(Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: core::mem::take(actions), new_state: state.into() });
+                transitions.push_front(Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: core::mem::take(actions), new_state: Some(state.into()) });
             } else if transitions.len() == 1 && transitions[0].unordered_condition == Condition::constant(true) {
                 transitions[0].actions.extend_front(core::mem::take(actions).into_iter());
             } else if terminal {
@@ -425,7 +425,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
                             debug_assert_eq!(transitions[0].ordered_condition, Condition::constant(true));
                             debug_assert_eq!(transitions[0].actions.len(), 0);
                         }
-                    }
+                    };
 
                     let condition = Condition::atom(format_compact!("after({}, sec)", translate_expr(state_machine, state, seconds, context)?));
                     for transition in transitions.iter_mut() {
@@ -433,11 +433,12 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
                             *target = target.clone() & condition.clone();
                         }
                     }
+
                     transitions.push_back(Transition {
                         unordered_condition: !condition,
                         ordered_condition: Condition::constant(true),
                         actions: <_>::default(),
-                        new_state: state.into(),
+                        new_state: None,
                     });
                 }
                 _ => actions.extend_front(parse_actions(state_machine, state, stmt, context)?.into_iter()),
@@ -528,11 +529,11 @@ impl Project {
         }).collect::<BTreeMap<_,_>>();
 
         for state_machine in state_machines.values_mut() {
-            let target_states: Vec<_> = state_machine.states.values().flat_map(|s| s.transitions.iter().map(|t| t.new_state.clone())).collect();
+            let target_states: Vec<_> = state_machine.states.values().flat_map(|s| s.transitions.iter().flat_map(|t| t.new_state.clone())).collect();
             for target_state in target_states {
                 state_machine.states.entry(target_state.clone()).or_insert_with(|| State {
                     parent: None,
-                    transitions: deque![Transition { unordered_condition: Condition::constant(true), ordered_condition: Condition::constant(true), actions: <_>::default(), new_state: target_state }]
+                    transitions: deque![Transition { unordered_condition: Condition::constant(true), ordered_condition: Condition::constant(true), actions: <_>::default(), new_state: Some(target_state) }]
                 });
             }
         }
@@ -605,6 +606,16 @@ impl Project {
             }
         }
 
+        for machine in state_machines.values_mut() {
+            for (state_name, state) in machine.states.iter_mut() {
+                for transition in state.transitions.iter_mut() {
+                    if matches!(&transition.new_state, Some(x) if x == state_name) {
+                        transition.new_state = None;
+                    }
+                }
+            }
+        }
+
         Ok(Project { name: proj.name, role: role.name.clone(), state_machines })
     }
     pub fn to_graphviz(&self) -> dot::Graph {
@@ -638,14 +649,14 @@ impl Project {
                 stmts.push(dot::Stmt::Node(dot::Node { id: node_id(state_name), attributes }));
             }
             for (state_name, state) in state_machine.states.iter() {
-                let included_transitions = state.transitions.iter().filter(|t| t.new_state != state_name || !t.actions.is_empty() || t.ordered_condition != Condition::constant(true)).collect::<Vec<_>>();
+                let included_transitions = state.transitions.iter().filter(|t| t.new_state.as_ref().unwrap_or(state_name) != state_name || !t.actions.is_empty() || t.ordered_condition != Condition::constant(true)).collect::<Vec<_>>();
 
                 let labeler: fn (usize, Option<String>) -> dot::Id = match included_transitions.len() {
                     1 => |_, t| t.map(|t| dot_id(&format!(" {t} "))).unwrap_or_else(|| dot_id("")),
                     _ => |i, t| t.map(|t| dot_id(&format!(" {}: {t} ", i + 1))).unwrap_or_else(|| dot_id(&format!(" {} ", i + 1))),
                 };
                 for (i, transition) in included_transitions.iter().enumerate() {
-                    stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id(state_name)), dot::Vertex::N(node_id(&transition.new_state))), attributes: vec![
+                    stmts.push(dot::Stmt::Edge(dot::Edge { ty: dot::EdgeTy::Pair(dot::Vertex::N(node_id(state_name)), dot::Vertex::N(node_id(transition.new_state.as_ref().unwrap_or(state_name)))), attributes: vec![
                         dot::Attribute(dot::Id::Plain("label".into()), labeler(i, if transition.ordered_condition != Condition::constant(true) { Some(transition.ordered_condition.to_string()) } else { None })),
                     ] }));
                 }
@@ -691,12 +702,12 @@ impl Project {
                 }
             }
             for (state_idx, (state_name, state)) in state_machine.states.iter().enumerate() {
-                let included_transitions = state.transitions.iter().filter(|t| t.new_state != state_name || !t.actions.is_empty() || t.ordered_condition != Condition::constant(true));
+                let included_transitions = state.transitions.iter().filter(|t| t.new_state.as_ref().unwrap_or(state_name) != state_name || !t.actions.is_empty() || t.ordered_condition != Condition::constant(true));
 
                 for transition in included_transitions {
                     writeln!(res, "t = Stateflow.Transition(chart)").unwrap();
                     writeln!(res, "t.Source = s{state_idx}").unwrap();
-                    writeln!(res, "t.Destination = s{}", state_numbers[transition.new_state.as_str()]).unwrap();
+                    writeln!(res, "t.Destination = s{}", state_numbers[transition.new_state.as_deref().unwrap_or(state_name)]).unwrap();
 
                     let mut label = CompactString::default();
                     write!(label, "[{}]{{", if transition.unordered_condition != Condition::constant(true) { transition.unordered_condition.to_string() } else { String::new() }).unwrap();
