@@ -291,6 +291,7 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
 
             if volatile {
                 make_junction(state, &mut <_>::default(), &mut transitions, context);
+                debug_assert_eq!(transitions.len(), 1);
             }
 
             let tail_condition = match body_terminal {
@@ -314,9 +315,11 @@ fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, termina
 
             if volatile_1 {
                 make_junction(state, &mut <_>::default(), &mut transitions_1, context);
+                debug_assert_eq!(transitions_1.len(), 1);
             }
             if volatile_2 {
                 make_junction(state, &mut <_>::default(), &mut transitions_2, context);
+                debug_assert_eq!(transitions_2.len(), 1);
             }
 
             let cond_1 = transitions_1.back().map(|t| t.unordered_condition.clone()).unwrap_or(Condition::constant(false));
@@ -369,7 +372,7 @@ fn make_junction<'a>(state: &str, actions: &mut VecDeque<CompactString>, transit
     transitions.push_front(Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: core::mem::take(actions), new_state: Some(junction.clone()) });
     context.junctions.push((junction, junction_state));
 }
-fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, terminal: bool, context: &mut Context) -> Result<(), CompileError> {
+fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<CompactString>, transitions: &mut VecDeque<Transition>, terminal: bool, volatile: &mut bool, context: &mut Context) -> Result<(), CompileError> {
     prune_unreachable(transitions);
 
     if !actions.is_empty() {
@@ -380,6 +383,7 @@ fn handle_actions(state_machine: &str, state: &str, actions: &mut VecDeque<Compa
         } else if terminal {
             make_junction(state, actions, transitions, context);
             debug_assert_eq!(transitions.len(), 1);
+            *volatile = false;
         } else {
             return Err(CompileError::ActionsOutsideTransition { state_machine: state_machine.into(), state: state.into() });
         }
@@ -412,7 +416,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
     for stmt in stmts {
         match parse_transitions(state_machine, state, stmt, (script_terminal || body_terminal) && last, context)? {
             Some((sub_transitions, tail_condition, sub_body_terminal)) => {
-                handle_actions(state_machine, state, &mut actions, &mut transitions, script_terminal || body_terminal, context)?;
+                handle_actions(state_machine, state, &mut actions, &mut transitions, script_terminal || body_terminal, &mut volatile, context)?;
                 debug_assert_eq!(actions.len(), 0);
 
                 body_terminal |= sub_body_terminal;
@@ -425,7 +429,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
             }
             None => match &stmt.kind {
                 ast::StmtKind::Sleep { seconds } => {
-                    handle_actions(state_machine, state, &mut actions, &mut transitions, script_terminal || body_terminal, context)?;
+                    handle_actions(state_machine, state, &mut actions, &mut transitions, script_terminal || body_terminal, &mut volatile, context)?;
                     debug_assert_eq!(actions.len(), 0);
 
                     match transitions.as_slices() {
@@ -434,9 +438,6 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
                             make_junction(state, &mut actions, &mut transitions, context);
                             debug_assert_eq!(actions.len(), 0);
                             debug_assert_eq!(transitions.len(), 1);
-                            debug_assert_eq!(transitions[0].unordered_condition, Condition::constant(true));
-                            debug_assert_eq!(transitions[0].ordered_condition, Condition::constant(true));
-                            debug_assert_eq!(transitions[0].actions.len(), 0);
                         }
                     };
 
@@ -462,7 +463,7 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
         last = false;
     }
 
-    handle_actions(state_machine, state, &mut actions, &mut transitions, script_terminal || body_terminal, context)?;
+    handle_actions(state_machine, state, &mut actions, &mut transitions, script_terminal || body_terminal, &mut volatile, context)?;
     debug_assert_eq!(actions.len(), 0);
 
     Ok((transitions, body_terminal, volatile))
