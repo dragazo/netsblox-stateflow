@@ -5593,3 +5593,280 @@ fn test_wait_5() {
     });
     assert_complete(&proj);
 }
+
+#[test]
+fn test_wait_6() {
+    let proj = Project::compile(include_str!("projects/wait-6.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "wait".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("my state".into(), StateMachine {
+                variables: [
+                    ("x".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                ].into_iter().collect(),
+                states: [
+                    ("start".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::atom("after(3, sec)".into()),
+                                ordered_condition: Condition::atom("after(3, sec)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("::junction-1::".into()),
+                            },
+                            Transition {
+                                unordered_condition: !Condition::atom("after(3, sec)".into()),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("stop".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("::junction-1::".into(), State {
+                        parent: Some("start".into()),
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::atom("x".into()),
+                                ordered_condition: Condition::atom("x".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("::junction-0::".into()),
+                            },
+                            Transition {
+                                unordered_condition: !Condition::atom("x".into()),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("start".into()),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("::junction-0::".into(), State {
+                        parent: Some("start".into()),
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::atom("after(2, sec)".into()),
+                                ordered_condition: Condition::atom("after(2, sec)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("stop".into()),
+                            },
+                            Transition {
+                                unordered_condition: !Condition::atom("after(2, sec)".into()),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("start".into()),
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_complete(&proj);
+}
+
+#[test]
+fn test_wait_7() {
+    let proj = Project::compile(include_str!("projects/wait-7.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "wait".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("my state".into(), StateMachine {
+                variables: [
+                    ("x".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                ].into_iter().collect(),
+                states: [
+                    ("start".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::atom("after(3, sec)".into()),
+                                ordered_condition: Condition::atom("after(3, sec)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("::junction-1::".into()),
+                            },
+                            Transition {
+                                unordered_condition: !Condition::atom("after(3, sec)".into()),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("stop".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("::junction-1::".into(), State {
+                        parent: Some("start".into()),
+                        transitions: [
+                            Transition {
+                                unordered_condition: !Condition::atom("x".into()),
+                                ordered_condition: !Condition::atom("x".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("::junction-0::".into()),
+                            },
+                            Transition {
+                                unordered_condition: Condition::atom("x".into()),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("start".into()),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("::junction-0::".into(), State {
+                        parent: Some("start".into()),
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::atom("after(2, sec)".into()),
+                                ordered_condition: Condition::atom("after(2, sec)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("stop".into()),
+                            },
+                            Transition {
+                                unordered_condition: !Condition::atom("after(2, sec)".into()),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("start".into()),
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_complete(&proj);
+}
+
+#[test]
+fn test_wait_8() {
+    let proj = Project::compile(include_str!("projects/wait-8.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "wait".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("my state".into(), StateMachine {
+                variables: [
+                    ("x".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                ].into_iter().collect(),
+                states: [
+                    ("start".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::atom("after(3, sec)".into()),
+                                ordered_condition: Condition::atom("after(3, sec)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("::junction-2::".into()),
+                            },
+                            Transition {
+                                unordered_condition: !Condition::atom("after(3, sec)".into()),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("stop 1".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("stop 2".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("::junction-2::".into(), State {
+                        parent: Some("start".into()),
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::atom("x".into()),
+                                ordered_condition: Condition::atom("x".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("::junction-0::".into()),
+                            },
+                            Transition {
+                                unordered_condition: !Condition::atom("x".into()),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("::junction-1::".into()),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("::junction-0::".into(), State {
+                        parent: Some("start".into()),
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::atom("after(1, sec)".into()),
+                                ordered_condition: Condition::atom("after(1, sec)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("stop 1".into()),
+                            },
+                            Transition {
+                                unordered_condition: !Condition::atom("after(1, sec)".into()),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("::junction-1::".into(), State {
+                        parent: Some("start".into()),
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::atom("after(2, sec)".into()),
+                                ordered_condition: Condition::atom("after(2, sec)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("stop 2".into()),
+                            },
+                            Transition {
+                                unordered_condition: !Condition::atom("after(2, sec)".into()),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("start".into()),
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_complete(&proj);
+}
