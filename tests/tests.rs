@@ -6125,3 +6125,80 @@ fn test_wait_10() {
     });
     assert_complete(&proj);
 }
+
+#[test]
+fn test_wait_11() {
+    let proj = Project::compile(include_str!("projects/wait-11.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "wait".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("my state".into(), StateMachine {
+                variables: [
+                    ("x".into(), Variable { init: "0".into(), kind: VariableKind::Local }),
+                ].into_iter().collect(),
+                states: [
+                    ("start".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::atom("after(1, sec)".into()),
+                                ordered_condition: Condition::atom("after(1, sec)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("::junction-0::".into()),
+                            },
+                            Transition {
+                                unordered_condition: !Condition::atom("after(1, sec)".into()),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("a".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("b".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::constant(true),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("::junction-0::".into(), State {
+                        parent: Some("start".into()),
+                        transitions: [
+                            Transition {
+                                unordered_condition: Condition::atom("x".into()),
+                                ordered_condition: Condition::atom("x".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("a".into()),
+                            },
+                            Transition {
+                                unordered_condition: !Condition::atom("x".into()),
+                                ordered_condition: Condition::constant(true),
+                                actions: [].into_iter().collect(),
+                                new_state: Some("b".into()),
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("start".into()),
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_complete(&proj);
+}
