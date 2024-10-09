@@ -419,13 +419,18 @@ fn parse_stmts(state_machine: &str, state: &str, stmts: &[ast::Stmt], script_ter
                 handle_actions(state_machine, state, &mut actions, &mut transitions, script_terminal || body_terminal, &mut volatile, context)?;
                 debug_assert_eq!(actions.len(), 0);
 
+                if volatile {
+                    make_junction(state, &mut actions, &mut transitions, context);
+                    debug_assert_eq!(actions.len(), 0);
+                    debug_assert_eq!(transitions.len(), 1);
+                    volatile = false;
+                }
+
                 body_terminal |= sub_body_terminal;
                 for transition in transitions.iter_mut() {
                     transition.unordered_condition = tail_condition.clone() & transition.unordered_condition.clone();
                 }
                 transitions.extend_front(sub_transitions.into_iter());
-
-                volatile = false;
             }
             None => match &stmt.kind {
                 ast::StmtKind::Sleep { seconds } => {
