@@ -90,6 +90,7 @@ pub enum CompileError {
     RenameFailure { before: CompactString },
     RenameConflict { before: (CompactString, CompactString), after: CompactString },
 
+    TransitionEmptyTarget { state_machine: CompactString, state: CompactString },
     UnsupportedBlock { state_machine: CompactString, state: CompactString, info: CompactString },
     NonTerminalTransition { state_machine: CompactString, state: CompactString },
     MultipleHandlers { state_machine: CompactString, state: CompactString },
@@ -248,7 +249,10 @@ fn parse_actions(state_machine: &str, state: &str, stmt: &ast::Stmt, context: &m
 fn parse_transitions(state_machine: &str, state: &str, stmt: &ast::Stmt, terminal: bool, context: &mut Context) -> Result<Option<(VecDeque<Transition>, Condition, bool)>, CompileError> {
     fn parse_transition_target(state_machine: &str, state: &str, expr: &ast::Expr, context: &mut Context) -> Result<VecDeque<Transition>, CompileError> {
         Ok(match &expr.kind {
-            ast::ExprKind::Value(ast::Value::String(x)) => deque![Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: <_>::default(), new_state: Some(x.clone()) }],
+            ast::ExprKind::Value(ast::Value::String(x)) => match x.as_str() {
+                "" => return Err(CompileError::TransitionEmptyTarget { state_machine: state_machine.into(), state: state.into() }),
+                _ => deque![Transition { ordered_condition: Condition::constant(true), unordered_condition: Condition::constant(true), actions: <_>::default(), new_state: Some(x.clone()) }],
+            }
             ast::ExprKind::Conditional { condition, then, otherwise } => {
                 let condition = translate_condition(state_machine, state, condition, context)?;
                 let mut then_transitions = parse_transition_target(state_machine, state, then, context)?;

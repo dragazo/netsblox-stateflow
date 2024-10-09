@@ -5254,6 +5254,12 @@ fn test_empty_condition() {
 }
 
 #[test]
+fn test_empty_trans() {
+    let err = Project::compile(include_str!("projects/empty-trans.xml"), None, Settings::default()).unwrap_err();
+    assert_eq!(err, CompileError::TransitionEmptyTarget { state_machine: "my state".into(), state: "start".into() });
+}
+
+#[test]
 fn test_wait_1() {
     let proj = Project::compile(include_str!("projects/wait-1.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {
