@@ -209,6 +209,98 @@ d.Scope = "Local"
 }
 
 #[test]
+fn test_factoring_2() {
+    let proj = Project::compile(include_str!("projects/factoring-2.xml"), None, Settings::default()).unwrap();
+    assert_eq!(proj, Project {
+        name: "stateflow-example".into(),
+        role: "myRole".into(),
+        state_machines: [
+            ("gcd state".into(), StateMachine {
+                variables: [
+                    ("a".into(), Variable { init: "0".into(), kind: VariableKind::Input }),
+                    ("b".into(), Variable { init: "0".into(), kind: VariableKind::Output }),
+                ].into_iter().collect(),
+                states: [
+                    ("start".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                ordered_condition: Condition::atom("a > 20".into()),
+                                unordered_condition: Condition::atom("a > 20".into()),
+                                actions: [
+                                    "b = randi(6)".into(),
+                                ].into_iter().collect(),
+                                new_state: Some("Shake".into()),
+                            },
+                            Transition {
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: !Condition::atom("a > 20".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                    ("Shake".into(), State {
+                        parent: None,
+                        transitions: [
+                            Transition {
+                                ordered_condition: Condition::atom("after(3, sec)".into()),
+                                unordered_condition: Condition::atom("after(3, sec)".into()),
+                                actions: [
+                                    "b = 0".into(),
+                                ].into_iter().collect(),
+                                new_state: Some("start".into()),
+                            },
+                            Transition {
+                                ordered_condition: Condition::constant(true),
+                                unordered_condition: !Condition::atom("after(3, sec)".into()),
+                                actions: [].into_iter().collect(),
+                                new_state: None,
+                            },
+                        ].into_iter().collect(),
+                    }),
+                ].into_iter().collect(),
+                initial_state: Some("start".into()),
+                current_state: None,
+            }),
+        ].into_iter().collect(),
+    });
+    assert_complete(&proj);
+    assert_eq!(proj.to_stateflow().unwrap(), r#"
+sfnew stateflow_example
+chart = find(sfroot, "-isa", "Stateflow.Chart")
+chart.Name = "gcd state"
+s0 = Stateflow.State(chart)
+s0.LabelString = "Shake" + newline + "entry: b = randi(6);" + newline + "exit: b = 0;"
+s0.Position = [0, 0, 100, 100]
+s1 = Stateflow.State(chart)
+s1.LabelString = "start"
+s1.Position = [200, 0, 100, 100]
+t = Stateflow.Transition(chart)
+t.Source = s0
+t.Destination = s1
+t.LabelString = "[after(3, sec)]"
+t = Stateflow.Transition(chart)
+t.Source = s1
+t.Destination = s0
+t.LabelString = "[a > 20]"
+t = Stateflow.Transition(chart)
+t.Destination = s1
+t.DestinationOClock = 0
+t.SourceEndpoint = t.DestinationEndpoint - [0 30]
+t.Midpoint = t.DestinationEndpoint - [0 15]
+d = Stateflow.Data(chart)
+d.Name = "a"
+d.Props.InitialValue = "0"
+d.Scope = "Input"
+d = Stateflow.Data(chart)
+d.Name = "b"
+d.Props.InitialValue = "0"
+d.Scope = "Output"
+    "#.trim());
+}
+
+#[test]
 fn test_simple_no_handler() {
     let proj = Project::compile(include_str!("projects/simple-no-handler.xml"), None, Settings::default()).unwrap();
     assert_eq!(proj, Project {

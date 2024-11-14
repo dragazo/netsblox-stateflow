@@ -749,15 +749,19 @@ impl Project {
                 writeln!(res, "chart = add_block(\"sflib/Chart\", {:?})", format!("{model_name}/{state_machine_name}")).unwrap();
             }
 
+            let included_transitions = state_machine.states.iter().map(|(state_name, state)| {
+                (state as *const State, state.transitions.iter().filter(|t| t.new_state.as_ref().unwrap_or(state_name) != state_name || !t.actions.is_empty() || t.ordered_condition != Condition::constant(true)).collect::<Vec<_>>())
+            }).collect::<BTreeMap<_,_>>();
+
             let entry_actions = state_machine.states.iter().filter(|s| s.1.parent.is_none()).map(|(state_name, _)| {
                 let actions = match state_machine.initial_state.as_ref().map(|i| i != state_name).unwrap_or(true) {
-                    true => common_suffix(state_machine.states.iter().flat_map(|(n, s)| s.transitions.iter().filter(|t| t.new_state.as_ref().unwrap_or(n) == state_name)).map(|t| t.actions.iter())),
+                    true => common_suffix(state_machine.states.iter().flat_map(|(n, s)| included_transitions[&(s as _)].iter().filter(|t| t.new_state.as_ref().unwrap_or(n) == state_name)).map(|t| t.actions.iter())),
                     false => <_>::default(),
                 };
                 (state_name, actions)
             }).collect::<BTreeMap<_,_>>();
             let exit_actions = state_machine.states.iter().filter(|s| s.1.parent.is_none()).map(|(state_name, state)| {
-                let actions = common_suffix(state.transitions.iter().map(|t| t.actions.iter().take(t.actions.len() - entry_actions.get(t.new_state.as_ref().unwrap_or(state_name)).map(|x| x.len()).unwrap_or(0))));
+                let actions = common_suffix(included_transitions[&(state as _)].iter().map(|t| t.actions.iter().take(t.actions.len() - entry_actions.get(t.new_state.as_ref().unwrap_or(state_name)).map(|x| x.len()).unwrap_or(0))));
                 (state_name, actions)
             }).collect::<BTreeMap<_,_>>();
 
@@ -798,9 +802,7 @@ impl Project {
                 }
             }
             for (state_idx, (state_name, state)) in state_machine.states.iter().enumerate() {
-                let included_transitions = state.transitions.iter().filter(|t| t.new_state.as_ref().unwrap_or(state_name) != state_name || !t.actions.is_empty() || t.ordered_condition != Condition::constant(true));
-
-                for transition in included_transitions {
+                for transition in &included_transitions[&(state as _)] {
                     writeln!(res, "t = Stateflow.Transition(chart)").unwrap();
                     writeln!(res, "t.Source = s{state_idx}").unwrap();
                     writeln!(res, "t.Destination = s{}", state_numbers[transition.new_state.as_deref().unwrap_or(state_name)]).unwrap();
